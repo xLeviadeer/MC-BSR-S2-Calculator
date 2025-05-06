@@ -11,14 +11,11 @@ using System.Windows.Shapes;
 
 namespace MC_BSR_S2_Calculator
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
-    {
-        public MainWindow()
-        {
+    public partial class MainWindow : Window {
+        public MainWindow() {
             InitializeComponent();
+
+            // testing zone
         }
     }
 }

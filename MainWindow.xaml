@@ -4,9 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MC_BSR_S2_Calculator"
+        xmlns:validations="clr-namespace:MC_BSR_S2_Calculator.Validations"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MC:BSR-S2 Calculator" 
+        Height="450" 
+        Width="800"
+        FontFamily="Arial Round MT Bold"
+        WindowStartupLocation="CenterScreen">
+    
+    <!-- Window Layout \-->
     <Grid>
-
+        <validations:DoubleTextBox Height="100" Width="100" ValidationType="Final"/>
+        <validations:IntegerTextBox Height="100" Width="100" ValidationType="Final" Margin="475,167,225,167"/>
     </Grid>
 </Window>
