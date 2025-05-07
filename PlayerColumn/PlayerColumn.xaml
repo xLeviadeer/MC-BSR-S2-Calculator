@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="MC_BSR_S2_Calculator.PlayerColumn.PlayerColumn"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
+             xmlns:global="clr-namespace:MC_BSR_S2_Calculator.GlobalColumns"
+             xmlns:validations="clr-namespace:MC_BSR_S2_Calculator.Validations"
+             mc:Ignorable="d"
+             Height="Auto"
+             Width="Auto">
+    
+    <!-- PlayerGrid Layout -->
+    <Grid x:Name="PlayerGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="ViewRow" Height="*"/>
+            <RowDefinition x:Name="AddRow" Height="70" MinHeight="70" MaxHeight="80"/>
+        </Grid.RowDefinitions>
+        <GridSplitter x:Name="AddToViewGridSplitter" Grid.Row="0" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="#FFDCDFE7"/>
+
+        <!-- PlayerGrid Content -->
+        <!-- ViewGrid Layout -->
+        <Grid x:Name="ViewGrid" Grid.Row="0" Margin="5,5,5,10">
+            <global:TestClassListDisplay x:Name="TestClassListDisplay"/>
+        </Grid>
+
+        <!-- AddGrid Layout -->
+        <Grid x:Name="AddGrid" Grid.Row="1" Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Style="{StaticResource InputLabelBoxRow}"/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <!-- AddGrid Content -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource InputLabelBox}" Text="Player Name"/>
+            <TextBox x:Name="PlayerNameTextBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource InputTextBox}" MaxLength="20"/>
+            <Button x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" Style="{StaticResource InputButton}" Content="Add"/>
+        </Grid>
+    </Grid>
+</UserControl>

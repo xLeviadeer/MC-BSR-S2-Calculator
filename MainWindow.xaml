@@ -5,16 +5,42 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MC_BSR_S2_Calculator"
         xmlns:validations="clr-namespace:MC_BSR_S2_Calculator.Validations"
+        xmlns:main="clr-namespace:MC_BSR_S2_Calculator.MainColumn"
+        xmlns:player="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
+        xmlns:view="clr-namespace:MC_BSR_S2_Calculator.ViewColumn"
         mc:Ignorable="d"
         Title="MC:BSR-S2 Calculator" 
-        Height="450" 
-        Width="800"
+        Height="400" 
+        Width="550"
+        MinHeight="400"
+        MinWidth="550"
         FontFamily="Arial Round MT Bold"
         WindowStartupLocation="CenterScreen">
     
     <!-- Window Layout \-->
-    <Grid>
-        <validations:DoubleTextBox Height="100" Width="100" ValidationType="Final"/>
-        <validations:IntegerTextBox Height="100" Width="100" ValidationType="Final" Margin="475,167,225,167"/>
+    <Grid x:Name="MainGrid">
+        <Grid x:Name="SectionsGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="PlayerColumn" Width="9*" MinWidth="170" MaxWidth="230"/>
+                <ColumnDefinition x:Name="MainColumn" Width="12*"/>
+                <ColumnDefinition x:Name="ViewColumn" Width="5*" MinWidth="130" MaxWidth="200"/>
+            </Grid.ColumnDefinitions>
+            <GridSplitter x:Name="PlayerToMainColumnSplitter" Grid.Column="0" Width="5" Background="#FFB7BBC6"/>
+            <GridSplitter x:Name="MainToViewColumnSplitter" Grid.Column="1" Width="5" Background="#FFB7BBC6"/>
+
+            <!-- MainGrid Content -->
+            <Grid Grid.Column="0">
+                <Border x:Name="PlayerBorder" BorderBrush="#FFE4E7F1" BorderThickness="3" Margin="0,0,5,0"/>
+                <player:PlayerColumn x:Name="PlayerColumnControl" Margin="3,3,8,3"/>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Border x:Name="MainBorder" BorderBrush="#FFE4E7F1" BorderThickness="3" Margin="0,0,5,0"/>
+                <main:MainColumn x:Name="MainColumnControl" Margin="3,3,8,3"/>
+            </Grid>
+            <Grid Grid.Column="2">
+                <Border x:Name="ViewBorder" Grid.Column="4" BorderBrush="#FFE4E7F1" BorderThickness="3"/>
+                <view:ViewColumn x:Name="ViewColumnControl" Margin="3,3,3,3"/>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
