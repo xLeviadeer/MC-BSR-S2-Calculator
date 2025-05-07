@@ -117,6 +117,7 @@ namespace MC_BSR_S2_Calculator.Validations {
                         (err is FormatException)
                         || (err is ArgumentNullException)
                         || (err is OverflowException)
+                        || (err is SyntaxErrorException)
                     ) { // return failiure
                         return (false, -1);
                     }           
@@ -204,7 +205,15 @@ namespace MC_BSR_S2_Calculator.Validations {
 
                         // if k or h
                         if ((charStack.First().chr == 'k') || (charStack.First().chr == 'h')) {
+                            // skip if last symbol is not a digit
+                            if ((i < (runLength - 1)) && (!char.IsDigit(cleanedText[i + 1]))) {
+                                RevertText(textBox);
+                                return;
+                            }
+
+                            // evaluate
                             if (!evaluatePortion((i + 1), applyOffset:false)) { // dont include parenthesis
+                                RevertText(textBox);
                                 return; // return if failed
                             } 
                         }
@@ -223,7 +232,15 @@ namespace MC_BSR_S2_Calculator.Validations {
                             if (charStackLast == ')') {
                                 continue;
                             } else if (charStackLast == 'h' || charStackLast == 'k') {
+                                // skip if last symbol is not a digit
+                                if ((i < (runLength - 1)) && (!char.IsDigit(cleanedText[i + 1]))) {
+                                    RevertText(textBox);
+                                    return;
+                                }
+
+                                // evaluate
                                 if (!evaluatePortion(i, applyOffset:true)) {
+                                    RevertText(textBox);
                                     return; // return if failed
                                 }
                             }
@@ -240,7 +257,15 @@ namespace MC_BSR_S2_Calculator.Validations {
                         bool wasEvaluated = false;
                         foreach (char mathSymbol in mathSymbols) {
                             if (currChar == mathSymbol) {
+                                // skip if last symbol is not a digit
+                                if ((i < (runLength - 1)) && (!char.IsDigit(cleanedText[i + 1]))) {
+                                    RevertText(textBox);
+                                    return;
+                                }
+
+                                // evaluate
                                 if (!evaluatePortion((i + 1), applyOffset:false)) { // we dont want to include the math symbol itself
+                                    RevertText(textBox);
                                     return; // return if failed
                                 }
                                 wasEvaluated = true;

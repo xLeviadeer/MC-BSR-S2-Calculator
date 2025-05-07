@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -221,6 +222,7 @@ namespace MC_BSR_S2_Calculator.Validations {
                 err is FormatException 
                 || err is ArgumentNullException 
                 || err is OverflowException
+                || err is SyntaxErrorException
             ) { // revert text if there was parsing error
                 RevertText(textBox);
                 return;
