@@ -4,27 +4,10 @@
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!-- Input Text Block (as a Label) Margin -->
-        <Style x:Key="InputLabelBox" TargetType="TextBlock">
-            <Setter Property="Margin" Value="3,3,3,0"/>
-            <Setter Property="FontSize" Value="8"/>
-        </Style>
-        
-        <!-- Input Text Block Column Spacing -->
-        <Style x:Key="InputLabelBoxRow" TargetType="RowDefinition">
-            <Setter Property="Height" Value="12"/>
-        </Style>
-
-        <!-- Input Box Margin -->
-        <Style x:Key="InputTextBox" TargetType="TextBox">
-            <Setter Property="Margin" Value="3"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
-
         <!-- Input Button Margin -->
         <Style x:Key="InputButton" TargetType="Button">
             <Setter Property="Margin" Value="3"/>
+            <Setter Property="Height" Value="22"/>
         </Style>
     </Application.Resources>
 </Application>

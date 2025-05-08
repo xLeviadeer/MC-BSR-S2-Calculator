@@ -10,10 +10,10 @@
         xmlns:view="clr-namespace:MC_BSR_S2_Calculator.ViewColumn"
         mc:Ignorable="d"
         Title="MC:BSR-S2 Calculator" 
-        Height="400" 
-        Width="550"
-        MinHeight="400"
-        MinWidth="550"
+        Height="800" 
+        Width="1100"
+        MinHeight="800"
+        MinWidth="1100"
         FontFamily="Arial Round MT Bold"
         WindowStartupLocation="CenterScreen">
     
@@ -21,9 +21,9 @@
     <Grid x:Name="MainGrid">
         <Grid x:Name="SectionsGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="PlayerColumn" Width="9*" MinWidth="170" MaxWidth="230"/>
-                <ColumnDefinition x:Name="MainColumn" Width="12*"/>
-                <ColumnDefinition x:Name="ViewColumn" Width="5*" MinWidth="130" MaxWidth="200"/>
+                <ColumnDefinition x:Name="PlayerColumn" Width="*" MinWidth="240" MaxWidth="310"/>
+                <ColumnDefinition x:Name="MainColumn" Width="3*"/>
+                <ColumnDefinition x:Name="ViewColumn" Width="*" MinWidth="260" MaxWidth="330"/>
             </Grid.ColumnDefinitions>
             <GridSplitter x:Name="PlayerToMainColumnSplitter" Grid.Column="0" Width="5" Background="#FFB7BBC6"/>
             <GridSplitter x:Name="MainToViewColumnSplitter" Grid.Column="1" Width="5" Background="#FFB7BBC6"/>

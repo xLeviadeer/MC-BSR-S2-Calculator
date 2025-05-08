@@ -14,9 +14,9 @@
     <Grid x:Name="PlayerGrid">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="ViewRow" Height="*"/>
-            <RowDefinition x:Name="AddRow" Height="70" MinHeight="70" MaxHeight="80"/>
+            <RowDefinition x:Name="AddRow" Height="98"/>
         </Grid.RowDefinitions>
-        <GridSplitter x:Name="AddToViewGridSplitter" Grid.Row="0" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="#FFDCDFE7"/>
+        <GridSplitter x:Name="AddToViewGridSplitter" Grid.Row="0" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="#FFDCDFE7" IsEnabled="False"/>
 
         <!-- PlayerGrid Content -->
         <!-- ViewGrid Layout -->
@@ -27,7 +27,6 @@
         <!-- AddGrid Layout -->
         <Grid x:Name="AddGrid" Grid.Row="1" Margin="5">
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource InputLabelBoxRow}"/>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
@@ -37,8 +36,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- AddGrid Content -->
-            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource InputLabelBox}" Text="Player Name"/>
-            <TextBox x:Name="PlayerNameTextBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource InputTextBox}" MaxLength="20"/>
+            <global:TextLabelAbove Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" LabelText="Add Player" TextBoxType="TextBox" TextBoxMaxLength="20"/>
             <Button x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" Style="{StaticResource InputButton}" Content="Add"/>
         </Grid>
     </Grid>

@@ -14,7 +14,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
     /// </summary>
     /// <typeparam name="T"> The class type of which data to display from </typeparam>
     internal abstract partial class ListDisplay<T> : UserControl
-        where T : Displayable<T> {
+        where T : Displayable {
         // --- VARIABLES ---
         #region VARIABLES
 

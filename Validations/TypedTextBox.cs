@@ -132,7 +132,7 @@ namespace MC_BSR_S2_Calculator.Validations {
         /// Adds the validate method as a listener to the validation event
         /// </summary>
         public TypedTextBox() {
-            Validate(this, new()); // validate upon creation
+            Loaded += Validate; // validate upon creation
 
             // set validation events
             switch (ValidationType) {
