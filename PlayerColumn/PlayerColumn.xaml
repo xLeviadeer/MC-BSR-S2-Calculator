@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
              xmlns:global="clr-namespace:MC_BSR_S2_Calculator.GlobalColumns"
+             xmlns:global_DisplayList="clr-namespace:MC_BSR_S2_Calculator.GlobalColumns.DisplayList"
              xmlns:validations="clr-namespace:MC_BSR_S2_Calculator.Validations"
              mc:Ignorable="d"
              Height="Auto"
@@ -21,7 +22,13 @@
         <!-- PlayerGrid Content -->
         <!-- ViewGrid Layout -->
         <Grid x:Name="ViewGrid" Grid.Row="0" Margin="5,5,5,10">
-            <global:TestClassListDisplay x:Name="TestClassListDisplay"/>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Button x:Name="TestButton" Grid.Row="1" Content="Test Swap" Click="OnTestButtonClicked"/>
+
+            <global_DisplayList:TestClassListDisplay x:Name="TestClassListDisplay" ScrollBarWidth="10" ShowScrollBar="Visible" DisplayLayer="1" Grid.Row="0" ItemHeight="26"/>
         </Grid>
 
         <!-- AddGrid Layout -->

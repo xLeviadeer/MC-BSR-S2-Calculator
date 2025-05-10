@@ -7,20 +7,22 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns {
+namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
     /// <summary>
     /// DisplayValue which's display mimics the value as it changes
     /// </summary>
-    /// <typeparam name="T"> The type of value this class holds </typeparam>
-    internal class BoundDisplayValue<T> : IDisplayValue {
+    /// <typeparam name="T"> DisplayObject type T; T must be a type of FrameworkElement </typeparam>
+    /// <typeparam name="U"> The type of value this class holds </typeparam>
+    internal class BoundDisplayValue<T, U> : IDisplayValue
+        where T : FrameworkElement {
         // --- VARIABLES ---
         #region VARIABLES
 
         // - Value -
 
-        private T _value;
-        public T Value {
+        private U _value;
+        public U Value {
             get => _value;
             set {
                 _value = value;
@@ -47,7 +49,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
         // --- CONSTRUCTOR ---
         #region CONSTRUCTOR
 
-        public BoundDisplayValue(T value, FrameworkElement displayObject, TextBox contentReference) {
+        public BoundDisplayValue(U value, T displayObject, TextBox contentReference) {
             // set class properties
             DisplayObject = displayObject;
             ContentReference = contentReference;
@@ -55,7 +57,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
             UpdateDisplayObjectValue();
         }
 
-        public BoundDisplayValue(T value, FrameworkElement displayObject, TextBlock contentReference) {
+        public BoundDisplayValue(U value, T displayObject, TextBlock contentReference) {
             // set class properties
             DisplayObject = displayObject;
             ContentReference = contentReference;
@@ -63,7 +65,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
             UpdateDisplayObjectValue();
         }
 
-        public BoundDisplayValue(T value, FrameworkElement displayObject, ContentControl contentReference) {
+        public BoundDisplayValue(U value, T displayObject, ContentControl contentReference) {
             // set class properties
             DisplayObject = displayObject;
             ContentReference = contentReference;

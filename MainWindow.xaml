@@ -10,10 +10,10 @@
         xmlns:view="clr-namespace:MC_BSR_S2_Calculator.ViewColumn"
         mc:Ignorable="d"
         Title="MC:BSR-S2 Calculator" 
-        Height="800" 
+        Height="700" 
         Width="1100"
-        MinHeight="800"
-        MinWidth="1100"
+        MinHeight="600"
+        MinWidth="900"
         FontFamily="Arial Round MT Bold"
         WindowStartupLocation="CenterScreen">
     
