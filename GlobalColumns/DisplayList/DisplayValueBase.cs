@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -143,7 +144,33 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
     /// <summary>
     /// Display value interface; requirss that DisplayValue extensions must have a DisplayObject
     /// </summary>
-    internal interface IDisplayValue {
-        public FrameworkElement DisplayObject { get; }
+    internal abstract class DisplayValueBase : OptionalEventHolder {
+        
+        // --- VARIABLES ---
+        
+        // - DisplayObject -
+
+        public abstract FrameworkElement DisplayObject { get; }
+
+        // - HeldListener -
+
+        private EventHandler<EventArgs>? CellEvent { get; set; }
+        public new void HeldListener(object? sender, EventArgs args) {
+            if (CellEvent == null) {
+                base.HeldListener(sender, args);
+                return;
+            }
+            CellEvent.Invoke(sender, args);
+        }
+
+        // --- CONSTRUCTOR ---
+
+        public DisplayValueBase(EventHandler<EventArgs>? eventListener=null) {
+            // set listener
+            CellEvent = eventListener;
+
+            // set override
+            IsHoldingEventOverride = (eventListener != null);
+        }
     }
 }

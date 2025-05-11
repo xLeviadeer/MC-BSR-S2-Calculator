@@ -26,11 +26,17 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             var button = new Button() {
                 Content = "swap!"
             };
-            button.Click += (sender, args) => {
-                BooleanTextBlock.Value = !BooleanTextBlock.Value;
-            };
+            button.Click += ClickEvent;
             button.FontSize = 10;
-            ButtonUpdater = new(button);
+            ButtonUpdater = new(button, ClickEvent);
         }
+
+        private void ClickEvent(object? sender, EventArgs args) {
+            BooleanTextBlock.Value = !BooleanTextBlock.Value;
+        }
+
+        //public override void HeldListener(object? sender, EventArgs args) {
+        //    BooleanTextBlock.Value = !BooleanTextBlock.Value;
+        //}
     }
 }

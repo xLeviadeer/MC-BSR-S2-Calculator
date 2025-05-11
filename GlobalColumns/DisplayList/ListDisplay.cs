@@ -1,0 +1,636 @@
+﻿using MC_BSR_S2_Calculator.GlobalColumns.DisplayList;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Threading;
+
+namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
+
+    /// <summary>
+    /// Contains data about grid composition and the list of data to display; 
+    /// Generates grid from associated data;
+    /// Default display structure for ListDisplays
+    /// </summary>
+    /// <typeparam name="T"> The class type of which data to display from </typeparam>
+    internal abstract partial class ListDisplay<T> : UserControl
+        where T : Displayable {
+
+        // --- VARIABLES ---
+        #region VARIABLES
+
+        // -- Data Holders --
+
+        // - Data List -
+
+        /// <summary>
+        /// Holds a list of classes to display data from
+        /// </summary>
+        public List<T> ClassDataList { get; set; }
+
+        // - Data List by Rows -
+
+        /// <summary>
+        /// A list of IDisplayValues organized by row
+        /// </summary>
+        public List<Dictionary<string, DisplayValueBase>> DataListByRows {
+            get {
+                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return new(); }
+
+                return ClassDataList.Select(
+                    cls => cls.DisplayValues
+                ).ToList();
+            }
+        }
+
+        // - Index by Index -
+
+        /// <summary>
+        /// Accesses the data list by index
+        /// </summary>
+        /// <param name="index"> The element to retrieve </param>
+        /// <returns> A dictionary element with a header name and it's associated DisplayValueBase </returns>
+        public Dictionary<string, DisplayValueBase> this[int index] {
+            get => DataListByRows[index];
+            set => DataListByRows[index] = value;
+        }
+
+        // - Data List by Columns -
+
+        /// <summary>
+        /// A list of IDisaplayValues organized by columns
+        /// </summary>
+        public Dictionary<string, List<DisplayValueBase>> DataListByColumns {
+            get {
+                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return new(); }
+
+                return ClassDataList[0].DisplayHeaders.ToDictionary(
+                    key => key, // key
+                    key => ClassDataList.Select( // value
+                        cls => cls.DisplayValues[key]
+                    ).ToList()
+                );
+            }
+        }
+
+        // - Index by Headers -
+
+        /// <summary>
+        /// Accesses the data list by header
+        /// </summary>
+        /// <param name="header"> The header of the elements to retrieve </param>
+        /// <returns> A list of IDisplayValues associated with a header </returns>
+        public List<DisplayValueBase> this[string header] {
+            get => DataListByColumns[header];
+            set => DataListByColumns[header] = value;
+        }
+
+        // - List Headers -
+
+        /// <summary>
+        /// Gets the headers for this list
+        /// </summary>
+        public ImmutableList<string> Headers {
+            get {
+                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableList<string>.Empty; }
+
+                if (ClassDataList.Count > 0) {
+                    return ClassDataList[0].DisplayHeaders.ToImmutableList();
+                } else {
+                    return ImmutableList<string>.Empty;
+                }
+            }
+        }
+
+        // - Column Widths -
+
+        private ImmutableDictionary<string, int> ColumnWidths {
+            get {
+                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableDictionary<string, int>.Empty; }
+
+                return ClassDataList[0].DisplayHeaders.ToImmutableDictionary(
+                    key => key, // key
+                    key => ClassDataList[0].ColumnWidths[key]
+                );
+            }
+        }
+
+        #endregion
+
+        // --- CONSTRUCTOR ---
+        #region CONSTRUCTOR
+
+        /// <remarks>
+        /// Extensions of this class MUST define which exact data to display (parameterless constructor)
+        /// </remarks
+        public ListDisplay() {
+            // loads data list and builds grid
+            Loaded += (object sender, RoutedEventArgs args) => {
+                SetClassDataList();
+                BuildGrid();
+            };
+
+            // event handling for ensuring content never overlaps the scrollbar
+            MainGrid.SizeChanged += OnMainGridSizeChange;
+            ListDisplayGrid.ChildrenChanged += OnMainGridSizeChange;
+
+            // sets the original scroll bar visibility
+            Loaded += SetOriginalScrollBarVisibilityOnLoaded;
+            // set the scroll bar visibility state when starting up
+            Loaded += (sender, args) => {
+                if (OriginalScrollBarVisbility == ScrollBarVisibility.Visible) {
+                    OnMainGridSizeChange(sender, args); // ensures the sizing immediately takes place
+                } else {
+                    // update the scroll bar state when starting up
+                    OnShowScrollBarChanged(this, new DependencyPropertyChangedEventArgs(ShowScrollBarProperty, null, ShowScrollBar));
+                }
+            };
+
+            // set main content parents
+            this.Content = MainGrid;
+
+            // alignment settings for the grid
+            ListDisplayGrid.VerticalAlignment = VerticalAlignment.Top;
+        }
+
+        /// <remarks>
+        /// this method MUST set ClassDataList
+        /// </remarks>
+        protected abstract void SetClassDataList();
+
+        #endregion
+
+        // --- METHODS ---
+
+        // -- General --
+        #region General
+
+        /// <summary>
+        /// Attempts to find a ScrollBar from a parent
+        /// </summary>
+        /// <param name="parent"> The object to search for a ScrollBar </param>
+        /// <returns> A ScrollBar object </returns>
+        private static ScrollBar? FindVerticalScrollBar(DependencyObject parent) {
+
+            // get children amount
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            if (childrenCount == 0) { return null; }
+
+            // for every child of the parent
+            for (int i = 0; i < childrenCount; i++) {
+
+                // check the child for a vertical scroll bar
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if ((child is ScrollBar sb) && (sb.Orientation == Orientation.Vertical))
+                    return sb;
+
+                // if the scroll bar wasn't directly found, then try recursing to find it
+                ScrollBar? scrollBar = FindVerticalScrollBar(child);
+                if (scrollBar != null) {
+                    return scrollBar;
+                }
+
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Changes the visibility and margin for the scrollbar and manages display max height when the layout is changed
+        /// </summary>
+        private void OnMainGridSizeChange(object? sender, EventArgs args) {
+            // designer check
+            if (DesignerProperties.GetIsInDesignMode(this)) { return; }
+
+            // validate max display height
+            MaxDisplayHeight = (MaxDisplayHeight < -1) ? -1 : MaxDisplayHeight;
+            if ((MaxDisplayHeight != -1) && (MaxDisplayHeight < 50)) { throw new ArgumentException($"The MaxDisplayHeight cannot be les than 50"); }
+
+            // - main grid height managament -
+
+            // check max display height (-1 has no max)
+            if ((MaxDisplayHeight != -1) && (MainGrid.ActualHeight > MaxDisplayHeight)) {
+                // set list display and scroll to the max
+                MainScrollViewer.Height = (
+                    MaxDisplayHeight
+                    - (MainBorderThickness.Bottom + MainBorderThickness.Top)
+                );
+                MainBorder.Height = MaxDisplayHeight;
+
+                // stretching
+                MainScrollViewer.VerticalAlignment = VerticalAlignment.Top;
+                MainBorder.VerticalAlignment = VerticalAlignment.Top;
+            } else {
+                // height adjustments
+                MainScrollViewer.ClearValue(FrameworkElement.HeightProperty);
+                MainBorder.ClearValue(FrameworkElement.HeightProperty);
+
+                // stretching
+                MainScrollViewer.VerticalAlignment = VerticalAlignment.Stretch;
+                MainBorder.VerticalAlignment = VerticalAlignment.Stretch;
+            }
+
+            // - scroll bar management -
+
+            // find the content height
+            double listContentTotalHeight = (
+                ((ListDisplayGrid.RowDefinitions.Count - 1) * ItemHeight)
+                + HeaderHeight
+                + MainBorderThickness.Top + MainBorderThickness.Bottom
+            );
+
+            // not null check
+            if (OriginalScrollBarVisbility != null) {
+
+                // check if original was auto
+                if (OriginalScrollBarVisbility == ScrollBarVisibility.Auto) {
+                    // auto show/hide scrollbar
+                    if (listContentTotalHeight > MainBorder.ActualHeight) { // if listContentTotalHeight of the grid is too much
+                                                                            // (can check either MainScrollViewer or ListDisplayGrid or MainBorder)
+                        MainScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+                    } else { // listContentTotalHeight is too small
+                        MainScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                    }
+
+                    // original wasn't auto
+                } else {
+                    if (OriginalScrollBarVisbility != null) {
+                        MainScrollViewer.VerticalScrollBarVisibility = (ScrollBarVisibility)OriginalScrollBarVisbility;
+                    }
+                }
+
+                // set margin
+                if (MainScrollViewer.VerticalScrollBarVisibility == ScrollBarVisibility.Visible) {
+                    ListDisplayGrid.Margin = new Thickness(0, 0, 3, 0);
+                } else {
+                    ListDisplayGrid.Margin = new Thickness(0);
+                }
+            }
+        }
+
+        #endregion
+
+        // -- Grid Building --
+
+        // - general grid building -
+        #region general grid building
+
+        private int YcurrBuildPosition = 0;
+        private int YcurrItemRow { get => YcurrBuildPosition + 1; }
+        private int XcurrBuildPosition = 0;
+
+        // grid additions helper
+        private void AddToCurrentItem(FrameworkElement objectToAdd, int? rowOverride = null, int? columnOverride = null) {
+            ListDisplayGrid.Children.Add(objectToAdd);
+            Grid.SetColumn(
+                objectToAdd,
+                ((columnOverride != null) ? (int)columnOverride : XcurrBuildPosition)
+            );
+            Grid.SetRow(
+                objectToAdd,
+                ((rowOverride != null) ? (int)rowOverride : YcurrBuildPosition)
+            );
+        }
+
+        private void PrepareGridForBuilding() {
+            // clear current grid contents
+            MainGrid.Children.Clear();
+            ListDisplayGrid.Children.Clear();
+            ListDisplayGrid.ColumnDefinitions.Clear();
+            ListDisplayGrid.RowDefinitions.Clear();
+
+            // content relationships
+            MainGrid.Children.Add(MainBorder);
+            MainGrid.Children.Add(MainScrollViewer);
+            MainScrollViewer.Content = ListDisplayGrid;
+
+            // border settings
+            MainBorder.BorderThickness = MainBorderThickness;
+            MainBorder.BorderBrush = MainBorderBrush;
+            MainBorder.Background = MainBorderBackground;
+
+            // scroll bar settings
+            Application.Current.Dispatcher.InvokeAsync(() => {
+                // find scroll bar
+                ScrollBar? scrollBar = FindVerticalScrollBar(MainScrollViewer);
+                if (scrollBar == null) { throw new ArgumentException($"MainScrollViewer didn't contain a ScrollBar"); }
+
+                // scroll width
+                scrollBar.MinWidth = 10;
+                scrollBar.Width = ScrollBarWidth;
+            }, DispatcherPriority.Loaded);
+
+            // scroll viewer margins
+            MainScrollViewer.Margin = MainBorder.BorderThickness;
+
+            // if class data is null or empty
+            if ((ClassDataList == null) || (ClassDataList.Count == 0)) {
+                // create empty and add
+                var emptyTextBlock = CreateEmptyTextBlock(false, HorizontalAlignment.Stretch);
+                ListDisplayGrid.Children.Add(emptyTextBlock);
+                return; // dont add anything else
+            }
+
+            // headers row
+            ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
+        }
+
+        private TextBlock CreateEmptyTextBlock(bool isPerHeader, HorizontalAlignment headerHorizontalAlignment) {
+            // main create
+            var emptyTextBlock = new TextBlock();
+            emptyTextBlock.Foreground = HeaderFontColor;
+            emptyTextBlock.VerticalAlignment = VerticalAlignment.Top;
+            emptyTextBlock.TextWrapping = TextWrapping.Wrap;
+
+            // generate per header or main block
+            if (isPerHeader) {
+                // settings
+                emptyTextBlock.Text = EmptyHeaderText;
+                emptyTextBlock.FontSize = ItemHeight * 0.5;
+                emptyTextBlock.HorizontalAlignment = headerHorizontalAlignment;
+                emptyTextBlock.Margin = new Thickness(
+                    ItemBorderThickness.Left + ItemMargin,
+                    ItemBorderThickness.Top + ItemMargin,
+                    ItemBorderThickness.Right + ItemMargin,
+                    ItemBorderThickness.Bottom + ItemMargin
+                );
+
+                // return
+                return emptyTextBlock;
+            } else {
+                // settings
+                emptyTextBlock.Text = EmptyText;
+                emptyTextBlock.FontSize = HeaderHeight * 0.5;
+                emptyTextBlock.HorizontalAlignment = HorizontalAlignment.Center;
+                emptyTextBlock.Margin = new Thickness(
+                    HeaderBorderThickness.Left + HeaderMargin,
+                    HeaderBorderThickness.Top + HeaderMargin,
+                    HeaderBorderThickness.Right + HeaderMargin,
+                    HeaderBorderThickness.Bottom + HeaderMargin
+                );
+
+                // return
+                return emptyTextBlock;
+            }
+        }
+
+        /// <summary>
+        /// Builds the associated grid display with the current data
+        /// </summary>
+        /// <remarks>
+        /// Font Size is set to the listContentTotalHeight of it's associated grid
+        /// </remarks>
+        public void BuildGrid() {
+            // prepare main grid
+            PrepareGridForBuilding();
+
+            // add headers
+            AddHeaders();
+
+            // add items 
+            AddItemGridBottoms(); // add the item grid bottoms
+            AddClickableButtons(); // add buttons if applicable
+            AddItemGridTops(); // add the item grid tops
+        }
+
+        #endregion
+
+        // - header grid building -
+        #region header grid building
+
+        private void AddHeaders() {
+            // for every header
+            bool usePrimaryHeaderColor = true;
+            for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
+                var header = Headers[XcurrBuildPosition];
+
+                // - setup -
+
+                // get alignments
+                var headerHorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
+                var headerVerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
+
+                // display layer checking
+                if (DisplayLayer != -1) {
+                    // check if the display layer being called for exists
+                    if (!ClassDataList[0].DisplayLayers
+                        .Select(displayLayers => displayLayers.Value)
+                        .Any(displayLayers => displayLayers.Contains(DisplayLayer))
+                    ) {
+                        throw new ArgumentException($"DisplayLayer is associated with no headers: {DisplayLayer}");
+                    }
+
+                    // check if display layer doesn't match
+                    if (!ClassDataList[0].DisplayLayers[header].Contains(DisplayLayer)) { continue; }
+                }
+
+                // - add headers -
+
+                // create header
+                Grid headerGrid = CreateHeaderGrid(header, ref usePrimaryHeaderColor, headerHorizontalAlignment, headerVerticalAlignment);
+
+                // create a new column with each header
+                ListDisplayGrid.ColumnDefinitions.Add(new ColumnDefinition() {
+                    Width = new GridLength(ColumnWidths[header], GridUnitType.Star),
+                });
+
+                // add header grid to main grid
+                AddToCurrentItem(headerGrid, 0);
+
+                // - add empty if applicable -
+
+                // if the header is null or empty
+                int maxItemsCount = ((header == null) || (DataListByColumns[header].Count == 0)) ? 0 : maxItemsCount = DataListByColumns.Values.Max(list => list.Count);
+                if (maxItemsCount == 0) {
+                    // create empty text box
+                    var emptyTextBlock = CreateEmptyTextBlock(true, headerHorizontalAlignment);
+
+                    // add rows if needed
+                    if (ListDisplayGrid.RowDefinitions.Count < 2) {
+                        ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
+                    }
+
+                    // add empty to grid
+                    AddToCurrentItem(emptyTextBlock, 1);
+                    Grid.SetRowSpan(emptyTextBlock, maxItemsCount);
+
+                    // dont add items
+                    continue;
+                }
+            }
+        }
+
+        private Grid CreateHeaderGrid(
+            string header,
+            ref bool usePrimaryHeaderColor,
+            HorizontalAlignment headerHorizontalAlignment,
+            VerticalAlignment headerVerticalAlignment
+        ) {
+            // create grid
+            var headerGrid = new Grid();
+            headerGrid.Height = HeaderHeight;
+
+            // create border
+            var headerBorder = new Border();
+            headerBorder.BorderThickness = HeaderBorderThickness;
+            headerBorder.BorderBrush = HeaderBorderBrush;
+            headerBorder.Background = (usePrimaryHeaderColor ? HeaderPrimaryFillBrush : HeaderSecondaryFillBrush);
+            usePrimaryHeaderColor = !usePrimaryHeaderColor; // swap
+            headerGrid.Children.Add(headerBorder);
+
+            // create textblock
+            var headerTextBlock = new TextBlock();
+            headerTextBlock.Text = header;
+            headerTextBlock.FontSize = HeaderHeight * 0.5;
+            headerTextBlock.Foreground = HeaderFontColor;
+            headerTextBlock.HorizontalAlignment = (headerHorizontalAlignment == HorizontalAlignment.Stretch) ? HorizontalAlignment.Center : headerHorizontalAlignment;
+            headerTextBlock.VerticalAlignment = (headerVerticalAlignment == VerticalAlignment.Stretch) ? VerticalAlignment.Center : VerticalAlignment;
+            headerTextBlock.Margin = new Thickness(
+                HeaderBorderThickness.Left + HeaderMargin,
+                HeaderBorderThickness.Top + HeaderMargin,
+                HeaderBorderThickness.Right + HeaderMargin,
+                HeaderBorderThickness.Bottom + HeaderMargin
+            );
+            headerGrid.Children.Add(headerTextBlock);
+
+            // return
+            return headerGrid;
+        }
+
+        #endregion
+
+        // - item grid building - 
+        #region item grid building
+
+        // item grid bottom
+        private void AddItemGridBottoms() {
+            // iterate over every header
+            bool isFirstPass = true;
+            for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
+                // iterate over every class data for this header
+                bool usePrimaryItemColor = true;
+                for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
+                    // create a new row with each header
+                    if (isFirstPass) {
+                        ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
+                    }
+
+                    // create border (background)
+                    var bottomItemBorder = new Border();
+                    bottomItemBorder.Background = (usePrimaryItemColor ? ItemPrimaryFillBrush : ItemSecondaryFillBrush);
+                    usePrimaryItemColor = !usePrimaryItemColor; // swap
+                    AddToCurrentItem(bottomItemBorder, YcurrItemRow);
+                }
+
+                // no longer first pass
+                isFirstPass = false;
+            }
+        }
+
+        // clickable buttons
+        private void AddClickableButtons() {
+            // iterate over every header
+            bool isLastPass = false;
+            for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
+                string header = Headers[XcurrBuildPosition];
+
+                // set last past
+                if (XcurrBuildPosition == Headers.Count - 1) {
+                    isLastPass = true;
+                }
+
+                // button creation helper
+                Button CreateClickableButton() {
+                    // create button to host click event
+                    var button = new Button() {
+                        Background = Brushes.Transparent
+                    };
+                    // hover color
+                    // click color
+
+                    return button;
+                }
+
+                // iterate over every class data for this header
+                for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
+
+                    // add by cell
+                    if (IsClickable == ListDisplayClickable.ByCell) {
+                        // only add button if holding event
+                        DisplayValueBase displayValue = DataListByColumns[header][YcurrBuildPosition];
+                        if (displayValue.IsHoldingEvent) {
+
+                            // create button
+                            var button = CreateClickableButton();
+
+                            // add event
+                            button.Click += displayValue.HeldListener;
+
+                            // place onto grid
+                            AddToCurrentItem(button, YcurrItemRow);
+                        }
+                    }
+
+                    // add by row
+                    else if (isLastPass && (IsClickable == ListDisplayClickable.ByRow)) {
+                        // buttons will span across invalid "no items found" sections which will look weird, but I dont think it's even really possible to have these sections
+
+                        // only add button if holding event
+                        T cls = ClassDataList[YcurrBuildPosition];
+                        if (cls.IsHoldingEvent) {
+
+                            // create button
+                            var button = CreateClickableButton();
+
+                            // add event
+                            button.Click += cls.HeldListener;
+
+                            // place onto grid
+                            AddToCurrentItem(button, YcurrItemRow, 0);
+                            Grid.SetColumnSpan(button, Headers.Count);
+                        }
+                    }
+                }
+            }
+        }
+
+        // item grid tops
+        private void AddItemGridTops() {
+            // iterate over every header
+            for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
+                var header = Headers[XcurrBuildPosition];
+
+                // iterate over every class data for this header
+                for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
+                    // create border (outline)
+                    var bottomItemBorder = new Border();
+                    bottomItemBorder.BorderThickness = ItemBorderThickness;
+                    bottomItemBorder.BorderBrush = ItemBorderBrush;
+                    AddToCurrentItem(bottomItemBorder, YcurrItemRow);
+
+                    // add display object
+                    var displayObject = DataListByColumns[header][YcurrBuildPosition].DisplayObject;
+                    displayObject.Margin = new Thickness(
+                        ItemBorderThickness.Left + ItemMargin,
+                        ItemBorderThickness.Top + ItemMargin,
+                        ItemBorderThickness.Right + ItemMargin,
+                        ItemBorderThickness.Bottom + ItemMargin
+                    );
+                    displayObject.HorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
+                    displayObject.VerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
+                    if (displayObject.Parent != null) { ((Panel)displayObject.Parent).Children.Remove(displayObject); } // detach it from the current parent if it has one for some reason
+                    AddToCurrentItem(displayObject, YcurrItemRow);
+                }
+            }
+        }
+
+        #endregion
+    }
+}

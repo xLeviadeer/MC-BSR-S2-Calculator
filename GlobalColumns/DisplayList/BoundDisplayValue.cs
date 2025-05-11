@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
     /// </summary>
     /// <typeparam name="T"> DisplayObject type T; T must be a type of FrameworkElement </typeparam>
     /// <typeparam name="U"> The type of value this class holds </typeparam>
-    internal class BoundDisplayValue<T, U> : IDisplayValue
+    internal class BoundDisplayValue<T, U> : DisplayValueBase
         where T : FrameworkElement {
         // --- VARIABLES ---
         #region VARIABLES
@@ -35,7 +36,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
         /// <summary>
         /// Holds the total object to be displayed
         /// </summary>
-        public FrameworkElement DisplayObject { get; }
+        public override FrameworkElement DisplayObject { get; }
 
         // - Content Reference -
 
@@ -49,7 +50,8 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
         // --- CONSTRUCTOR ---
         #region CONSTRUCTOR
 
-        public BoundDisplayValue(U value, T displayObject, TextBox contentReference) {
+        public BoundDisplayValue(U value, T displayObject, TextBox contentReference, EventHandler<EventArgs>? eventListener=null) 
+            : base(eventListener) {
             // set class properties
             DisplayObject = displayObject;
             ContentReference = contentReference;
@@ -57,7 +59,8 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             UpdateDisplayObjectValue();
         }
 
-        public BoundDisplayValue(U value, T displayObject, TextBlock contentReference) {
+        public BoundDisplayValue(U value, T displayObject, TextBlock contentReference, EventHandler<EventArgs>? eventListener=null)
+            : base(eventListener) {
             // set class properties
             DisplayObject = displayObject;
             ContentReference = contentReference;
@@ -65,7 +68,8 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             UpdateDisplayObjectValue();
         }
 
-        public BoundDisplayValue(U value, T displayObject, ContentControl contentReference) {
+        public BoundDisplayValue(U value, T displayObject, ContentControl contentReference, EventHandler<EventArgs>? eventListener=null)
+            : base(eventListener) {
             // set class properties
             DisplayObject = displayObject;
             ContentReference = contentReference;

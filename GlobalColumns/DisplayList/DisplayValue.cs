@@ -13,12 +13,17 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
     /// Regular DisplayValue class, extension with a constructor
     /// </summary>
     /// <typeparam name="T"> DisplayObject type T; T must be a type of FrameworkElement </typeparam>
-    internal class DisplayValue<T> : IDisplayValue
+    internal class DisplayValue<T> : DisplayValueBase
         where T : FrameworkElement {
-        public FrameworkElement DisplayObject { get; init; }
+        
+        // --- VARIABLES ---
 
-        public DisplayValue(T displayObject) {
-            // set display object
+        public override FrameworkElement DisplayObject { get; }
+
+        // --- CONSTRUCTOR ---
+
+        public DisplayValue(T displayObject, EventHandler<EventArgs>? eventListener=null)
+            : base(eventListener) {
             DisplayObject = displayObject;
         }
     }

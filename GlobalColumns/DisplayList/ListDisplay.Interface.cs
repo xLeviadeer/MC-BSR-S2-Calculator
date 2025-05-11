@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -16,7 +18,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 //using MC_BSR_S2_Calculator.SystemMetricsHeler;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns {
+namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
     internal abstract partial class ListDisplay<T> : UserControl 
         where T : Displayable {
 
@@ -59,7 +61,6 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
         #endregion
 
         // -- Interface Settings -
-        #region Interface Settings
 
         #region Scroll Bar
 
@@ -376,6 +377,60 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
 
         #endregion
 
+        #region Clickable
+
+        // - Clickable -
+
+        public enum ListDisplayClickable {
+            NotClickable,
+            ByCell,
+            ByRow
+        }
+
+        private ListDisplayClickable? _isClickable;
+
+        public ListDisplayClickable IsClickable {
+            get {
+                if (_isClickable == null) {
+                    // holder variables
+                    bool anyRowHasClickMethod = false;
+                    bool anyCelleHasClickMethod = false;
+
+                    // check all classes for an event
+                    foreach (T cls in ClassDataList) {
+                        if (cls.IsHoldingEvent) {
+                            anyRowHasClickMethod = true;
+                        }
+
+                        // check all display values of a class for an event
+                        foreach (string header in Headers) {
+                            if (cls.DisplayValues[header].IsHoldingEvent) {
+                                anyCelleHasClickMethod = true;
+                            }
+                        }
+                    }
+
+                    // if both contain methods
+                    if (anyRowHasClickMethod && anyCelleHasClickMethod) { // both
+                        throw new ArgumentException($"both rows and cells contained methods for a displayable object");
+                    } else if (anyRowHasClickMethod ^ anyCelleHasClickMethod) { // only one (xor)
+                        if (anyRowHasClickMethod) { // by row
+                            _isClickable = ListDisplayClickable.ByRow;
+                        } else { // by cell
+                            _isClickable = ListDisplayClickable.ByCell;
+                        }
+                    } else { // neither
+                        _isClickable = ListDisplayClickable.NotClickable;
+                    }
+                }
+                return (ListDisplayClickable)_isClickable;
+            }
+        }
+
+        #endregion
+
+        #region General
+
         // - Display Layer -
 
         [Category("Common")]
@@ -398,243 +453,55 @@ namespace MC_BSR_S2_Calculator.GlobalColumns {
             }
         }
 
+        // - Empty Text - 
+
+        [Category("Common")]
+        [Description("Determines what text to display when the grid is empty")]
+        public string EmptyText {
+            get => (string)GetValue(EmptyTextProperty);
+            set => SetValue(EmptyTextProperty, value);
+        }
+
+        public static readonly DependencyProperty EmptyTextProperty = DependencyProperty.Register(
+            nameof(EmptyText),
+            typeof(string),
+            typeof(ListDisplay<T>),
+            new PropertyMetadata("No columns found")
+        );
+
+        // - Empty Header Text -
+
+        [Category("Headers")]
+        [Description("Determines what text to display when a header is empty")]
+        public string EmptyHeaderText {
+            get => (string)GetValue(EmptyHeaderTextProperty);
+            set => SetValue(EmptyHeaderTextProperty, value);
+        }
+
+        public static readonly DependencyProperty EmptyHeaderTextProperty = DependencyProperty.Register(
+            nameof(EmptyHeaderText),
+            typeof(string),
+            typeof(ListDisplay<T>),
+            new PropertyMetadata("No items found")
+        );
+
+        // - Max Height -
+
+        [Category("Layout")]
+        [Description("Determines the maximum height the main grid can have")]
+        public int MaxDisplayHeight {
+            get => (int)GetValue(MaxDisplayHeightProperty);
+            set => SetValue(MaxDisplayHeightProperty, value);
+        }
+
+        public static readonly DependencyProperty MaxDisplayHeightProperty = DependencyProperty.Register(
+            nameof(MaxDisplayHeight),
+            typeof(int),
+            typeof(ListDisplay<T>),
+            new PropertyMetadata(-1)
+        );
+
         #endregion
 
-        // --- CONSTRUCTOR ---
-        #region CONSTRUCTOR
-
-        private void Interface_Constructor() {
-            // event handling for ensuring content never overlaps the scrollbar
-            MainGrid.SizeChanged += OnScrollBarVisibilityChange;
-            ListDisplayGrid.ChildrenChanged += OnScrollBarVisibilityChange;
-
-            // sets the original scroll bar visibility
-            Loaded += SetOriginalScrollBarVisibilityOnLoaded;
-
-            // set main content parents
-            this.Content = MainGrid;
-
-            // alignment settings for the ListDisplayGrid
-            ListDisplayGrid.VerticalAlignment = VerticalAlignment.Top;
-        }
-
-        #endregion
-
-        // --- METHODS ---
-        #region METHODS
-
-        /// <summary>
-        /// Attempts to find a ScrollBar from a parent
-        /// </summary>
-        /// <param name="parent"> The object to search for a ScrollBar </param>
-        /// <returns> A ScrollBar object </returns>
-        private static ScrollBar? FindVerticalScrollBar(DependencyObject parent) {
-            
-            // get children amount
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-            if (childrenCount == 0) { return null; }
-            
-            // for every child of the parent
-            for (int i = 0; i < childrenCount; i++) {
-
-                // check the child for a vertical scroll bar
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if ((child is ScrollBar sb) && (sb.Orientation == Orientation.Vertical))
-                    return sb;
-
-                // if the scroll bar wasn't directly found, then try recursing to find it
-                ScrollBar? scrollBar = FindVerticalScrollBar(child);
-                if (scrollBar != null) {
-                    return scrollBar;
-                }
-
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Changes the visibility and margin for the scrollbar when the layout is changed
-        /// </summary>
-        private void OnScrollBarVisibilityChange(object? sender, EventArgs args) {
-            // designer check
-            if (DesignerProperties.GetIsInDesignMode(this)) { return; }
-
-            // find the content height
-            double listContentTotalHeight = (
-                ((ListDisplayGrid.RowDefinitions.Count) * ItemHeight)
-                + HeaderHeight
-                + MainBorderThickness.Top + MainBorderThickness.Bottom
-            );
-
-            // not null check
-            if (OriginalScrollBarVisbility != null) {
-
-                // check if original was auto
-                if (OriginalScrollBarVisbility == ScrollBarVisibility.Auto) {
-                    // auto show/hide scrollbar
-                    if (listContentTotalHeight > MainGrid.ActualHeight) { // if listContentTotalHeight of the grid is too much
-                        MainScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
-                    } else { // listContentTotalHeight is too small
-                        MainScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-                    }
-
-                // original wasn't auto
-                } else {
-                    if (OriginalScrollBarVisbility != null) {
-                        MainScrollViewer.VerticalScrollBarVisibility = (ScrollBarVisibility)OriginalScrollBarVisbility;
-                    }
-                }
-
-                // set margin
-                if (MainScrollViewer.VerticalScrollBarVisibility == ScrollBarVisibility.Visible) {
-                    ListDisplayGrid.Margin = new Thickness(0, 0, 3, 0);
-                } else {
-                    ListDisplayGrid.Margin = new Thickness(0);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Builds the associated grid display with the current data
-        /// </summary>
-        /// <remarks>
-        /// Font Size is set to the listContentTotalHeight of it's associated grid
-        /// </remarks>
-        public void BuildGrid() {
-            // clear current grid contents
-            MainGrid.Children.Clear();
-            ListDisplayGrid.Children.Clear();
-            ListDisplayGrid.ColumnDefinitions.Clear();
-            ListDisplayGrid.RowDefinitions.Clear();
-
-            // content relationships
-            MainGrid.Children.Add(MainBorder);
-            MainGrid.Children.Add(MainScrollViewer);
-            MainScrollViewer.Content = ListDisplayGrid;
-
-            // border settings
-            MainBorder.BorderThickness = MainBorderThickness;
-            MainBorder.BorderBrush = MainBorderBrush;
-            MainBorder.Background = MainBorderBackground;
-
-            // scroll bar width
-            Application.Current.Dispatcher.InvokeAsync(() => {
-                ScrollBar? scrollBar = FindVerticalScrollBar(MainScrollViewer);
-                if (scrollBar == null) { throw new ArgumentException($"MainScrollViewer didn't contain a ScrollBar"); }
-                scrollBar.MinWidth = 10;
-                scrollBar.Width = ScrollBarWidth;
-            }, DispatcherPriority.Loaded);
-            
-
-            // scroll viewer margins
-            MainScrollViewer.Margin = MainBorder.BorderThickness;
-
-            // headers row
-            ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
-
-            // for every header
-            bool usePrimaryHeaderColor = true;
-            bool isFirstPass = true;
-            for (int x = 0; x < Headers.Count; x++) {
-                var header = Headers[x];
-
-                // display layer checking
-                if (DisplayLayer != -1) {
-                    // check if the display layer being called for exists
-                    if (!ClassDataList[0].DisplayLayers
-                        .Select(displayLayers => displayLayers.Value)
-                        .Any(displayLayers => displayLayers.Contains(DisplayLayer))
-                    ) {
-                        throw new ArgumentException($"DisplayLayer is associated with no headers: {DisplayLayer}");
-                    }
-
-                    // check if display layer doesn't match
-                    if (!ClassDataList[0].DisplayLayers[header].Contains(DisplayLayer)) { continue; }
-                }
-
-                // create grid
-                var headerGrid = new Grid();
-                headerGrid.Height = HeaderHeight;
-
-                // create border
-                var headerBorder = new Border();
-                headerBorder.BorderThickness = HeaderBorderThickness;
-                headerBorder.BorderBrush = HeaderBorderBrush;
-                headerBorder.Background = (usePrimaryHeaderColor ? HeaderPrimaryFillBrush : HeaderSecondaryFillBrush);
-                usePrimaryHeaderColor = !usePrimaryHeaderColor; // swap
-                headerGrid.Children.Add(headerBorder);
-
-                // create textblock
-                var headerTextBlock = new TextBlock();
-                headerTextBlock.Text = header;
-                headerTextBlock.FontSize = HeaderHeight * 0.5;
-                headerTextBlock.Foreground = HeaderFontColor;
-                headerTextBlock.HorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
-                headerTextBlock.VerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
-                headerTextBlock.Margin = new Thickness(
-                    HeaderBorderThickness.Left + HeaderMargin,
-                    HeaderBorderThickness.Top + HeaderMargin,
-                    HeaderBorderThickness.Right + HeaderMargin,
-                    HeaderBorderThickness.Bottom + HeaderMargin
-                );
-
-                // create a new column with each header
-                headerGrid.Children.Add(headerTextBlock);
-                ListDisplayGrid.ColumnDefinitions.Add(new ColumnDefinition() {
-                    Width = new GridLength(ColumnWidths[header], GridUnitType.Star),
-                });
-
-                // add header grid to main grid
-                ListDisplayGrid.Children.Add(headerGrid);
-                Grid.SetColumn(headerGrid, x);
-                Grid.SetRow(headerGrid, 0);
-
-                // for every value associated with this header
-                bool usePrimaryItemColor = true;
-                for (int y = 0; y < ClassDataList.Count; y++) {
-                    T value = ClassDataList[y];
-
-                    // create grid
-                    var itemGrid = new Grid();
-                    itemGrid.Height = ItemHeight;
-
-                    // create border
-                    var itemBorder = new Border();
-                    itemBorder.BorderThickness = ItemBorderThickness;
-                    itemBorder.BorderBrush = ItemBorderBrush;
-                    itemBorder.Background = (usePrimaryItemColor ? ItemPrimaryFillBrush : ItemSecondaryFillBrush);
-                    usePrimaryItemColor = !usePrimaryItemColor; // swap
-                    itemGrid.Children.Add(itemBorder);
-
-                    // create a new row with each header
-                    if (isFirstPass) {
-                        ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
-                    }
-
-                    // add display object
-                    var displayObject = DataListByColumns[header][y].DisplayObject;
-                    displayObject.Margin = new Thickness(
-                        ItemBorderThickness.Left + ItemMargin,
-                        ItemBorderThickness.Top + ItemMargin,
-                        ItemBorderThickness.Right + ItemMargin,
-                        ItemBorderThickness.Bottom + ItemMargin
-                    );
-                    displayObject.HorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
-                    displayObject.VerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
-                    if (displayObject.Parent != null) { ((Panel)displayObject.Parent).Children.Remove(displayObject); } // detach it from the current parent if it has one for some reason
-                    itemGrid.Children.Add(displayObject);
-
-                    // add item to main grid
-                    ListDisplayGrid.Children.Add(itemGrid);
-                    Grid.SetColumn(itemGrid, x);
-                    Grid.SetRow(itemGrid, (y + 1)); // + 1 to avoid headers
-                }
-
-                // no longer first pass
-                isFirstPass = false;
-            }
-        }
-
-        #endregion
     }
 }

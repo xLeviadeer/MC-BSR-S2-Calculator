@@ -21,9 +21,5 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         public PlayerColumn() {
             InitializeComponent();
         }
-
-        private void OnTestButtonClicked(object sender, RoutedEventArgs e) {
-            TestClassListDisplay.DisplayLayer = ((TestClassListDisplay.DisplayLayer >= 1) ? -1 : TestClassListDisplay.DisplayLayer + 1);
-        }
     }
 }

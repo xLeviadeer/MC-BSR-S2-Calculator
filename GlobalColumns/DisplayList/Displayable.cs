@@ -8,14 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Ink;
 using MC_BSR_S2_Calculator.Validations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
     /// <summary>
     /// Class to extend to mark a class as containing DisplayValues
     /// </summary>
-    internal abstract class Displayable : IValidatable {
+    internal abstract class Displayable : OptionalEventHolder, IValidatable {
 
         // --- VARIABLES ---
         #region VARIABLES
@@ -51,7 +50,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                     // get the attribute's associated value
                     if (memberInfo is PropertyInfo propertyInfo) { // property value
                         var value = propertyInfo.GetValue(this);
-                        if (value is IDisplayValue displayValue) {
+                        if (value is DisplayValueBase displayValue) {
                             DisplayValues[attribute.DisplayName] = displayValue;
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
@@ -59,7 +58,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                         }
                     } else if (memberInfo is FieldInfo fieldInfo) { // field value
                         var value = fieldInfo.GetValue(this);
-                        if (value is IDisplayValue displayValue) {
+                        if (value is DisplayValueBase displayValue) {
                             DisplayValues[attribute.DisplayName] = displayValue;
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
@@ -72,12 +71,12 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
         // - Display Names -
 
-        private Dictionary<string, IDisplayValue> _displayValues = new();
+        private Dictionary<string, DisplayValueBase> _displayValues = new();
 
         /// <summary>
         /// holds a list of display name values locatable by header name
         /// </summary>
-        public Dictionary<string, IDisplayValue> DisplayValues {
+        public Dictionary<string, DisplayValueBase> DisplayValues {
             get {
                 if (!AttributeValuesHaveBeenBuilt) { // only builds once
                     BuildAttributeValues();
@@ -193,14 +192,14 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                         if (memberInfo is PropertyInfo propertyInfo) { // property value
                             var value = propertyInfo.GetValue(displayable);
                             if (value == null) { continue; }
-                            if (value is not IDisplayValue) { // check if it's not a display value
-                                throw new ValidationException($"A value attributed with IDisplayValue in class {displayable} was not an IDisplayValue");
+                            if (value is not DisplayValueBase) { // check if it's not a display value
+                                throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
                             }
                         } else if (memberInfo is FieldInfo fieldInfo) { // field value
                             var value = fieldInfo.GetValue(displayable);
                             if (value == null) { continue; }
-                            if (value is not IDisplayValue) { // check if it's not a display value
-                                throw new ValidationException($"A value attributed with IDisplayValue in class {displayable} was not an IDisplayValue");
+                            if (value is not DisplayValueBase) { // check if it's not a display value
+                                throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
                             }
                         }
                     }

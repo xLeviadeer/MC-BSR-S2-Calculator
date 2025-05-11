@@ -22,13 +22,7 @@
         <!-- PlayerGrid Content -->
         <!-- ViewGrid Layout -->
         <Grid x:Name="ViewGrid" Grid.Row="0" Margin="5,5,5,10">
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Button x:Name="TestButton" Grid.Row="1" Content="Test Swap" Click="OnTestButtonClicked"/>
-
-            <global_DisplayList:TestClassListDisplay x:Name="TestClassListDisplay" ScrollBarWidth="10" ShowScrollBar="Visible" DisplayLayer="1" Grid.Row="0" ItemHeight="26"/>
+            <global_DisplayList:TestClassListDisplay x:Name="TestClassListDisplay" ScrollBarWidth="10" ShowScrollBar="Auto"/>
         </Grid>
 
         <!-- AddGrid Layout -->
