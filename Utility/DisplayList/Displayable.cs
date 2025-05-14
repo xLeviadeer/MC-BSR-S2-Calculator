@@ -6,18 +6,25 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Ink;
-using MC_BSR_S2_Calculator.Validations;
+using MC_BSR_S2_Calculator.Utility.Validations;
+using Newtonsoft.Json;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
     /// <summary>
     /// Class to extend to mark a class as containing DisplayValues
     /// </summary>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     internal abstract class Displayable : OptionalEventHolder, IValidatable {
 
         // --- VARIABLES ---
         #region VARIABLES
+
+        // - IsValid -
+
+        public bool? IsValid { get; set; }
 
         // - Attribute Building -
 
@@ -171,7 +178,12 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
         /// <exception cref="ValidationException"></exception>
         public void Validate(object sender, EventArgs args) {
             // check that sender is not null and is displayable
-            ArgumentNullException.ThrowIfNull(sender, nameof(sender));
+            if (sender == null) {
+                IsValid = false;
+                throw new ArgumentNullException(nameof(sender));
+            }
+
+            // if sender is displayable
             if (sender is Displayable displayable) {
 
                 // flags to check from
@@ -180,7 +192,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                 // for every property/field
                 bool foundAnyDisplayValues = false;
                 foreach (var memberInfo in displayable.GetType().GetMembers(flags).ToList()) {
-                    // check if value is an attribute
+                    // check if attribute is a display value attribute
                     if (memberInfo.IsDefined(
                         typeof(DisplayValueAttribute),
                         inherit: true
@@ -193,12 +205,14 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                             var value = propertyInfo.GetValue(displayable);
                             if (value == null) { continue; }
                             if (value is not DisplayValueBase) { // check if it's not a display value
+                                IsValid = false;
                                 throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
                             }
                         } else if (memberInfo is FieldInfo fieldInfo) { // field value
                             var value = fieldInfo.GetValue(displayable);
                             if (value == null) { continue; }
                             if (value is not DisplayValueBase) { // check if it's not a display value
+                                IsValid = false;
                                 throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
                             }
                         }
@@ -207,8 +221,12 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
                 // if contains no DisplayValues
                 if (!foundAnyDisplayValues) {
+                    IsValid = false;
                     throw new ValidationException("Displayable child had no public DisplayValueAttributes");
                 }
+
+                // valid
+                IsValid = true;
             }
         }
 

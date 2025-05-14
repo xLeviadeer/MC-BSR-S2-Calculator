@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
-             xmlns:global="clr-namespace:MC_BSR_S2_Calculator.GlobalColumns"
-             xmlns:global_DisplayList="clr-namespace:MC_BSR_S2_Calculator.GlobalColumns.DisplayList"
-             xmlns:validations="clr-namespace:MC_BSR_S2_Calculator.Validations"
+             xmlns:global="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:global_DisplayList="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
+             xmlns:global_validations="clr-namespace:MC_BSR_S2_Calculator.Utility.Validations"
              mc:Ignorable="d"
              Height="Auto"
              Width="Auto">
@@ -22,7 +22,7 @@
         <!-- PlayerGrid Content -->
         <!-- ViewGrid Layout -->
         <Grid x:Name="ViewGrid" Grid.Row="0" Margin="5,5,5,10">
-            <global_DisplayList:TestClassListDisplay x:Name="TestClassListDisplay" ScrollBarWidth="10" ShowScrollBar="Auto"/>
+            <local:PlayerList x:Name="PlayerList" ScrollBarWidth="10" ShowScrollBar="Auto" ItemBorderBrushSides="#FFB3B3B3"/>
         </Grid>
 
         <!-- AddGrid Layout -->
@@ -37,8 +37,10 @@
             </Grid.ColumnDefinitions>
 
             <!-- AddGrid Content -->
-            <global:TextLabelAbove Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" LabelText="Add Player" TextBoxType="TextBox" TextBoxMaxLength="20"/>
-            <Button x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" Style="{StaticResource InputButton}" Content="Add"/>
+            <global:TextLabelAbove x:Name="PlayerInputBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
+                LabelText="Add Player" TextBoxType="StringTextBox" TextBoxMaxLength="20" ValidityChanged="OnPlayerInputBoxValidityChanged" KeyDownEnter="OnPlayerInputBoxKeyDownEnter"/>
+            <Button x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" 
+                Style="{StaticResource InputButton}" Content="Add" Click="OnClickAddPlayerButton"/>
         </Grid>
     </Grid>
 </UserControl>

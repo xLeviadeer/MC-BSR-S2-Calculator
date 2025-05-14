@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MC_BSR_S2_Calculator.Validations {
+namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
     public class DoubleTextBox : NumberTextBox {
         // --- VARIABLES ---
         #region VARIABLES
@@ -70,6 +70,12 @@ namespace MC_BSR_S2_Calculator.Validations {
 
     public abstract class NumberTextBox : TypedTextBox<double> {
 
+        // --- CONSTRUCTOR ---
+
+        public NumberTextBox() : base() {
+            DoColorChanges = false;
+        }
+
         // --- METHODS ---
         #region METHODS
 
@@ -114,10 +120,10 @@ namespace MC_BSR_S2_Calculator.Validations {
                     try { // try to parse immediately
                         return (true, double.Parse(parenthesilessString, CultureInfo.InvariantCulture));
                     } catch (Exception err) when (
-                        (err is FormatException)
-                        || (err is ArgumentNullException)
-                        || (err is OverflowException)
-                        || (err is SyntaxErrorException)
+                        err is FormatException
+                        || err is ArgumentNullException
+                        || err is OverflowException
+                        || err is SyntaxErrorException
                     ) { // return failiure
                         return (false, -1);
                     }           
@@ -128,11 +134,11 @@ namespace MC_BSR_S2_Calculator.Validations {
                 try {
                     result = Convert.ToDouble(table.Compute(str, null));
                 } catch (Exception err) when (
-                    (err is SyntaxErrorException)
-                    || (err is EvaluateException)
-                    || (err is InvalidCastException)
-                    || (err is FormatException)
-                    || (err is OverflowException)
+                    err is SyntaxErrorException
+                    || err is EvaluateException
+                    || err is InvalidCastException
+                    || err is FormatException
+                    || err is OverflowException
                 ) {
                     return (false, -1);
                 }
@@ -153,7 +159,7 @@ namespace MC_BSR_S2_Calculator.Validations {
                 int offsetIndex = currPop.index + (applyOffset ? offsetCount : 0);
 
                 // get eval portion from main string
-                string evalPortion = cleanedText.Substring(currIndex, (offsetIndex - currIndex));
+                string evalPortion = cleanedText.Substring(currIndex, offsetIndex - currIndex);
 
                 // evaluate portion
                 (bool succeeded, double result) = evaluate(evalPortion);
@@ -172,14 +178,14 @@ namespace MC_BSR_S2_Calculator.Validations {
                 offsetIndex += 1;
 
                 // place result into cleanedString
-                cleanedText = (
+                cleanedText = 
                     cleanedText.Substring(0, currIndex)
                     + result.ToString()
                     + cleanedText.Substring(offsetIndex)
-                );
+                ;
 
                 // apply offset
-                offsetCount += (result.ToString().Length - evalPortion.Length - 1); // - 1 accounts for removal of h or k
+                offsetCount += result.ToString().Length - evalPortion.Length - 1; // - 1 accounts for removal of h or k
 
                 // success
                 return true;
@@ -204,15 +210,15 @@ namespace MC_BSR_S2_Calculator.Validations {
                         }
 
                         // if k or h
-                        if ((charStack.First().chr == 'k') || (charStack.First().chr == 'h')) {
+                        if (charStack.First().chr == 'k' || charStack.First().chr == 'h') {
                             // skip if last symbol is not a digit
-                            if ((i < (runLength - 1)) && (!char.IsDigit(cleanedText[i + 1]))) {
+                            if (i < runLength - 1 && !char.IsDigit(cleanedText[i + 1])) {
                                 RevertText(textBox);
                                 return;
                             }
 
                             // evaluate
-                            if (!evaluatePortion((i + 1), applyOffset:false)) { // dont include parenthesis
+                            if (!evaluatePortion(i + 1, applyOffset:false)) { // dont include parenthesis
                                 RevertText(textBox);
                                 return; // return if failed
                             } 
@@ -233,7 +239,7 @@ namespace MC_BSR_S2_Calculator.Validations {
                                 continue;
                             } else if (charStackLast == 'h' || charStackLast == 'k') {
                                 // skip if last symbol is not a digit
-                                if ((i < (runLength - 1)) && (!char.IsDigit(cleanedText[i + 1]))) {
+                                if (i < runLength - 1 && !char.IsDigit(cleanedText[i + 1])) {
                                     RevertText(textBox);
                                     return;
                                 }
@@ -248,7 +254,7 @@ namespace MC_BSR_S2_Calculator.Validations {
                         break;
                     default: // math symbol and other handling
                         // skip if currently parenthesized
-                        if ((charStack.Count <= 0) || (charStack.First().chr == ')')) {
+                        if (charStack.Count <= 0 || charStack.First().chr == ')') {
                             continue;
                         }
 
@@ -258,13 +264,13 @@ namespace MC_BSR_S2_Calculator.Validations {
                         foreach (char mathSymbol in mathSymbols) {
                             if (currChar == mathSymbol) {
                                 // skip if last symbol is not a digit
-                                if ((i < (runLength - 1)) && (!char.IsDigit(cleanedText[i + 1]))) {
+                                if (i < runLength - 1 && !char.IsDigit(cleanedText[i + 1])) {
                                     RevertText(textBox);
                                     return;
                                 }
 
                                 // evaluate
-                                if (!evaluatePortion((i + 1), applyOffset:false)) { // we dont want to include the math symbol itself
+                                if (!evaluatePortion(i + 1, applyOffset:false)) { // we dont want to include the math symbol itself
                                     RevertText(textBox);
                                     return; // return if failed
                                 }
@@ -279,7 +285,7 @@ namespace MC_BSR_S2_Calculator.Validations {
                         }
 
                         // if the char isn't a (), h, k, math symbol or digit, revert
-                        if ((!char.IsDigit(currChar)) && currChar != '.') {
+                        if (!char.IsDigit(currChar) && currChar != '.') {
                             RevertText(textBox);
                             return;
                         }

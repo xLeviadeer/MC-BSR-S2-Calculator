@@ -1,15 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
     /// <summary>
     /// class which *can* hold an event listener function but doesn't have to
     /// </summary>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     internal abstract class OptionalEventHolder {
 
         // --- VARIABLES ---

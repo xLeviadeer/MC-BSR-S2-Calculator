@@ -1,4 +1,5 @@
-﻿using MC_BSR_S2_Calculator.GlobalColumns.DisplayList;
+﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,8 +19,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 //using MC_BSR_S2_Calculator.SystemMetricsHeler;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
-    internal abstract partial class ListDisplay<T> : UserControl 
+namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+    internal abstract partial class ListDisplay<T> : UserControl
         where T : Displayable {
 
         // --- VARIABLES ---
@@ -327,17 +328,33 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             new PropertyMetadata(new Thickness(1))
         );
 
-        // - Items Border Color -
+        // - Items Left/Right Border Color -
 
         [Category("Items")]
-        [Description("Determines the border brush for items")]
-        public SolidColorBrush ItemBorderBrush {
-            get => (SolidColorBrush)GetValue(ItemBorderBrushProperty);
-            set => SetValue(ItemBorderBrushProperty, value);
+        [Description("Determines the left/right border brush for items")]
+        public SolidColorBrush ItemBorderBrushSides {
+            get => (SolidColorBrush)GetValue(ItemBorderBrushSidesProperty);
+            set => SetValue(ItemBorderBrushSidesProperty, value);
         }
 
-        public static readonly DependencyProperty ItemBorderBrushProperty = DependencyProperty.Register(
-            nameof(ItemBorderBrush),
+        public static readonly DependencyProperty ItemBorderBrushSidesProperty = DependencyProperty.Register(
+            nameof(ItemBorderBrushSides),
+            typeof(SolidColorBrush),
+            typeof(ListDisplay<T>),
+            new PropertyMetadata(new SolidColorBrush(Colors.DimGray))
+        );
+
+        // Items Border Top/Bottom Color -
+
+        [Category("Items")]
+        [Description("Determines the left/right border brush for items")]
+        public SolidColorBrush ItemBorderBrushEnds {
+            get => (SolidColorBrush)GetValue(ItemBorderBrushEndsProperty);
+            set => SetValue(ItemBorderBrushEndsProperty, value);
+        }
+
+        public static readonly DependencyProperty ItemBorderBrushEndsProperty = DependencyProperty.Register(
+            nameof(ItemBorderBrushEnds),
             typeof(SolidColorBrush),
             typeof(ListDisplay<T>),
             new PropertyMetadata(new SolidColorBrush(Colors.DimGray))
@@ -379,7 +396,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
         #region Clickable
 
-        // - Clickable -
+        // - Clickable Status -
 
         public enum ListDisplayClickable {
             NotClickable,
@@ -426,6 +443,38 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                 return (ListDisplayClickable)_isClickable;
             }
         }
+
+        // - Hover Color -
+
+        [Category("Items")]
+        [Description("Determines the hover color of items if they are clickable")]
+        public SolidColorBrush ItemsHoverColor {
+            get => (SolidColorBrush)GetValue(ItemsHoverColorProperty);
+            set => SetValue(ItemsHoverColorProperty, value);
+        }
+
+        public static readonly DependencyProperty ItemsHoverColorProperty = DependencyProperty.Register(
+            nameof(ItemsHoverColor),
+            typeof(SolidColorBrush),
+            typeof(ListDisplay<T>),
+            new PropertyMetadata(new SolidColorBrush(Color.FromArgb(77, 80, 180, 255)), OnMainBorderBrushPropertyChanged)
+        );
+
+        // - Click Color -
+
+        [Category("Items")]
+        [Description("Determines the click color of items if they are clickable")]
+        public SolidColorBrush ItemsClickColor {
+            get => (SolidColorBrush)GetValue(ItemsClickColorProperty);
+            set => SetValue(ItemsClickColorProperty, value);
+        }
+
+        public static readonly DependencyProperty ItemsClickColorProperty = DependencyProperty.Register(
+            nameof(ItemsClickColor),
+            typeof(SolidColorBrush),
+            typeof(ListDisplay<T>),
+            new PropertyMetadata(new SolidColorBrush(Color.FromArgb(77, 140, 200, 255)), OnMainBorderBrushPropertyChanged)
+        );
 
         #endregion
 

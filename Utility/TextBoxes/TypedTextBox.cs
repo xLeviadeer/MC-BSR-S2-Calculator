@@ -11,9 +11,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using MC_BSR_S2_Calculator.Utility.Validations;
 
-namespace MC_BSR_S2_Calculator.Validations {
-    public abstract class TypedTextBox<T> : TextBox, IValidatable 
+namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
+    public abstract class TypedTextBox<T> : ColorValidatedTextBox 
         where T : IParsable<T> {
 
         // --- VARIABLES ---
@@ -55,7 +56,7 @@ namespace MC_BSR_S2_Calculator.Validations {
         /// </summary>
         /// <exception cref="ArgumentException">Thrown if invalid ValidationType string</exception>
         private static void OnValidationTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (ValidationTypes.All.Any(type => (type != (string)e.NewValue))) {
+            if (ValidationTypes.All.Any(type => type != (string)e.NewValue)) {
                 throw new ArgumentException($"ValidationType was not set to a valid string");
             }
         }
@@ -137,25 +138,28 @@ namespace MC_BSR_S2_Calculator.Validations {
             // set validation events
             switch (ValidationType) {
                 case ValidationTypes.Final:
-                    this.KeyDown += (sender, args) => {
-                        if (args.Key == Key.Enter) {
-                            Validate(sender, args);
-                        }
+                    KeyDownEnter += (sender, args) => {
+                        Validate(sender, args);
                     };
-                    this.LostFocus += Validate;
+                    LostFocus += Validate;
                     break;
                 case ValidationTypes.Constant:
-                    this.TextChanged += Validate;
+                    TextChanged += Validate;
                     break;
             }
 
             // set default values
-            this.Text = DefaultValue.ToString();
-            LastText = DefaultValue.ToString() ?? "";
+            if (DefaultValue == null) {
+                Text = "";
+                LastText = "";
+            } else {
+                Text = DefaultValue.ToString();
+                LastText = DefaultValue.ToString() ?? "";
+            }
             LastValue = DefaultValue;
 
             // set max length
-            this.MaxLength = 25;
+            MaxLength = 25;
         }
 
         #endregion
@@ -182,9 +186,12 @@ namespace MC_BSR_S2_Calculator.Validations {
         /// <summary>
         /// Ensures that contents of the textbox are the associated type
         /// </summary>
-        public virtual void Validate(Object? sender, EventArgs args) {
+        public override void Validate(object? sender, EventArgs args) {
             // type cast sender
-            ArgumentNullException.ThrowIfNull(sender);
+            if (sender == null) {
+                IsValid = false;
+                throw new ArgumentNullException(nameof(sender));
+            }
             var textBox = (TypedTextBox<T>)sender;
 
             // method to set last values
@@ -193,9 +200,10 @@ namespace MC_BSR_S2_Calculator.Validations {
                 LastText = textBox.Text;
             }
 
-            // check if empty and set to last or do nothing
-            if (string.IsNullOrWhiteSpace(textBox.Text)) {
-                if (!IsNullable) { // set current to last text
+            // only if nullable
+            if (!IsNullable) { 
+                // check if empty and set to last or do nothing
+                if (string.IsNullOrWhiteSpace(textBox.Text)) { // set current to last text
                     // if default value is null
                     if (DefaultValue == null) { // revert
                         RevertText(textBox);
@@ -206,11 +214,13 @@ namespace MC_BSR_S2_Calculator.Validations {
 
                     // set last values
                     setLastvalues();
+                    IsValid = false;
                     return;
                 } else {
                     // set last values as defaults
                     Value = default; // null
                     setLastvalues();
+                    IsValid = true;
                     return;
                 }
             }
@@ -225,11 +235,13 @@ namespace MC_BSR_S2_Calculator.Validations {
                 || err is SyntaxErrorException
             ) { // revert text if there was parsing error
                 RevertText(textBox);
+                IsValid = false;
                 return;
             }
 
             // set last values to the current values
             setLastvalues();
+            IsValid = true;
         }
 
         #endregion

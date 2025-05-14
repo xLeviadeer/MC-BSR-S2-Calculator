@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns {
+namespace MC_BSR_S2_Calculator.Utility {
     public static class SystemMetricsHelper {
 
         // --- GETTER METHOD ---

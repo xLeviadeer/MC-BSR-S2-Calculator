@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MC_BSR_S2_Calculator.Validations {
+namespace MC_BSR_S2_Calculator.Utility.Validations {
     internal class ValidationException : Exception {
         // --- CONSTRUCTORS ---
         #region CONSTRUCTORS

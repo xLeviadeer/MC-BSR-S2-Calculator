@@ -1,11 +1,16 @@
-﻿using MC_BSR_S2_Calculator.GlobalColumns.DisplayList;
+﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +18,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
     /// <summary>
     /// Contains data about grid composition and the list of data to display; 
@@ -21,6 +26,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
     /// Default display structure for ListDisplays
     /// </summary>
     /// <typeparam name="T"> The class type of which data to display from </typeparam>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     internal abstract partial class ListDisplay<T> : UserControl
         where T : Displayable {
 
@@ -34,7 +40,8 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
         /// <summary>
         /// Holds a list of classes to display data from
         /// </summary>
-        public List<T> ClassDataList { get; set; }
+        [JsonProperty("Class Data List")]
+        public virtual List<T> ClassDataList { get; set; } = new();
 
         // - Data List by Rows -
 
@@ -159,7 +166,18 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
             // alignment settings for the grid
             ListDisplayGrid.VerticalAlignment = VerticalAlignment.Top;
+
+            // add instance to the instances storable (if it's storable)
+            if (typeof(IStorable).IsAssignableFrom(this.GetType())) {
+                AddInstanceToInstances();
+            }
         }
+
+        // - minimizes IStorable requirements in extended classes -
+
+        public void AddInstanceToInstances() => IStorable.Instances.Add((IStorable)this);
+
+        // - class data setter -
 
         /// <remarks>
         /// this method MUST set ClassDataList
@@ -381,6 +399,23 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             }
         }
 
+        private bool IsValidCurrentDisplayLayer(string header) {
+            // display layer checking
+            if (DisplayLayer == -1) { return true; }
+
+            // check if the display layer being called for exists
+            if (!ClassDataList[0].DisplayLayers
+                .Select(displayLayers => displayLayers.Value)
+                .Any(displayLayers => displayLayers.Contains(DisplayLayer))
+            ) {
+                throw new ArgumentException($"DisplayLayer is associated with no headers: {DisplayLayer}");
+            }
+
+            // check if display layer doesn't match
+            if (!ClassDataList[0].DisplayLayers[header].Contains(DisplayLayer)) { return false; }
+            return true;
+        }
+
         /// <summary>
         /// Builds the associated grid display with the current data
         /// </summary>
@@ -418,18 +453,7 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
                 var headerVerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
 
                 // display layer checking
-                if (DisplayLayer != -1) {
-                    // check if the display layer being called for exists
-                    if (!ClassDataList[0].DisplayLayers
-                        .Select(displayLayers => displayLayers.Value)
-                        .Any(displayLayers => displayLayers.Contains(DisplayLayer))
-                    ) {
-                        throw new ArgumentException($"DisplayLayer is associated with no headers: {DisplayLayer}");
-                    }
-
-                    // check if display layer doesn't match
-                    if (!ClassDataList[0].DisplayLayers[header].Contains(DisplayLayer)) { continue; }
-                }
+                if (!IsValidCurrentDisplayLayer(header)) { continue; }
 
                 // - add headers -
 
@@ -514,6 +538,9 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             // iterate over every header
             bool isFirstPass = true;
             for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
+                // display layer checking
+                if (!IsValidCurrentDisplayLayer(Headers[XcurrBuildPosition])) { continue; }
+
                 // iterate over every class data for this header
                 bool usePrimaryItemColor = true;
                 for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
@@ -541,6 +568,9 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
                 string header = Headers[XcurrBuildPosition];
 
+                // display layer checking
+                if (!IsValidCurrentDisplayLayer(header)) { continue; }
+
                 // set last past
                 if (XcurrBuildPosition == Headers.Count - 1) {
                     isLastPass = true;
@@ -548,12 +578,44 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
 
                 // button creation helper
                 Button CreateClickableButton() {
+                    // - re-create the button template so you can change it's overriden style -
+
+                    // new template 
+                    var template = new ControlTemplate(typeof(Button));
+
+                    // create border
+                    var border = new FrameworkElementFactory(typeof(Border));
+                    border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                    border.SetValue(Border.SnapsToDevicePixelsProperty, true);
+
+                    // create content
+                    var content = new FrameworkElementFactory(typeof(ContentPresenter));
+                    content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+                    content.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+
+                    // add content to border
+                    border.AppendChild(content);
+
+                    // add border to template
+                    template.VisualTree = border;
+
+                    // - regular settings modification -
+
                     // create button to host click event
+                    Brush normalColor = Brushes.Transparent;
                     var button = new Button() {
-                        Background = Brushes.Transparent
+                        OverridesDefaultStyle = true,
+                        Background = normalColor
                     };
+                    button.Template = template; // use the control template
+
                     // hover color
+                    button.MouseEnter += (sender, args) => button.Background = ItemsHoverColor;
+                    button.MouseLeave += (sender, args) => button.Background = normalColor;
+
                     // click color
+                    button.PreviewMouseLeftButtonDown += (sender, args) => button.Background = ItemsClickColor;
+                    button.PreviewMouseLeftButtonUp += (sender, args) => button.Background = ItemsHoverColor;
 
                     return button;
                 }
@@ -607,13 +669,32 @@ namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
             for (XcurrBuildPosition = 0; XcurrBuildPosition < Headers.Count; XcurrBuildPosition++) {
                 var header = Headers[XcurrBuildPosition];
 
+                // display layer checking
+                if (!IsValidCurrentDisplayLayer(header)) { continue; }
+
                 // iterate over every class data for this header
                 for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
-                    // create border (outline)
-                    var bottomItemBorder = new Border();
-                    bottomItemBorder.BorderThickness = ItemBorderThickness;
-                    bottomItemBorder.BorderBrush = ItemBorderBrush;
-                    AddToCurrentItem(bottomItemBorder, YcurrItemRow);
+                    // create border left/right (outline)
+                    var toptemBorderSides = new Border();
+                    toptemBorderSides.BorderThickness = new Thickness(
+                        ItemBorderThickness.Left,
+                        0,
+                        ItemBorderThickness.Right,
+                        0
+                    );
+                    toptemBorderSides.BorderBrush = ItemBorderBrushSides;
+                    AddToCurrentItem(toptemBorderSides, YcurrItemRow);
+
+                    // create border top/bottom (outline)
+                    var toptemBorderEnds = new Border();
+                    toptemBorderEnds.BorderThickness = new Thickness(
+                        0,
+                        ItemBorderThickness.Top,
+                        0,
+                        ItemBorderThickness.Bottom
+                    );
+                    toptemBorderEnds.BorderBrush = ItemBorderBrushEnds;
+                    AddToCurrentItem(toptemBorderEnds, YcurrItemRow);
 
                     // add display object
                     var displayObject = DataListByColumns[header][YcurrBuildPosition].DisplayObject;

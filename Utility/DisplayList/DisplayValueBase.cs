@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -7,11 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// <summary>
     /// Attribute class for DisplayValue; used to mark values as to-be-displayed
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     internal class DisplayValueAttribute : Attribute {
 
         // --- VARIABLES ---

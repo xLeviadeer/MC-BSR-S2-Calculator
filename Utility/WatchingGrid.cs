@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace MC_BSR_S2_Calculator.GlobalColumns
+namespace MC_BSR_S2_Calculator.Utility
 {
     /// <summary>
     /// EventArgs type for changes to children
