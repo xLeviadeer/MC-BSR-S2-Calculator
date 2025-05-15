@@ -15,7 +15,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// </summary>
     /// <typeparam name="T"> DisplayObject type T; T must be a type of FrameworkElement </typeparam>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    internal class DisplayValue<T> : DisplayValueBase
+    public class DisplayValue<T> : DisplayValueBase
         where T : FrameworkElement {
         
         // --- VARIABLES ---
@@ -24,8 +24,8 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // --- CONSTRUCTOR ---
 
-        public DisplayValue(T displayObject, EventHandler<EventArgs>? eventListener=null)
-            : base(eventListener) {
+        public DisplayValue(T displayObject, EventHandler<EventArgs>? eventListener=null, ContextMenu? rightClickMenu=null)
+            : base(eventListener, rightClickMenu) {
             DisplayObject = displayObject;
         }
     }

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -27,7 +28,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// </summary>
     /// <typeparam name="T"> The class type of which data to display from </typeparam>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    internal abstract partial class ListDisplay<T> : UserControl
+    public abstract partial class ListDisplay<T> : UserControl
         where T : Displayable {
 
         // --- VARIABLES ---
@@ -41,7 +42,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// Holds a list of classes to display data from
         /// </summary>
         [JsonProperty("Class Data List")]
-        public virtual List<T> ClassDataList { get; set; } = new();
+        public virtual NotifyingList<T> ClassDataList { get; set; } = new();
 
         // - Data List by Rows -
 
@@ -317,6 +318,10 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             );
         }
 
+        protected virtual void SortClassData() {
+            // no sorting default
+        }
+
         private void PrepareGridForBuilding() {
             // clear current grid contents
             MainGrid.Children.Clear();
@@ -425,6 +430,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         public void BuildGrid() {
             // prepare main grid
             PrepareGridForBuilding();
+            SortClassData();
 
             // add headers
             AddHeaders();
@@ -622,41 +628,130 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
                 // iterate over every class data for this header
                 for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
+                    DisplayValueBase displayValue = DataListByColumns[header][YcurrBuildPosition];
+                    T cls = ClassDataList[YcurrBuildPosition];
 
-                    // add by cell
-                    if (IsClickable == ListDisplayClickable.ByCell) {
-                        // only add button if holding event
-                        DisplayValueBase displayValue = DataListByColumns[header][YcurrBuildPosition];
-                        if (displayValue.IsHoldingEvent) {
+                    // button adder helper
+                    Button AddButton(OptionalMouseClickEventHolder holder ) {
+                        // create button and add event
+                        var button = CreateClickableButton();
+                        button.Click += holder.HeldLeftClickListener;
 
-                            // create button
-                            var button = CreateClickableButton();
-
-                            // add event
-                            button.Click += displayValue.HeldListener;
-
-                            // place onto grid
+                        // if it's the last pass and row
+                        if (IsClickable == ListDisplayClickable.ByRow) {
+                            AddToCurrentItem(button, YcurrItemRow, 0);
+                            Grid.SetColumnSpan(button, Headers.Count); // change span
+                        } else {
                             AddToCurrentItem(button, YcurrItemRow);
+                        }
+
+                        // return button reference
+                        return button;
+                    }
+
+                    // context wrapper helper
+                    void AddContextWrapper(ContextMenu menu) {
+                        // create wrapper, add context and add
+                        var wrapperGrid = new Grid();
+                        wrapperGrid.ContextMenu = menu;
+                        wrapperGrid.Background = Brushes.Transparent;
+
+                        // hover background coloring
+                        wrapperGrid.MouseEnter += (s, e) => {
+                            wrapperGrid.Background = new SolidColorBrush(Color.FromArgb(20, 255, 255, 255));
+                        };
+                        wrapperGrid.MouseLeave += (s, e) => {
+                            wrapperGrid.Background = new SolidColorBrush(Colors.Transparent);
+                        };
+
+                        // if it's the last pass and row
+                        if (ContextClickable == ListDisplayClickable.ByRow) {
+                            AddToCurrentItem(wrapperGrid, YcurrItemRow, 0);
+                            Grid.SetColumnSpan(wrapperGrid, Headers.Count); // change span
+                        } else {
+                            AddToCurrentItem(wrapperGrid, YcurrItemRow);
                         }
                     }
 
-                    // add by row
-                    else if (isLastPass && (IsClickable == ListDisplayClickable.ByRow)) {
-                        // buttons will span across invalid "no items found" sections which will look weird, but I dont think it's even really possible to have these sections
+                    // if only buttons are clickable
+                    if (
+                        (IsClickable != ListDisplayClickable.NotClickable)
+                        && (ContextClickable == ListDisplayClickable.NotClickable)
+                    ) {
+                        // if by cell
+                        if (
+                            (IsClickable == ListDisplayClickable.ByCell)
+                            && (displayValue.IsHoldingLeftClick)
+                        ) {
+                            AddButton(displayValue);
+                        }
 
-                        // only add button if holding event
-                        T cls = ClassDataList[YcurrBuildPosition];
-                        if (cls.IsHoldingEvent) {
+                        // if by row
+                        else if (
+                            (IsClickable == ListDisplayClickable.ByRow)
+                            && (isLastPass)
+                            && (cls.IsHoldingRightClick)
+                        ) {
+                            AddButton(cls);
+                        }
 
-                            // create button
-                            var button = CreateClickableButton();
+                        // if only contexts clickable
+                    } else if (
+                        (IsClickable == ListDisplayClickable.NotClickable)
+                        && (ContextClickable != ListDisplayClickable.NotClickable)
+                    ) {
+                        // if by cell
+                        if (
+                            (ContextClickable == ListDisplayClickable.ByCell)
+                            && (displayValue.IsHoldingLeftClick)
+                        ) {
+                            AddContextWrapper(displayValue.RightClickMenu);
 
-                            // add event
-                            button.Click += cls.HeldListener;
+                        // if by row
+                        } else if (
+                            (ContextClickable == ListDisplayClickable.ByRow)
+                            && (isLastPass)
+                            && (cls.IsHoldingRightClick)
+                        ) {
+                            AddContextWrapper(cls.RightClickMenu);
+                        }
+                    }
 
-                            // place onto grid
-                            AddToCurrentItem(button, YcurrItemRow, 0);
-                            Grid.SetColumnSpan(button, Headers.Count);
+                    // if both are clickable
+                    else if (
+                        (IsClickable != ListDisplayClickable.NotClickable)
+                        && (ContextClickable != ListDisplayClickable.NotClickable)
+                    ) {
+                        // if click styles dont match
+                        if (IsClickable != ContextClickable) {
+                            throw new ArgumentException($"button clickability and context clickability must match: button as {IsClickable}, context as {ContextClickable}");
+                        }
+
+                        // only run if it's the last pass if it's row
+                        if ((IsClickable == ListDisplayClickable.ByRow) && (!isLastPass)) {
+                            continue;
+                        }
+
+                        // select holder based on click status
+                        OptionalMouseClickEventHolder holder = (IsClickable == ListDisplayClickable.ByRow) ? cls : displayValue;
+
+                        // if both exist for this one
+                        if (
+                            (holder.IsHoldingLeftClick)
+                            && (holder.IsHoldingRightClick)
+                        ) {
+                            Button button = AddButton(holder);
+                            button.ContextMenu = holder.RightClickMenu;
+                        }
+
+                        // if only button exists for this one
+                        else if (holder.IsHoldingLeftClick) {
+                            AddButton(holder);
+                        }
+
+                        // if only context exists for this one
+                        else if (holder.IsHoldingRightClick) {
+                            AddContextWrapper(holder.RightClickMenu);
                         }
                     }
                 }
@@ -675,26 +770,28 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                 // iterate over every class data for this header
                 for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
                     // create border left/right (outline)
-                    var toptemBorderSides = new Border();
-                    toptemBorderSides.BorderThickness = new Thickness(
+                    var topItemBorderSides = new Border();
+                    topItemBorderSides.BorderThickness = new Thickness(
                         ItemBorderThickness.Left,
                         0,
                         ItemBorderThickness.Right,
                         0
                     );
-                    toptemBorderSides.BorderBrush = ItemBorderBrushSides;
-                    AddToCurrentItem(toptemBorderSides, YcurrItemRow);
+                    topItemBorderSides.BorderBrush = ItemBorderBrushSides;
+                    topItemBorderSides.IsHitTestVisible = false;
+                    AddToCurrentItem(topItemBorderSides, YcurrItemRow);
 
                     // create border top/bottom (outline)
-                    var toptemBorderEnds = new Border();
-                    toptemBorderEnds.BorderThickness = new Thickness(
+                    var topItemBorderEnds = new Border();
+                    topItemBorderEnds.BorderThickness = new Thickness(
                         0,
                         ItemBorderThickness.Top,
                         0,
                         ItemBorderThickness.Bottom
                     );
-                    toptemBorderEnds.BorderBrush = ItemBorderBrushEnds;
-                    AddToCurrentItem(toptemBorderEnds, YcurrItemRow);
+                    topItemBorderEnds.BorderBrush = ItemBorderBrushEnds;
+                    topItemBorderEnds.IsHitTestVisible = false;
+                    AddToCurrentItem(topItemBorderEnds, YcurrItemRow);
 
                     // add display object
                     var displayObject = DataListByColumns[header][YcurrBuildPosition].DisplayObject;
@@ -706,6 +803,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                     );
                     displayObject.HorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
                     displayObject.VerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
+                    displayObject.IsHitTestVisible = ClassDataList[0].HitTestVisibilities[header];
                     if (displayObject.Parent != null) { ((Panel)displayObject.Parent).Children.Remove(displayObject); } // detach it from the current parent if it has one for some reason
                     AddToCurrentItem(displayObject, YcurrItemRow);
                 }

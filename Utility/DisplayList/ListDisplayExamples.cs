@@ -13,7 +13,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     internal class ListDisplayExampleStartingDataset : ListDisplay<DisplayClassExample>, IStorable {
 
         // the starting data set
-        public override List<DisplayClassExample> ClassDataList { get; set; } = new();
+        public override NotifyingList<DisplayClassExample> ClassDataList { get; set; } = new();
 
         // save location for this class
         public List<string> SaveLocation { get => ["list_display_example_dataset.json"]; }
@@ -26,7 +26,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             : base() { }
 
         // parametered constructor for class duplication
-        public ListDisplayExampleStartingDataset(List<DisplayClassExample> classDataList) 
+        public ListDisplayExampleStartingDataset(NotifyingList<DisplayClassExample> classDataList) 
             : base() {
             ClassDataList = classDataList;
         }

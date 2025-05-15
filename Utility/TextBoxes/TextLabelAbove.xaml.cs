@@ -42,22 +42,15 @@ namespace MC_BSR_S2_Calculator.Utility {
 
         // - TextBoxType -
 
-        public enum TextBoxTypes {
-            TextBox,
-            IntegerTextBox,
-            DoubleTextBox,
-            StringTextBox
-        }
-
         [Category("Common")]
         [Description("The type of TextBox to use")]
-        public TextBoxTypes TextBoxType {
-            get => (TextBoxTypes)GetValue(TextBoxTypeProperty);
-            set => SetValue(TextBoxTypeProperty, value);
+        public TextBoxTypes TextLabelAboveTextBoxType {
+            get => (TextBoxTypes)GetValue(TextLabelAboveTextBoxTypeProperty);
+            set => SetValue(TextLabelAboveTextBoxTypeProperty, value);
         }
 
-        public static readonly DependencyProperty TextBoxTypeProperty = DependencyProperty.Register(
-            nameof(TextBoxType),
+        public static readonly DependencyProperty TextLabelAboveTextBoxTypeProperty = DependencyProperty.Register(
+            nameof(TextLabelAboveTextBoxType),
             typeof(TextBoxTypes),
             typeof(TextLabelAbove),
             new PropertyMetadata(TextBoxTypes.TextBox)
@@ -122,7 +115,7 @@ namespace MC_BSR_S2_Calculator.Utility {
 
         private void OnLoaded(object sender, RoutedEventArgs args) {
             // create text box of specified type
-            TextBoxInput = TextBoxType switch {
+            TextBoxInput = TextLabelAboveTextBoxType switch {
                 TextBoxTypes.TextBox => new TextBox(),
                 TextBoxTypes.IntegerTextBox => new IntegerTextBox(),
                 TextBoxTypes.DoubleTextBox => new DoubleTextBox(),
@@ -134,7 +127,8 @@ namespace MC_BSR_S2_Calculator.Utility {
             TextBoxInput.MaxLength = TextBoxMaxLength;
             TextBoxInput.HorizontalContentAlignment = HorizontalAlignment.Left;
             TextBoxInput.VerticalContentAlignment = VerticalAlignment.Center;
-            TextBoxInput.Height = 22;
+            TextBoxInput.Height = (double)Application.Current.Resources["TextBoxHeight"];
+            ;
             TextBoxInput.Margin = new Thickness(3, 1, 3, 3);
 
             // set textbox to the grid

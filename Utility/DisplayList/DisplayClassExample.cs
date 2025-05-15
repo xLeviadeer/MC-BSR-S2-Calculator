@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Windows.Controls;
 using System.Windows;
+using System.Runtime.CompilerServices;
 
 namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     internal class DisplayClassExample : Displayable {
@@ -20,7 +21,8 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         public DisplayValue<Button> ButtonUpdater { get; init; }
 
         // add a text block and button to the values
-        public DisplayClassExample() {
+        public DisplayClassExample() : base() {
+            // text
             var textBlock = new TextBlock();
             BooleanTextBlock = new(
                 textBlock,
@@ -28,12 +30,19 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                 false
             );
 
+            // button
             var button = new Button() {
                 Content = "swap!"
             };
             button.Click += ClickEvent;
             button.FontSize = 10;
             ButtonUpdater = new(button);
+
+            // right click
+            RightClickMenu = new ContextMenu();
+            var optionOne = new MenuItem();
+            optionOne.Header = "Option 1";
+            RightClickMenu.Items.Add(optionOne);
         }
 
         // click event for button
@@ -42,7 +51,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         }
 
         // column click event
-        public override void HeldListener(object? sender, EventArgs args) {
+        public override void HeldLeftClickListener(object? sender, EventArgs args) {
             BooleanTextBlock.Value = !BooleanTextBlock.Value;
         }
     }

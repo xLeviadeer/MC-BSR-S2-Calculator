@@ -15,14 +15,23 @@
     <Grid x:Name="PlayerGrid">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="ViewRow" Height="*"/>
-            <RowDefinition x:Name="AddRow" Height="98"/>
+            <RowDefinition x:Name="AddRow" Height="Auto"/>
         </Grid.RowDefinitions>
         <GridSplitter x:Name="AddToViewGridSplitter" Grid.Row="0" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="#FFDCDFE7" IsEnabled="False"/>
 
         <!-- PlayerGrid Content -->
         <!-- ViewGrid Layout -->
-        <Grid x:Name="ViewGrid" Grid.Row="0" Margin="5,5,5,10">
-            <local:PlayerList x:Name="PlayerList" ScrollBarWidth="10" ShowScrollBar="Auto" ItemBorderBrushSides="#FFB3B3B3"/>
+        <Grid x:Name="ViewGrid" Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <!-- ViewGrid Content -->
+            <Button x:Name="MarkAllAsInactiveButton" Grid.Row="0" 
+                Style="{StaticResource InputButton}" Content="Mark All as Inactive" Margin="5,5,5,0" Click="OnMarkAllAsInactiveButtonClicked"/>
+            <local:PlayerList x:Name="_playersList" Grid.Row="1" 
+                ScrollBarWidth="10" Margin="5,3,5,10" ShowScrollBar="Auto" ItemBorderBrushSides="#FFB3B3B3"/>
         </Grid>
 
         <!-- AddGrid Layout -->
@@ -38,7 +47,7 @@
 
             <!-- AddGrid Content -->
             <global:TextLabelAbove x:Name="PlayerInputBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
-                LabelText="Add Player" TextBoxType="StringTextBox" TextBoxMaxLength="20" ValidityChanged="OnPlayerInputBoxValidityChanged" KeyDownEnter="OnPlayerInputBoxKeyDownEnter"/>
+                LabelText="Add Player" TextLabelAboveTextBoxType="StringTextBox" TextBoxMaxLength="{StaticResource PlayerNameMaxLength}" ValidityChanged="OnPlayerInputBoxValidityChanged" KeyDownEnter="OnPlayerInputBoxKeyDownEnter"/>
             <Button x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" 
                 Style="{StaticResource InputButton}" Content="Add" Click="OnClickAddPlayerButton"/>
         </Grid>

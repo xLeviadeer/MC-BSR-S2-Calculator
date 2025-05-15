@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// <summary>
@@ -14,7 +15,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    internal class DisplayValueAttribute : Attribute {
+    public class DisplayValueAttribute : Attribute {
 
         // --- VARIABLES ---
         #region VARIABLES
@@ -45,6 +46,10 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         public ColumnContentAlignmnetRecord ColumnContentAlignment { get; init; }
 
+        // - Hit Testing -
+
+        public bool IsHitTestVisible { get; init; }
+
         #endregion
 
         // --- CONSTRUCTORS --
@@ -54,7 +59,12 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// Singular display layer
         /// </summary>
         /// <param name="displayLayer"> The layer to be displayed on </param>
-        public DisplayValueAttribute(string displayName, int columnWidth, int displayLayer=-1) {
+        public DisplayValueAttribute(
+            string displayName, 
+            int columnWidth, 
+            int displayLayer=-1,
+            bool isHitTestVisible=false
+        ) {
             // set name
             DisplayName = displayName;
 
@@ -70,13 +80,21 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // default content alignmet
             ColumnContentAlignment = new(HorizontalAlignment.Left, VerticalAlignment.Center);
+
+            // hit testing
+            IsHitTestVisible = isHitTestVisible;
         }
 
         /// <summary>
         /// Array of display layers to be added to
         /// </summary>
         /// <param name="displayLayers"> An array of layers to be displayed on </param>
-        public DisplayValueAttribute(string displayName, int columnWidth, int[] displayLayers) {
+        public DisplayValueAttribute(
+            string displayName, 
+            int columnWidth, 
+            int[] displayLayers,
+            bool isHitTestVisible=false
+        ) {
             // set name
             DisplayName = displayName;
 
@@ -93,13 +111,23 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // default content alignmet
             ColumnContentAlignment = new(HorizontalAlignment.Left, VerticalAlignment.Center);
+
+            // hit testing
+            IsHitTestVisible = isHitTestVisible;
         }
 
         /// <summary>
         /// Singular display layer
         /// </summary>
         /// <param name="displayLayer"> The layer to be displayed on </param>
-        public DisplayValueAttribute(string displayName, int columnWidth, HorizontalAlignment columnContentHorizontalAlignment, VerticalAlignment columnContentVerticalAlignment, int displayLayer=-1) {
+        public DisplayValueAttribute(
+            string displayName, 
+            int columnWidth, 
+            HorizontalAlignment columnContentHorizontalAlignment, 
+            VerticalAlignment columnContentVerticalAlignment, 
+            int displayLayer=-1,
+            bool isHitTestVisible=false
+        ) {
             // set name
             DisplayName = displayName;
 
@@ -115,13 +143,23 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // content alignment
             ColumnContentAlignment = new(columnContentHorizontalAlignment, columnContentVerticalAlignment);
+
+            // hit testing
+            IsHitTestVisible = isHitTestVisible;
         }
 
         /// <summary>
         /// Array of display layers to be added to
         /// </summary>
         /// <param name="displayLayers"> An array of layers to be displayed on </param>
-        public DisplayValueAttribute(string displayName, int columnWidth, HorizontalAlignment columnContentHorizontalAlignment, VerticalAlignment columnContentVerticalAlignment, int[] displayLayers) {
+        public DisplayValueAttribute(
+            string displayName, 
+            int columnWidth, 
+            HorizontalAlignment columnContentHorizontalAlignment, 
+            VerticalAlignment columnContentVerticalAlignment, 
+            int[] displayLayers,
+            bool isHitTestVisible=false
+        ) {
             // set name
             DisplayName = displayName;
 
@@ -138,6 +176,9 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // content alignment
             ColumnContentAlignment = new(columnContentHorizontalAlignment, columnContentVerticalAlignment);
+
+            // hit testing
+            IsHitTestVisible = isHitTestVisible;
         }
 
         #endregion
@@ -146,7 +187,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// <summary>
     /// Display value interface; requirss that DisplayValue extensions must have a DisplayObject
     /// </summary>
-    internal abstract class DisplayValueBase : OptionalEventHolder {
+    public abstract class DisplayValueBase : OptionalMouseClickEventHolder {
         
         // --- VARIABLES ---
         
@@ -154,12 +195,12 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         public abstract FrameworkElement DisplayObject { get; }
 
-        // - HeldListener -
+        // - HeldLeftClickListener -
 
         private EventHandler<EventArgs>? CellEvent { get; set; }
-        public new void HeldListener(object? sender, EventArgs args) {
+        public new void HeldLeftClickListener(object? sender, EventArgs args) {
             if (CellEvent == null) {
-                base.HeldListener(sender, args);
+                base.HeldLeftClickListener(sender, args);
                 return;
             }
             CellEvent.Invoke(sender, args);
@@ -167,12 +208,17 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // --- CONSTRUCTOR ---
 
-        public DisplayValueBase(EventHandler<EventArgs>? eventListener=null) {
+        public DisplayValueBase(EventHandler<EventArgs>? eventListener=null, ContextMenu? rightClickMenu=null) {
             // set listener
             CellEvent = eventListener;
 
+            // set context menu
+            if (rightClickMenu != null) {
+                RightClickMenu = rightClickMenu;
+            }
+
             // set override
-            IsHoldingEventOverride = (eventListener != null);
+            IsHoldingLeftClickOverride = (eventListener != null);
         }
     }
 }

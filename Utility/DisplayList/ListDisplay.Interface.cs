@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -20,7 +21,7 @@ using System.Windows.Threading;
 //using MC_BSR_S2_Calculator.SystemMetricsHeler;
 
 namespace MC_BSR_S2_Calculator.Utility.DisplayList {
-    internal abstract partial class ListDisplay<T> : UserControl
+    public abstract partial class ListDisplay<T> : UserControl
         where T : Displayable {
 
         // --- VARIABLES ---
@@ -415,13 +416,13 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
                     // check all classes for an event
                     foreach (T cls in ClassDataList) {
-                        if (cls.IsHoldingEvent) {
+                        if (cls.IsHoldingLeftClick) {
                             anyRowHasClickMethod = true;
                         }
 
                         // check all display values of a class for an event
                         foreach (string header in Headers) {
-                            if (cls.DisplayValues[header].IsHoldingEvent) {
+                            if (cls.DisplayValues[header].IsHoldingLeftClick) {
                                 anyCelleHasClickMethod = true;
                             }
                         }
@@ -441,6 +442,46 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                     }
                 }
                 return (ListDisplayClickable)_isClickable;
+            }
+        }
+
+        private ListDisplayClickable? _contextClickable;
+
+        public ListDisplayClickable ContextClickable {
+            get {
+                if (_contextClickable == null) {
+                    // holder variables
+                    bool anyRowHasClickMethod = false;
+                    bool anyCellHasClickMethod = false;
+
+                    // check all classes for an event
+                    foreach (T cls in ClassDataList) {
+                        if (cls.IsHoldingRightClick) {
+                            anyRowHasClickMethod = true;
+                        }
+
+                        // check all display values of a class for an event
+                        foreach (string header in Headers) {
+                            if (cls.DisplayValues[header].IsHoldingRightClick) {
+                                anyCellHasClickMethod = true;
+                            }
+                        }
+                    }
+
+                    // if both contain methods
+                    if (anyRowHasClickMethod && anyCellHasClickMethod) { // both
+                        throw new ArgumentException($"both rows and cells contained context menus for a displayable object");
+                    } else if (anyRowHasClickMethod ^ anyCellHasClickMethod) { // only one (xor)
+                        if (anyRowHasClickMethod) { // by row
+                            _contextClickable = ListDisplayClickable.ByRow;
+                        } else { // by cell
+                            _contextClickable = ListDisplayClickable.ByCell;
+                        }
+                    } else { // neither
+                        _contextClickable = ListDisplayClickable.NotClickable;
+                    }
+                }
+                return (ListDisplayClickable)_contextClickable;
             }
         }
 

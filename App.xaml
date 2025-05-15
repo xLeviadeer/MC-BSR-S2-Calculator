@@ -2,12 +2,22 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <!-- Text Box Height -->
+        <sys:Double x:Key="TextBoxHeight">22.0</sys:Double>
+
+        <!-- Button Height -->
+        <sys:Double x:Key="ButtonHeight">22.0</sys:Double>
+
         <!-- Input Button Margin -->
         <Style x:Key="InputButton" TargetType="Button">
             <Setter Property="Margin" Value="3"/>
-            <Setter Property="Height" Value="22"/>
+            <Setter Property="Height" Value="{StaticResource ButtonHeight}"/>
         </Style>
+
+        <!-- Player Name Max Length -->
+        <sys:Int32 x:Key="PlayerNameMaxLength">20</sys:Int32>
     </Application.Resources>
 </Application>

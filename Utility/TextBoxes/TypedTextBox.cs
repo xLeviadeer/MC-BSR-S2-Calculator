@@ -157,9 +157,6 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                 LastText = DefaultValue.ToString() ?? "";
             }
             LastValue = DefaultValue;
-
-            // set max length
-            MaxLength = 25;
         }
 
         #endregion

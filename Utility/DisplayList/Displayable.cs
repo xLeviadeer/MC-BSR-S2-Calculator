@@ -17,7 +17,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// Class to extend to mark a class as containing DisplayValues
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    internal abstract class Displayable : OptionalEventHolder, IValidatable {
+    public abstract class Displayable : OptionalMouseClickEventHolder, IValidatable {
 
         // --- VARIABLES ---
         #region VARIABLES
@@ -62,6 +62,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
                             DisplayLayers[attribute.DisplayName] = attribute.DisplayLayers;
+                            HitTestVisibilities[attribute.DisplayName] = attribute.IsHitTestVisible;
                         }
                     } else if (memberInfo is FieldInfo fieldInfo) { // field value
                         var value = fieldInfo.GetValue(this);
@@ -70,6 +71,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
                             DisplayLayers[attribute.DisplayName] = attribute.DisplayLayers;
+                            HitTestVisibilities[attribute.DisplayName] = attribute.IsHitTestVisible;
                         }
                     }
                 }
@@ -142,6 +144,20 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                 return _displayLayers;
             }
             set => _displayLayers = value;
+        }
+
+        // - Hit Testing -
+
+        private Dictionary<string, bool> _hitTestVisibilities = new();
+
+        public Dictionary<string, bool> HitTestVisibilities {
+            get {
+                if (!AttributeValuesHaveBeenBuilt) { // only builds once
+                    BuildAttributeValues();
+                }
+                return _hitTestVisibilities;
+            }
+            set => _hitTestVisibilities = value;
         }
 
         // - Headers -

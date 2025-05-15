@@ -29,7 +29,7 @@ namespace MC_BSR_S2_Calculator.Utility
     /// <summary>
     /// Grid class with an event that runs when it's children are updated (added or removed)
     /// </summary>
-    class WatchingGrid : Grid {
+    public class WatchingGrid : Grid {
         /// <summary>
         /// Event for when the children of the grid has been updated (added or removed)
         /// </summary>

@@ -17,7 +17,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     /// <typeparam name="T"> DisplayObject type T; T must be a type of FrameworkElement </typeparam>
     /// <typeparam name="U"> The type of value this class holds </typeparam>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    internal class BoundDisplayValue<T, U> : DisplayValueBase, INotifyPropertyChanged
+    public class BoundDisplayValue<T, U> : DisplayValueBase, INotifyPropertyChanged
         where T : FrameworkElement {
 
         // --- VARIABLES ---
@@ -49,8 +49,8 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // --- CONSTRUCTOR ---
 
-        public BoundDisplayValue(T displayObject, DependencyProperty targetProperty, U defaultValue, EventHandler<EventArgs>? eventListener=null)
-            : base(eventListener) {
+        public BoundDisplayValue(T displayObject, DependencyProperty targetProperty, U defaultValue, EventHandler<EventArgs>? eventListener=null, ContextMenu? rightClickMenu = null)
+            : base(eventListener, rightClickMenu) {
             // set DisplayObject
             DisplayObject = displayObject;
 
@@ -63,6 +63,12 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // set default
             Value = defaultValue;
+        }
+
+        // --- CASTING ---
+
+        public static implicit operator U(BoundDisplayValue<T, U> value) {
+            return value.Value;
         }
     }
 }

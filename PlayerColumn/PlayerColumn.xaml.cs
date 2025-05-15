@@ -22,6 +22,12 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
     /// </summary>
     public partial class PlayerColumn : UserControl {
         
+        // --- VARIABLES ---
+
+        // - player list reference
+
+        private PlayerList PlayersList { get => (PlayerList) this.FindName("_playersList"); }
+
         // --- CONSTRUCTORS ---
         
         public PlayerColumn() {
@@ -33,8 +39,16 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         // - add player button -
 
         public void OnClickAddPlayerButton(object sender, RoutedEventArgs args) {
-            PlayerList.ClassDataList.Add(new(PlayerInputBox.Text));
-            PlayerList.BuildGrid();
+            // check if player name already used
+            string nameTrimmed = PlayerInputBox.Text.Trim();
+            if (!PlayersList.NameAlreadyExists(nameTrimmed)) {
+                // add player
+                PlayersList.ClassDataList.Add(new(nameTrimmed));
+                PlayerInputBox.Text = "";
+                PlayersList.BuildGrid();
+            } else {
+                PlayersList.ShowPlayerNameTaken(nameTrimmed);
+            }
         }
 
         // - validity changed function -
@@ -48,9 +62,17 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         }
 
         // - text enter function -
+
         public void OnPlayerInputBoxKeyDownEnter(object sender, KeyEventArgs args) {
             if (AddPlayerButton.IsEnabled) {
                 OnClickAddPlayerButton(this, new());
+            }
+        }
+
+        // - mark all as inactive -
+        public void OnMarkAllAsInactiveButtonClicked(object sender, RoutedEventArgs args) {
+            foreach (var player in PlayersList.ClassDataList) {
+                player.WasActive.Value = false;
             }
         }
     }
