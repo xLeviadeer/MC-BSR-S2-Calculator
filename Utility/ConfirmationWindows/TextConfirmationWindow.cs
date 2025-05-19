@@ -41,7 +41,7 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             // shift children down
             foreach (UIElement child in OuterGrid.Children) {
                 int row = Grid.GetRow(child);
-                if (row >= 1) {
+                if (row >= 2) {
                     Grid.SetRow(child, row + 1);
                 }
             }
@@ -79,16 +79,26 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             string titleText = "Are you sure?",
             string confirmButtonText = "Yes",
             string denyButtontext = "No",
+            string descriptionText = "",
             bool useConfirmColor = false,
             TextBoxTypes textBoxType = TextBoxTypes.TextBox,
-            int textMaxLength = 0
+            int textMaxLength = 0,
+            bool startHighlighted = true
         ) : base(
             titleText,
             confirmButtonText,
             denyButtontext, 
+            descriptionText,
             useConfirmColor
         ) {
             AddTextBoxToGrid(textBoxType, textMaxLength);
+
+            // focus user on textbox
+            Loaded += (s, e) => {
+                TextBoxInput.Focus();
+                TextBoxInput.CaretIndex = TextBoxInput.Text.Length;
+                if (startHighlighted) { TextBoxInput.SelectAll(); }
+            };
         }
     }
 }

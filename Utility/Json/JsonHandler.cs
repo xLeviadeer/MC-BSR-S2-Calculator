@@ -36,6 +36,7 @@ sealed class JsonHandler {
 
     // --- VARIABLES ---
 
+    public const string DataPath = "Data";
     private static string CWD = Directory.GetCurrentDirectory();
 
     // --- METHODS ---

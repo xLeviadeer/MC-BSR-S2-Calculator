@@ -17,13 +17,52 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
     /// <summary>
     /// Interaction logic for ConfirmationWindow.xaml
     /// </summary>
-    public partial class ConfirmationWindow : Window
-    {
+    public partial class ConfirmationWindow : Window {
+
+        // --- VARIABLES ---
+
         private const double TextSizeFactor = 0.5;
+        private const int MaxTitleTextLength = 150;
+        private const int MaxDescriptionTextLength = 1000;
+
+        // - screen heights and widths -
+
+        public static double ThirdScreenWidth { 
+            get {
+                var source = PresentationSource.FromVisual(Application.Current.MainWindow);
+
+                if (source?.CompositionTarget != null) {
+                    Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
+                    double dpiScaleX = transformToDevice.M11;
+
+                    // actual pixel width
+                    return (SystemParameters.PrimaryScreenWidth * dpiScaleX) / 3;
+                }
+                return 500;
+            }
+        }
+
+        public static double ScreenHeight {
+            get {
+                var source = PresentationSource.FromVisual(Application.Current.MainWindow);
+
+                if (source?.CompositionTarget != null) {
+                    Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
+                    double dpiScaleY = transformToDevice.M22;
+
+                    // actual pixel width
+                    return SystemParameters.PrimaryScreenHeight * dpiScaleY;
+                }
+                return 500;
+            }
+        }
 
         // --- CONSTRUCTORS ---
 
         private void CenterText() {
+            // set data context
+            DataContext = this;
+
             // set text size
             TitleText.FontSize = TitleText.Height * TextSizeFactor;
 
@@ -50,13 +89,15 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
         }
 
         public ConfirmationWindow(
-            string titleText="Are you sure?", 
+            string titleText="Are you sure?",
             string confirmButtonText="Yes", 
             string denyButtontext="No",
+            string descriptionText="",
             bool useConfirmColor=false
         ) {
             InitializeComponent();
-            TitleText.Text = titleText;
+            TitleText.Text = (titleText.Length > MaxTitleTextLength) ? "Invalid Title" : titleText;
+            DescriptionText.Text = (descriptionText.Length > MaxDescriptionTextLength) ? "Invalid Description" : descriptionText;
             ConfirmButton.Content = confirmButtonText;
             DenyButton.Content = denyButtontext;
             if (useConfirmColor) {

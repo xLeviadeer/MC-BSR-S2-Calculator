@@ -15,6 +15,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.Identification;
+using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
     /// <summary>
@@ -45,6 +48,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
                 // add player
                 PlayersList.ClassDataList.Add(new(nameTrimmed));
                 PlayerInputBox.Text = "";
+                PlayersList.AsIStorable.Save();
                 PlayersList.BuildGrid();
             } else {
                 PlayersList.ShowPlayerNameTaken(nameTrimmed);

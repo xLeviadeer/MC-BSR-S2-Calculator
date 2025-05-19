@@ -1,4 +1,5 @@
-﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
+﻿using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility.DisplayList;
 using MC_BSR_S2_Calculator.Utility.Json;
 using Newtonsoft.Json;
 using System;
@@ -41,7 +42,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// <summary>
         /// Holds a list of classes to display data from
         /// </summary>
-        [JsonProperty("Class Data List")]
+        [JsonProperty("data")]
         public virtual NotifyingList<T> ClassDataList { get; set; } = new();
 
         // - Data List by Rows -
@@ -143,6 +144,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             // loads data list and builds grid
             Loaded += (object sender, RoutedEventArgs args) => {
                 SetClassDataList();
+                ExtraSetup();
                 BuildGrid();
             };
 
@@ -184,6 +186,31 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// this method MUST set ClassDataList
         /// </remarks>
         protected abstract void SetClassDataList();
+
+        // - row and new item helper overridable -
+
+        private void ExtraSetup() {
+            // on item added
+            ClassDataList.ItemAdded += (sender, args) => {
+                if (args is ListChangedEventArgs argsCasted) {
+                    ForAllLoadedRowsAndNewItems(ClassDataList[argsCasted.NewIndex]);
+                } else { throw new ArgumentException($"the arguments send by the ItemsAdded event weren't of the correct type"); }
+            };
+
+            // for every instance on load
+            foreach (var instance in ClassDataList) {
+                ForAllLoadedRowsAndNewItems(instance);
+            }
+        }
+
+        /// <summary>
+        /// runs extra setup for items which are either newly added to the list or pre-loaded via JSON
+        /// </summary>
+        /// <remarks>
+        /// Does nothing by default
+        /// </remarks>
+        /// <param name="instance"> An instance of an object contained in the list </param>
+        protected virtual void ForAllLoadedRowsAndNewItems(T instance) { }
 
         #endregion
 

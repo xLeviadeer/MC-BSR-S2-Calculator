@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.Json;
 using MC_BSR_S2_Calculator.Utility.Validations;
 
@@ -19,12 +20,6 @@ namespace MC_BSR_S2_Calculator
 
         public MainWindow() {
             InitializeComponent();
-
-            // set save conditions
-            AppDomain.CurrentDomain.ProcessExit += IStorable.SaveAll;
-            AppDomain.CurrentDomain.UnhandledException += IStorable.SaveAll;
-            Application.Current.Dispatcher.ShutdownStarted += IStorable.SaveAll;
-            Closing += IStorable.SaveAll;
         }
     }
 }

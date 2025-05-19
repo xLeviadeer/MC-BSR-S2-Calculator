@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
 using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.Identification;
 using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
@@ -18,6 +20,11 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
     public class Player : Displayable {
 
         // --- VARIABLES ---
+
+        // - IDPrimary -
+
+        [JsonProperty("player_id")]
+        public IDPrimary PlayerID { get; set; } = new(typeof(Player), 'p');
 
         // - Name -
 
@@ -30,6 +37,8 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         // - WasActive -
 
         private CheckBox WasActiveCheckBox { get; set; } = new();
+
+        public event EventHandler<EventArgs>? WasActiveChanged;
 
         [DisplayValue("Active", 3, HorizontalAlignment.Center, VerticalAlignment.Center, isHitTestVisible: true)]
         [JsonProperty("was_active")]
@@ -116,6 +125,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
             // electable changed event
             IsElectable.PropertyChanged += (s, args) => IsElectableChanged?.Invoke(this, args);
+            WasActive.PropertyChanged += (s, args) => WasActiveChanged?.Invoke(this, args);
 
             // elected official change event
             IsElectedOfficialChanged += (s, args) => {
@@ -129,6 +139,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         }
 
         // parameterless requirement
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public Player() {
             Name = new(NameTextBlock, TextBlock.TextProperty, "");
             SetDefaultValues();
@@ -136,7 +147,9 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         public Player(string name) {
             Name = new(NameTextBlock, TextBlock.TextProperty, name);
+            PlayerID.AssignNewID(this);
             SetDefaultValues();
         }
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     }
 }

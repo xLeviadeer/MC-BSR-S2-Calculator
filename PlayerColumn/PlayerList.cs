@@ -13,6 +13,8 @@ using System.Windows;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System.Xml.Linq;
 using System.Security.Cryptography.Xml;
+using MC_BSR_S2_Calculator.Utility.Identification;
+using System.Diagnostics;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 
@@ -32,36 +34,30 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         protected override void SetClassDataList() {
             // try to load data list
             AsIStorable.TryLoad(new PlayerList());
+        }
 
-            // event adder helper
-            void AddEvents(Player player) {
-                player.IsElectableChanged += (s, e) => BuildGrid();
-                player.IsElectedOfficialChanged += (s, e) => BuildGrid();
-                player.DeleteContextClicked += (s, e) => DeletePlayer(player);
-                player.RenameContextClicked += (s, e) => RenamePlayer(player);
-            }
-
-            // rebuild grid on changes to election status
-            ClassDataList.ItemAdded += (sender, args) => {
-                if (args is ListChangedEventArgs argsCasted) {
-                    Player target = ClassDataList[argsCasted.NewIndex];
-                    AddEvents(target);
-                } else { throw new ArgumentException($"the arguments send by the ItemsAdded event weren't of the correct type"); }
-            };
-
-            // set all existing to have event
-            foreach (var player in ClassDataList) {
-                AddEvents(player);
-            }
+        protected override void ForAllLoadedRowsAndNewItems(Player instance) {
+            instance.IsElectableChanged += (s, e) => AsIStorable.Save();
+            instance.IsElectableChanged += (s, e) => BuildGrid();
+            instance.IsElectedOfficialChanged += (s, e) => AsIStorable.Save();
+            instance.IsElectedOfficialChanged += (s, e) => BuildGrid();
+            instance.WasActiveChanged += (s, e) => AsIStorable.Save();
+            instance.DeleteContextClicked += (s, e) => DeletePlayer(instance);
+            instance.RenameContextClicked += (s, e) => RenamePlayer(instance);
+            instance.PlayerID.AssignInstance(instance);
         }
 
         private void DeletePlayer(Player player) {
             // confirmation
             if (new ConfirmationWindow(
                 "Are you sure you want to delete?",
+                descriptionText: "This will leave associations to this player empty"
+                + "\nplayers should not be deleted unless they have accidentally been created",
                 useConfirmColor: true
             ).ShowDialog() == true) {
-                ClassDataList.Remove(player);
+                player.PlayerID.Delete(); // delete id
+                ClassDataList.Remove(player); // delete player from list
+                AsIStorable.Save();
                 BuildGrid();
             }
         }
@@ -98,6 +94,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
                 if (!NameAlreadyExists(nameTrimmed)) {
                     // modify payer
                     player.Name.Value = name;
+                    AsIStorable.Save();
                     BuildGrid(); // build required for sorting
                 } else {
                     ShowPlayerNameTaken(nameTrimmed);
