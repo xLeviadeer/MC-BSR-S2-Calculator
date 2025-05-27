@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
              xmlns:global="clr-namespace:MC_BSR_S2_Calculator.Utility"
-             xmlns:global_DisplayList="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
-             xmlns:global_validations="clr-namespace:MC_BSR_S2_Calculator.Utility.Validations"
+             xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
+             xmlns:util_validations="clr-namespace:MC_BSR_S2_Calculator.Utility.Validations"
              mc:Ignorable="d"
              Height="Auto"
              Width="Auto">
@@ -31,7 +32,8 @@
             <Button x:Name="MarkAllAsInactiveButton" Grid.Row="0" 
                 Style="{StaticResource InputButton}" Content="Mark All as Inactive" Margin="5,5,5,0" Click="OnMarkAllAsInactiveButtonClicked"/>
             <local:PlayerList x:Name="_playersList" Grid.Row="1" 
-                ScrollBarWidth="10" Margin="5,3,5,10" ShowScrollBar="Auto" ItemBorderBrushSides="#FFB3B3B3"/>
+                ScrollBarWidth="10" Margin="5,3,5,10" ShowScrollBar="Auto" ItemBorderBrushSides="#FFB3B3B3"
+                EmptyText="No Players found"/>
         </Grid>
 
         <!-- AddGrid Layout -->
@@ -47,9 +49,10 @@
 
             <!-- AddGrid Content -->
             <global:TextLabelAbove x:Name="PlayerInputBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
-                LabelText="Add Player" TextLabelAboveTextBoxType="StringTextBox" TextBoxMaxLength="{StaticResource PlayerNameMaxLength}" ValidityChanged="OnPlayerInputBoxValidityChanged" KeyDownEnter="OnPlayerInputBoxKeyDownEnter"/>
-            <Button x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" 
-                Style="{StaticResource InputButton}" Content="Add" Click="OnClickAddPlayerButton"/>
+                LabelText="Add Player" TextLabelAboveTextBoxType="StringTextBox" TextBoxMaxLength="{StaticResource PlayerNameMaxLength}" 
+                ValidityChanged="OnPlayerInputBoxValidityChanged" KeyDownEnter="OnPlayerInputBoxKeyDownEnter" KeyUpEnter="OnPlayerInputBoxKeyUpEnter" PreviewTextInput="OnPlayerInputBoxTextInput" PreviewKeyDown="OnPlayerInputTextBoxKeyPressed"/>
+            <util:ChargingButton x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" 
+                Style="{StaticResource InputChargingButton}" Content="Add" FullyCharged="OnChargedAddPlayerButton"/>
         </Grid>
     </Grid>
 </UserControl>

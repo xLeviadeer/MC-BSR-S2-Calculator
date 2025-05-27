@@ -80,16 +80,20 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             string confirmButtonText = "Yes",
             string denyButtontext = "No",
             string descriptionText = "",
-            bool useConfirmColor = false,
+            string useConfirmColor = "",
+            bool useChargingButton = false,
             TextBoxTypes textBoxType = TextBoxTypes.TextBox,
             int textMaxLength = 0,
-            bool startHighlighted = true
+            bool startHighlighted = true,
+            double? chargeTime = null
         ) : base(
             titleText,
             confirmButtonText,
             denyButtontext, 
             descriptionText,
-            useConfirmColor
+            useConfirmColor,
+            useChargingButton,
+            chargeTime
         ) {
             AddTextBoxToGrid(textBoxType, textMaxLength);
 

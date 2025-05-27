@@ -498,7 +498,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             nameof(ItemsHoverColor),
             typeof(SolidColorBrush),
             typeof(ListDisplay<T>),
-            new PropertyMetadata(new SolidColorBrush(Color.FromArgb(77, 80, 180, 255)), OnMainBorderBrushPropertyChanged)
+            new PropertyMetadata(new SolidColorBrush(ColorResources.HoverColor), OnMainBorderBrushPropertyChanged)
         );
 
         // - Click Color -
@@ -514,7 +514,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             nameof(ItemsClickColor),
             typeof(SolidColorBrush),
             typeof(ListDisplay<T>),
-            new PropertyMetadata(new SolidColorBrush(Color.FromArgb(77, 140, 200, 255)), OnMainBorderBrushPropertyChanged)
+            new PropertyMetadata(new SolidColorBrush(ColorResources.ClickColor), OnMainBorderBrushPropertyChanged)
         );
 
         #endregion

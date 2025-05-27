@@ -41,13 +41,18 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         // - add player button -
 
-        public void OnClickAddPlayerButton(object sender, RoutedEventArgs args) {
+        public void OnChargedAddPlayerButton(object sender, EventArgs args) {
             // check if player name already used
             string nameTrimmed = PlayerInputBox.Text.Trim();
             if (!PlayersList.NameAlreadyExists(nameTrimmed)) {
                 // add player
                 PlayersList.ClassDataList.Add(new(nameTrimmed));
+
+                // erase text
                 PlayerInputBox.Text = "";
+                PlayerInputBox.IsValid = null;
+
+                // save and rebuild grid
                 PlayersList.AsIStorable.Save();
                 PlayersList.BuildGrid();
             } else {
@@ -69,7 +74,25 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         public void OnPlayerInputBoxKeyDownEnter(object sender, KeyEventArgs args) {
             if (AddPlayerButton.IsEnabled) {
-                OnClickAddPlayerButton(this, new());
+                AddPlayerButton.MarkAsPressed(this, args);
+            }
+        }
+
+        public void OnPlayerInputBoxKeyUpEnter(object sender, KeyEventArgs args) {
+            AddPlayerButton.MarkAsUnpressed(this, args);
+        }
+
+        // blocks pasting while charging
+        public void OnPlayerInputBoxTextInput(object sender, TextCompositionEventArgs args) {
+            if (AddPlayerButton.IsChargeCycling) {
+                args.Handled = true;
+            }
+        }
+
+        // blocks typing while charging
+        public void OnPlayerInputTextBoxKeyPressed(object sender, KeyEventArgs args) {
+            if (AddPlayerButton.IsChargeCycling && args.Key != Key.Enter) {
+                args.Handled = true;
             }
         }
 

@@ -50,10 +50,12 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         private void DeletePlayer(Player player) {
             // confirmation
             if (new ConfirmationWindow(
-                "Are you sure you want to delete?",
+                $"Are you sure you want to delete '{player.Name.Value}'?",
                 descriptionText: "This will leave associations to this player empty"
                 + "\nplayers should not be deleted unless they have accidentally been created",
-                useConfirmColor: true
+                useConfirmColor: "red",
+                useChargingButton: true,
+                chargeTime: 2
             ).ShowDialog() == true) {
                 player.PlayerID.Delete(); // delete id
                 ClassDataList.Remove(player); // delete player from list

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -57,6 +58,10 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             }
         }
 
+        // - button -
+
+        public ButtonBase ConfirmButton { get; set; }
+
         // --- CONSTRUCTORS ---
 
         private void CenterText() {
@@ -82,10 +87,11 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             TitleText.Height -= textSizeFactorInverse;
         }
 
-        public ConfirmationWindow()
-        {
+        public ConfirmationWindow() {
             InitializeComponent();
             CenterText();
+            ConfirmButton = new Button();
+            ConfirmButton.Content = "Test Yes";
         }
 
         public ConfirmationWindow(
@@ -93,17 +99,68 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             string confirmButtonText="Yes", 
             string denyButtontext="No",
             string descriptionText="",
-            bool useConfirmColor=false
+            string useConfirmColor="",
+            bool useChargingButton=false,
+            double? chargeTime=null
         ) {
             InitializeComponent();
+            
+            // title/description
             TitleText.Text = (titleText.Length > MaxTitleTextLength) ? "Invalid Title" : titleText;
             DescriptionText.Text = (descriptionText.Length > MaxDescriptionTextLength) ? "Invalid Description" : descriptionText;
-            ConfirmButton.Content = confirmButtonText;
-            DenyButton.Content = denyButtontext;
-            if (useConfirmColor) {
-                ConfirmButton.BorderBrush = new SolidColorBrush(Color.FromRgb(108, 49, 49));
-                ConfirmButton.Foreground = new SolidColorBrush(Color.FromRgb(164, 33, 33));
+            
+            // confirm button type
+            if (useChargingButton) {
+                ConfirmButton = new ChargingButton();
+            } else {
+                ConfirmButton = new Button();
             }
+
+            // confirm button default setup
+            ConfirmButton.Style = (Style)Application.Current.Resources["ConfirmButtons"];
+            ConfirmButton.Content = confirmButtonText;
+            ConfirmButton.Margin = new Thickness(5, 0, 3, 5);
+
+            // confirm button color and dependent settings
+            switch (useConfirmColor.ToLower()) {
+                case "red":
+                    // colors
+                    var darkerColor = Color.FromRgb(108, 49, 49);
+                    var brighterColor = Color.FromRgb(164, 33, 33);
+
+                    // set colors
+                    ConfirmButton.BorderBrush = new SolidColorBrush(darkerColor);
+                    ConfirmButton.Foreground = new SolidColorBrush(brighterColor);
+
+                    // set charging settings
+                    if (ConfirmButton is ChargingButton confirmChargingButton) {
+                        // colors
+                        confirmChargingButton.ChargingColor = new SolidColorBrush(brighterColor);
+                        confirmChargingButton.ChargedColor = new SolidColorBrush(darkerColor);
+                        
+                        // charge time
+                        if (chargeTime != null) {
+                            confirmChargingButton.ChargeTime = (double)chargeTime;
+                        }
+                        
+                        // event
+                        confirmChargingButton.ChargeCycled += (sender, args) => OnConfirm(this, new());
+                    } else {
+                        // event
+                        ConfirmButton.Click += OnConfirm;
+                    }
+                    break;
+            }
+
+            // add confirm button to grid
+            OuterGrid.Children.Add(ConfirmButton);
+            Grid.SetColumn(ConfirmButton, 2);
+            Grid.SetRow(ConfirmButton, 2);
+
+            // deny button
+            DenyButton.Content = denyButtontext;
+
+            // default
             CenterText();
         }
 

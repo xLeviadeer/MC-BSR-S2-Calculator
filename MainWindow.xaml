@@ -7,6 +7,7 @@
         xmlns:main="clr-namespace:MC_BSR_S2_Calculator.MainColumn"
         xmlns:player="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
         xmlns:view="clr-namespace:MC_BSR_S2_Calculator.ViewColumn"
+        xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
         mc:Ignorable="d"
         Title="MC:BSR-S2 Calculator" 
         Height="700" 
@@ -51,7 +52,7 @@
             <TextBlock x:Name="MainTitle" Grid.Column="1" Grid.Row="0" Text="Content" Style="{StaticResource MainTitle}"/>
             <Border x:Name="MainBorder" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" BorderBrush="#FFE4E7F1" BorderThickness="3" Margin="0,0,5,0"/>
             <main:MainColumn x:Name="MainColumnControl" Grid.Column="1" Grid.Row="1" Margin="3,0,8,3"/>
-
+            
             <!-- ViewColumn -->
             <TextBlock x:Name="ViewTitle" Grid.Column="2" Grid.Row="0" Text="Updates" Style="{StaticResource MainTitle}"/>
             <Border x:Name="ViewBorder" Grid.Column="4" Grid.Row="0" Grid.RowSpan="2" BorderBrush="#FFE4E7F1" BorderThickness="3"/>

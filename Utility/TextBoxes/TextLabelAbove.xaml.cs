@@ -86,6 +86,11 @@ namespace MC_BSR_S2_Calculator.Utility {
                     return true; // assume textboxes are always valid
                 }
             }
+            set {
+                if (TextBoxInput is ColorValidatedTextBox colorTextBox) {
+                    colorTextBox.IsValid = value;
+                } // does nothing if not color validated text box
+            }
         }
 
         public event EventHandler<BoolEventArgs>? ValidityChanged;
@@ -153,5 +158,6 @@ namespace MC_BSR_S2_Calculator.Utility {
         }
 
         #endregion
+        
     }
 }

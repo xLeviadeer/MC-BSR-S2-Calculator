@@ -1,0 +1,72 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility">
+
+    <Style TargetType="{x:Type util:ChargingButton}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="1,0,1,0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="IsHitTestVisible" Value="True"/>
+        <Setter Property="IsEnabled" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type util:ChargingButton}">
+                    <Grid>
+                        <Border x:Name="BackgroundBorder" 
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"/>
+                        <Rectangle x:Name="ChargeRectangle"
+                                Fill="{Binding ChargingColor, RelativeSource={RelativeSource TemplatedParent}}"
+                                Margin="{TemplateBinding BorderThickness}"
+                                HorizontalAlignment="Left"
+                                Width="0"
+                                VerticalAlignment="Stretch"
+                                Height="Auto"/>
+                        <Rectangle x:Name="HoverRectangle"
+                                Margin="{TemplateBinding BorderThickness}"
+                                HorizontalAlignment="Stretch"
+                                Width="Auto"
+                                VerticalAlignment="Stretch"
+                                Height="Auto"/>
+                        <Border x:Name="OutlineBorder" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"/>
+                        <ContentPresenter x:Name="ClickPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Margin="{TemplateBinding Padding}"/>
+                        <Border x:Name="DisabledBorder" 
+                                Background="Transparent"
+                                Padding="{TemplateBinding Padding}"/>
+                    </Grid>
+                    
+                    <!-- button hover color change -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HoverRectangle" Property="Fill" Value="{Binding HoverColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="HoverRectangle" Property="Fill" Value="{Binding ClickColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="DisabledBorder" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{x:Static util:ColorResources.DisabledOverlayColor}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

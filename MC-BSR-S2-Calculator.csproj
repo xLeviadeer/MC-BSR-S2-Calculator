@@ -22,4 +22,8 @@
 		<Resource Include="Resources\Blank.ico" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Themes\" />
+	</ItemGroup>
+
 </Project>
