@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
-             xmlns:global="clr-namespace:MC_BSR_S2_Calculator.Utility"
              xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:util_textboxes="clr-namespace:MC_BSR_S2_Calculator.Utility.TextBoxes"
+             xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
              xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
              xmlns:util_validations="clr-namespace:MC_BSR_S2_Calculator.Utility.Validations"
              mc:Ignorable="d"
@@ -37,7 +38,8 @@
         </Grid>
 
         <!-- AddGrid Layout -->
-        <Grid x:Name="AddGrid" Grid.Row="1" Margin="5">
+        <Grid x:Name="AddGrid" Grid.Row="1" Margin="5"
+              IsHitTestVisible="True" Focusable="True" Background="Transparent" MouseDown="OnMouseDown">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -48,11 +50,11 @@
             </Grid.ColumnDefinitions>
 
             <!-- AddGrid Content -->
-            <global:TextLabelAbove x:Name="PlayerInputBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
-                LabelText="Add Player" TextLabelAboveTextBoxType="StringTextBox" TextBoxMaxLength="{StaticResource PlayerNameMaxLength}" 
+            <util_labeledinputs:TextLabel x:Name="PlayerInputBox" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
+                LabelText="Add Player" LayoutMode="Above" TextBoxType="StringTextBox" TextBoxMaxLength="{StaticResource PlayerNameMaxLength}" 
                 ValidityChanged="OnPlayerInputBoxValidityChanged" KeyDownEnter="OnPlayerInputBoxKeyDownEnter" KeyUpEnter="OnPlayerInputBoxKeyUpEnter" PreviewTextInput="OnPlayerInputBoxTextInput" PreviewKeyDown="OnPlayerInputTextBoxKeyPressed"/>
             <util:ChargingButton x:Name="AddPlayerButton" Grid.Row="2" Grid.Column="1" 
-                Style="{StaticResource InputChargingButton}" Content="Add" FullyCharged="OnChargedAddPlayerButton"/>
+                Style="{StaticResource InputButton}" Content="Add" FullyCharged="OnChargedAddPlayerButton"/>
         </Grid>
     </Grid>
 </UserControl>

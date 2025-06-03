@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="MC_BSR_S2_Calculator.MainColumn.LandTracking.PropertyManager"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
+             xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:util_stringhelper="clr-namespace:MC_BSR_S2_Calculator.Utility.StringHelper"
+             xmlns:util_textboxes="clr-namespace:MC_BSR_S2_Calculator.Utility.TextBoxes"
+             xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             Height="Auto"
+             Width="Auto">
+
+    <UserControl.Resources>
+        <Style x:Key="TextLabeledInput" TargetType="util_labeledinputs:TextLabel">
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="4"/>
+            <Setter Property="FluidProportionsSplitIndex" Value="1"/>
+            <Setter Property="LayoutMode" Value="Left"/>
+        </Style>
+        <Style x:Key="ComboLabeledInput" TargetType="util_labeledinputs:ComboLabel">
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="4"/>
+            <Setter Property="FluidProportionsSplitIndex" Value="1"/>
+            <Setter Property="LayoutMode" Value="Left"/>
+        </Style>
+        <sys:Int32 x:Key="LastRow">7</sys:Int32>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="MainGrid" VerticalAlignment="Top"
+          IsHitTestVisible="True" Focusable="True" Background="Transparent" MouseDown="OnMouseDown"
+          PreviewKeyDown="OnKeyDown" PreviewKeyUp="OnKeyUp" PreviewTextInput="OnTextInput">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="12*" d:Width="50"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="5"/> <!-- GridSpacer margin row -->
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource SubTitle}"
+                   Text="Add New Property"/>
+            <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" 
+                      Height="3" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+
+            <!-- Name -->
+            <util_labeledinputs:TextLabel x:Name="NameInput" Grid.Row="2" Style="{StaticResource TextLabeledInput}"
+                                      LabelText="Name" TextBoxType="StringTextBox" TextBoxMaxLength="50"
+                                      ValidityChanged="NameInput_ValidityChanged"/>
+
+            <!-- Property Type -->
+            <util_labeledinputs:ComboLabel x:Name="PropertyTypeInput" Grid.Row="3" Style="{StaticResource ComboLabeledInput}"
+                                       LabelText="Property Type" ItemsSource="{util_stringhelper:CapitalizeWords List={x:Static local:Property.PlayerPropertyTypes}}"
+                                       SelectionChanged="PropertyTypeInput_SelectionChanged"/>
+
+            <util_labeledinputs:TextLabel x:Name="ResidentsCountInput" Grid.Row="4" Style="{StaticResource TextLabeledInput}"
+                                          LabelText="Number of Residents" TextBoxType="IntegerTextBox" TextBoxMaxLength="20" Visibility="Collapsed"
+                                          MaxInputFromTextLabel="100" MinInputFromTextLabel="1"
+                                          ValidityChanged="ResidentsCountInput_ValidityChanged"/>
+
+            <!-- Completion Buttons -->
+            <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"
+                             Content="Create Property"
+                             FullyCharged="OnCreateClicked"/>
+            <util:ChargingButton x:Name="ClearButton" Grid.Row="{StaticResource LastRow}" Grid.Column="2" Style="{StaticResource InputButton}"
+                             Content="Clear Form" ChargeTime="0.75" ColorPalette="Red"
+                             FullyCharged="OnClearClicked"/>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

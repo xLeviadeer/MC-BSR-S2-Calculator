@@ -542,20 +542,24 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             usePrimaryHeaderColor = !usePrimaryHeaderColor; // swap
             headerGrid.Children.Add(headerBorder);
 
-            // create textblock
-            var headerTextBlock = new TextBlock();
-            headerTextBlock.Text = header;
-            headerTextBlock.FontSize = HeaderHeight * 0.5;
-            headerTextBlock.Foreground = HeaderFontColor;
-            headerTextBlock.HorizontalAlignment = (headerHorizontalAlignment == HorizontalAlignment.Stretch) ? HorizontalAlignment.Center : headerHorizontalAlignment;
-            headerTextBlock.VerticalAlignment = (headerVerticalAlignment == VerticalAlignment.Stretch) ? VerticalAlignment.Center : VerticalAlignment;
-            headerTextBlock.Margin = new Thickness(
+            // create label
+            var headerLabel = new Label();
+            headerLabel.Content = header;
+            headerLabel.FontSize = HeaderHeight * 0.5;
+            headerLabel.Foreground = HeaderFontColor;
+            var horiAlign = (headerHorizontalAlignment == HorizontalAlignment.Stretch) ? HorizontalAlignment.Center : headerHorizontalAlignment;
+            headerLabel.HorizontalAlignment = horiAlign;
+            headerLabel.HorizontalContentAlignment = horiAlign;
+            var vertAlign = (headerVerticalAlignment == VerticalAlignment.Stretch) ? VerticalAlignment.Center : VerticalAlignment;
+            headerLabel.VerticalAlignment = vertAlign;
+            headerLabel.VerticalContentAlignment = vertAlign;
+            headerLabel.Margin = new Thickness(
                 HeaderBorderThickness.Left + HeaderMargin,
                 HeaderBorderThickness.Top + HeaderMargin,
                 HeaderBorderThickness.Right + HeaderMargin,
                 HeaderBorderThickness.Bottom + HeaderMargin
             );
-            headerGrid.Children.Add(headerTextBlock);
+            headerGrid.Children.Add(headerLabel);
 
             // return
             return headerGrid;

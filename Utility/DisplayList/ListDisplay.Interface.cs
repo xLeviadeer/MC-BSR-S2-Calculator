@@ -147,7 +147,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             } 
         }
 
-        // - Border Brush 
+        // - Border Brush -
 
         [Category("Brush")]
         [Description("Determines the border brush of the main Border")]
@@ -160,7 +160,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             nameof(MainBorderBrush),
             typeof(SolidColorBrush),
             typeof(ListDisplay<T>),
-            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(187, 187, 187)), OnMainBorderBrushPropertyChanged)
+            new PropertyMetadata(new SolidColorBrush(ColorResources.InnerBorderColor), OnMainBorderBrushPropertyChanged)
         );
 
         private static void OnMainBorderBrushPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {

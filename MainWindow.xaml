@@ -8,6 +8,7 @@
         xmlns:player="clr-namespace:MC_BSR_S2_Calculator.PlayerColumn"
         xmlns:view="clr-namespace:MC_BSR_S2_Calculator.ViewColumn"
         xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+        xmlns:util_textboxes="clr-namespace:MC_BSR_S2_Calculator.Utility.TextBoxes"
         mc:Ignorable="d"
         Title="MC:BSR-S2 Calculator" 
         Height="700" 
@@ -16,23 +17,13 @@
         MinWidth="900"
         FontFamily="Arial Round MT Bold"
         WindowStartupLocation="CenterScreen">
-    
-    <!-- Window Resources -->
-    <Window.Resources>
-        <Style x:Key="MainTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="10"/>
-        </Style>
-    </Window.Resources>
-    
+
     <!-- Window Layout \-->
     <Grid x:Name="MainGrid">
         <Grid x:Name="SectionsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="PlayerColumn" Width="*" MinWidth="240" MaxWidth="310"/>
-                <ColumnDefinition x:Name="MainColumn" Width="3*"/>
+                <ColumnDefinition x:Name="MainColumn" Width="3*" MinWidth="400"/>
                 <ColumnDefinition x:Name="ViewColumn" Width="*" MinWidth="260" MaxWidth="330"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>

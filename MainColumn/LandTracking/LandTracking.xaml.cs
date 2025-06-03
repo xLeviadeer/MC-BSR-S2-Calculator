@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -9,15 +12,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
-using MC_BSR_S2_Calculator.Utility.Identification;
-using MC_BSR_S2_Calculator.Utility.Json;
-using MC_BSR_S2_Calculator.Utility.Validations;
 
-namespace MC_BSR_S2_Calculator
-{
-    public partial class MainWindow : Window {
-        public MainWindow() {
+namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
+    /// <summary>
+    /// Interaction logic for LandTracking.xaml
+    /// </summary>
+    public partial class LandTracking : UserControl {
+        public LandTracking() {
             InitializeComponent();
         }
     }

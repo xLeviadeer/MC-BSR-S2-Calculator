@@ -3,28 +3,92 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator"
              xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:main="clr-namespace:MC_BSR_S2_Calculator.MainColumn"
+             xmlns:land="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <!-- Universal Label Padding Fix -->
+        <Style TargetType="Label">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        
+        <!-- Main Titles -->
+        <Style x:Key="MainTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+
+        <!-- Sub Titles -->
+        <Style x:Key="SubTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="7"/>
+        </Style>
+
         <!-- Text Box Height -->
         <sys:Double x:Key="TextBoxHeight">22.0</sys:Double>
+
+        <!-- Combo Box Height -->
+        <sys:Double x:Key="ComboBoxHeight">22.0</sys:Double>
 
         <!-- Button Height -->
         <sys:Double x:Key="ButtonHeight">22.0</sys:Double>
 
-        <!-- Input Button Margin -->
-        <Style x:Key="InputButton" TargetType="Button">
+        <!-- Input ButtonBase Margin -->
+        <Style x:Key="InputButton" TargetType="{x:Type ButtonBase}">
             <Setter Property="Margin" Value="3"/>
             <Setter Property="Height" Value="{StaticResource ButtonHeight}"/>
-        </Style>
-
-        <!-- Input ChargingButton Margin -->
-        <Style x:Key="InputChargingButton" TargetType="util:ChargingButton">
-            <Setter Property="Margin" Value="3"/>
-            <Setter Property="Height" Value="{StaticResource ButtonHeight}"/>
+            <Setter Property="FontSize" Value="12"/>
         </Style>
 
         <!-- Player Name Max Length -->
         <sys:Int32 x:Key="PlayerNameMaxLength">20</sys:Int32>
+        
+        <!-- Main Tab Height -->
+        <sys:Double x:Key="MainTabHeight">24.0</sys:Double>
+        
+        <!-- Main Tab Style -->
+        <Style x:Key="MainTabStyle" TargetType="TabItem">
+            <Setter Property="Height" Value="{StaticResource MainTabHeight}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- Main Tab Control Style -->
+        <Style x:Key="MainTabControlStyle" TargetType="TabControl">
+            <Setter Property="SelectedIndex" Value="0"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderColor}"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Sub Tab Height -->
+        <sys:Double x:Key="SubTabHeight">16.0</sys:Double>
+
+        <!-- Sub Tab Style -->
+        <Style x:Key="SubTabStyle" TargetType="TabItem">
+            <Setter Property="Height" Value="{StaticResource SubTabHeight}"/>
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+        
+        <!-- Sub Tab Control Style -->
+        <Style x:Key="SubTabControlStyle" TargetType="TabControl">
+            <Setter Property="SelectedIndex" Value="0"/>
+            <Setter Property="Margin" Value="-1,1,-1,-1"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderLightColor}"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

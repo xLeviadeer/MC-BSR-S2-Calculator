@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
-using static MC_BSR_S2_Calculator.Utility.TextLabelAbove;
 
 namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
 {

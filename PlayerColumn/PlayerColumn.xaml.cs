@@ -96,6 +96,11 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
             }
         }
 
+        // focus helper
+        private void OnMouseDown(object? sender, MouseButtonEventArgs args) {
+            PlayerInputBox.Element.Focus();
+        }
+
         // - mark all as inactive -
         public void OnMarkAllAsInactiveButtonClicked(object sender, RoutedEventArgs args) {
             foreach (var player in PlayersList.ClassDataList) {

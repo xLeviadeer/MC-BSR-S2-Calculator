@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -146,6 +147,27 @@ namespace MC_BSR_S2_Calculator.Utility {
             new PropertyMetadata(new SolidColorBrush(Color.FromArgb(255, 0, 255, 64)))
         );
 
+        // - Color Palette (override) -
+
+        public enum ChargingButtonColorPalettes {
+            Green,
+            Red
+        }
+
+        [Category("Brush")]
+        [Description("A pre-determined color palette choice; overrides ChargingColor and ChargedColor")]
+        public ChargingButtonColorPalettes ColorPalette {
+            get => (ChargingButtonColorPalettes)GetValue(ColorPaletteProperty);
+            set => SetValue(ColorPaletteProperty, value);
+        }
+
+        public static readonly DependencyProperty ColorPaletteProperty = DependencyProperty.Register(
+            nameof(ColorPalette),
+            typeof(ChargingButtonColorPalettes),
+            typeof(ChargingButton),
+            new PropertyMetadata(ChargingButtonColorPalettes.Green)
+        );
+
         // - Charge Time -
 
         [Category("Common")]
@@ -197,6 +219,27 @@ namespace MC_BSR_S2_Calculator.Utility {
             HoverRectangle.SizeChanged += (s, e) => {
                 double _ = HoverRectangle.ActualWidth;
             };
+
+            // apply Palette
+            ApplyPalette();
+        }
+
+        public void ApplyPalette() {
+            switch (ColorPalette) {
+                case ChargingButtonColorPalettes.Green:
+                    // default green already applied
+                    break;
+                case ChargingButtonColorPalettes.Red:
+                    // border/foreground colors
+                    BorderBrush = new SolidColorBrush(ColorResources.DarkeRedColor);
+                    Foreground = new SolidColorBrush(ColorResources.MediumRedColor);
+
+                    // charge colors
+                    ChargingColor = new SolidColorBrush(ColorResources.BrighterRedColor);
+                    ChargedColor = new SolidColorBrush(ColorResources.MediumRedColor);
+
+                    break;
+            }
         }
 
         static ChargingButton() {
