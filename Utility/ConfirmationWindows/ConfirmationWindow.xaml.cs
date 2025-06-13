@@ -125,8 +125,8 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             switch (useConfirmColor.ToLower()) {
                 case "red":
                     // set colors
-                    ConfirmButton.BorderBrush = new SolidColorBrush(ColorResources.DarkeRedColor);
-                    ConfirmButton.Foreground = new SolidColorBrush(ColorResources.MediumRedColor);
+                    ConfirmButton.BorderBrush = new SolidColorBrush(ColorResources.DarkerRedColor);
+                    ConfirmButton.Foreground = new SolidColorBrush(ColorResources.MediumerRedColor);
 
                     // set charging settings
                     if (ConfirmButton is ChargingButton confirmChargingButton) {

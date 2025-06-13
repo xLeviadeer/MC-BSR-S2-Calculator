@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MC_BSR_S2_Calculator.Utility.ConfirmationWindows"
+        xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
         mc:Ignorable="d"
         Title="Please Confirm" 
         SizeToContent="WidthAndHeight"
@@ -31,7 +32,11 @@
         <Grid Margin="3">
             <!-- Main Content -->
             <Border x:Name="OuterBorder"
-                BorderThickness="3" BorderBrush="#FFDCDFE7"/>
+                BorderThickness="3">
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </Border.BorderBrush>
+            </Border>
             <Grid x:Name="OuterGrid" Margin="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

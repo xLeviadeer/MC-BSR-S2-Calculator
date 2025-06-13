@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="MC_BSR_S2_Calculator.Utility.CoordinateInput"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
+             xmlns:util_xamlconverters="clr-namespace:MC_BSR_S2_Calculator.Utility.XamlConverters"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             mc:Ignorable="d" 
+             Height="Auto"
+             Width="Auto">
+
+    <UserControl.Resources>
+        <Style TargetType="util_labeledinputs:TextLabel">
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="FluidProportionsSplitIndex" Value="1"/>
+            <Setter Property="LayoutMode" Value="Left"/>
+            <Setter Property="TextBoxType" Value="IntegerTextBox"/>
+            <Setter Property="TextBoxMaxLength" Value="50"/>
+            <Setter Property="HightlightUponTabFromTextLabel" Value="True"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="MainGrid" d:Width="200">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <!-- Name -->
+        <TextBlock x:Name="TitleLabel" Grid.Row="0" Margin="3,3,3,0" TextWrapping="Wrap"
+            Text="{Binding DisplayName}" FontSize="12"/>
+
+        <!-- Coordinate Input -->
+        <Border Grid.Row="1" Margin="3" Padding="1"
+                BorderThickness="2">
+            <Border.BorderBrush>
+                <SolidColorBrush Color="{x:Static local:ColorResources.InnerBorderVeryLightColor}"/>
+            </Border.BorderBrush>
+            
+            <Grid x:Name="InputsGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <util_labeledinputs:TextLabel x:Name="XInput" Grid.Row="0"
+                                      LabelText="X" Visibility="{Binding ShowXInputVisibility}"
+                                      ValidityChanged="XInput_ValidityChanged"/>
+                <util_labeledinputs:TextLabel x:Name="YInput" Grid.Row="1"
+                                      LabelText="Y" Visibility="{Binding ShowYInputVisibility}"
+                                      ValidityChanged="YInput_ValidityChanged"/>
+                <util_labeledinputs:TextLabel x:Name="ZInput" Grid.Row="2"
+                                      LabelText="Z" Visibility="{Binding ShowZInputVisibility}"
+                                      ValidityChanged="ZInput_ValidityChanged"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -5,13 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
              xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
-             xmlns:util_stringhelper="clr-namespace:MC_BSR_S2_Calculator.Utility.StringHelper"
+             xmlns:util_stringhelper="clr-namespace:MC_BSR_S2_Calculator.Utility.XamlConverters"
              xmlns:util_textboxes="clr-namespace:MC_BSR_S2_Calculator.Utility.TextBoxes"
              xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
              mc:Ignorable="d" 
              Height="Auto"
-             Width="Auto">
+             Width="Auto" d:Width="500">
 
     <UserControl.Resources>
         <Style x:Key="TextLabeledInput" TargetType="util_labeledinputs:TextLabel">
@@ -26,7 +27,7 @@
             <Setter Property="FluidProportionsSplitIndex" Value="1"/>
             <Setter Property="LayoutMode" Value="Left"/>
         </Style>
-        <sys:Int32 x:Key="LastRow">7</sys:Int32>
+        <sys:Int32 x:Key="LastRow">11</sys:Int32>
     </UserControl.Resources>
 
     <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
@@ -34,14 +35,19 @@
           IsHitTestVisible="True" Focusable="True" Background="Transparent" MouseDown="OnMouseDown"
           PreviewKeyDown="OnKeyDown" PreviewKeyUp="OnKeyUp" PreviewTextInput="OnTextInput">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*"/>
-                <ColumnDefinition Width="12*" d:Width="50"/>
+                <ColumnDefinition Width="7*"/>
+                <ColumnDefinition Width="12*"/>
                 <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="100"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="5"/> <!-- GridSpacer margin row -->
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="3"/> <!-- GridSpacer margin row -->
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -68,10 +74,30 @@
                                        LabelText="Property Type" ItemsSource="{util_stringhelper:CapitalizeWords List={x:Static local:Property.PlayerPropertyTypes}}"
                                        SelectionChanged="PropertyTypeInput_SelectionChanged"/>
 
+            <!-- Number of Residents -->
             <util_labeledinputs:TextLabel x:Name="ResidentsCountInput" Grid.Row="4" Style="{StaticResource TextLabeledInput}"
                                           LabelText="Number of Residents" TextBoxType="IntegerTextBox" TextBoxMaxLength="20" Visibility="Collapsed"
                                           MaxInputFromTextLabel="100" MinInputFromTextLabel="1"
                                           ValidityChanged="ResidentsCountInput_ValidityChanged"/>
+
+            <!-- Property Sections -->
+            <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
+                       Text="Property Sections"/>
+            <GridSplitter Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" 
+                          Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+            <util:ControlStack x:Name="PropertySections" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="4"
+                               ItemsSource="{Binding Sections}"/>
+            <util_labeledinputs:ResultDisplay x:Name="TotalMetricResult" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="4" LayoutMode="LeftFit"
+                                              LabelText="Total Metric" DefaultResult="At least one section was invalid"/>
+            <Label x:Name="RemainingSectionsDisplay" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3"
+                   HorizontalContentAlignment="Right" VerticalAlignment="Center" Foreground="Gray"/>
+            <Button x:Name="AddPropertySectionButton" Grid.Row="9" Grid.Column="3" Style="{StaticResource InputButton}"
+                    Content="Add Section"
+                    Click="AddPropertySectionButton_Click"/>
 
             <!-- Completion Buttons -->
             <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"

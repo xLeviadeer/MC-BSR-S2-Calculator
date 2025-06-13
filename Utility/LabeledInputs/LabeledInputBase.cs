@@ -21,6 +21,8 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         // --- VARIABLES ---
         #region VARIABLES
 
+        private const double LeftFitMargin = 3.0;
+
         // - LabelText -
 
         [Category("Common")]
@@ -66,7 +68,8 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         public enum LabeledInputBaseLayoutModes {
             Above,
-            Left
+            Left,
+            LeftFit
         }
 
         private LabeledInputBaseLayoutModes? OriginalLayoutMode { get; set; }
@@ -110,7 +113,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             bool isClipped = (bool)args.NewValue;
 
             // update layout mode (only if started as left)
-            if (control.OriginalLayoutMode != LabeledInputBaseLayoutModes.Above) {
+            if (control.OriginalLayoutMode == LabeledInputBaseLayoutModes.Left) {
                 control.LayoutMode = isClipped ? LabeledInputBaseLayoutModes.Above : LabeledInputBaseLayoutModes.Left;
             }
         }
@@ -161,7 +164,6 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             Width = double.NaN;
 
             // label settings
-            TextLabel.Margin = new Thickness(3, 3, 3, 0);
             TextLabel.Content = LabelText;
 
             // add main grid
@@ -174,11 +176,16 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             MainGrid.RowDefinitions.Clear();
             MainGrid.ColumnDefinitions.Clear();
 
+            // regardless
+            TextLabel.HorizontalAlignment = HorizontalAlignment.Left;
+            TextLabel.VerticalAlignment = VerticalAlignment.Center;
+
             // -- above layout mode --
 
             if (LayoutMode == LabeledInputBaseLayoutModes.Above) {
                 // label font size
                 TextLabel.FontSize = 11;
+                TextLabel.Margin = new Thickness(3, 3, 3, 0);
 
                 // main grid divisions
                 MainGrid.RowDefinitions.Add(new RowDefinition() {
@@ -189,58 +196,107 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 // label to grid
                 MainGrid.Children.Add(TextLabel);
                 Grid.SetRow(TextLabel, 0);
+                Grid.SetColumn(TextLabel, 0);
+
+                // set column span to label if parent is grid
+                if (
+                    (this.Parent is Grid parent)
+                    && (parent.ColumnDefinitions.Count > 0)
+                ) {
+                    Grid.SetColumnSpan(TextLabel, parent.ColumnDefinitions.Count);
+                }
 
                 // text box to grid
                 MainGrid.Children.Add(Element);
                 Grid.SetRow(Element, 1);
-            }
+                Grid.SetColumn(Element, 0);
 
-            // -- left layout mode --
+                // dont generate standard
+                return;
 
-            if (LayoutMode == LabeledInputBaseLayoutModes.Left) {
+            // -- left or fit layout mode --
+
+            } else {
                 // label positioning and font
-                TextLabel.HorizontalAlignment = HorizontalAlignment.Left;
-                TextLabel.VerticalAlignment = VerticalAlignment.Center;
                 TextLabel.FontSize = 12;
+                TextLabel.Margin = new Thickness(3, 3, 3, 3);
 
                 // add to main grid
                 MainGrid.Children.Add(TextLabel);
                 MainGrid.Children.Add(Element);
 
-                // - yes parent grid -
-                if (
-                    (FluidProportionsSplitIndex != -1)
-                    && (this.Parent is Grid parent)
-                ) { // if parent is a grid
-                    // get starting and ending pos
-                    int startingPos = Grid.GetColumn(this);
-                    int endingPos = startingPos + Grid.GetColumnSpan(this);
+                // - left layout mode -
 
-                    // if parent has at least 2 columns
-                    if ((endingPos - startingPos) < 2) { goto generate_standardly; }
+                if (LayoutMode == LabeledInputBaseLayoutModes.Left) {
 
-                    // out of bounds check
-                    if (FluidProportionsSplitIndex >= parent.ColumnDefinitions.Count) {
-                        throw new IndexOutOfRangeException("the FluidProportionsSplitIndex was greater or equal to the amount of columns");
+                    // - yes parent grid -
+                    if (
+                        (FluidProportionsSplitIndex != -1)
+                        && (this.Parent is Grid parent)
+                    ) { // if parent is a grid
+                        // get starting and ending pos
+                        int startingPos = Grid.GetColumn(this);
+                        int endingPos = startingPos + Grid.GetColumnSpan(this);
+
+                        // if parent has at least 2 columns
+                        if ((endingPos - startingPos) < 2) { goto generate_standardly; }
+
+                        // out of bounds check
+                        if (FluidProportionsSplitIndex >= parent.ColumnDefinitions.Count) {
+                            throw new IndexOutOfRangeException("the FluidProportionsSplitIndex was greater or equal to the amount of columns");
+                        }
+
+                        // duplicate the grid structure to main grid
+                        for (int i = startingPos; i < endingPos; i++) {
+                            ColumnDefinition currColumn = parent.ColumnDefinitions[i];
+                            MainGrid.ColumnDefinitions.Add(new ColumnDefinition() {
+                                Width = currColumn.Width
+                            });
+                        }
+
+                        // placing
+                        Grid.SetColumn(TextLabel, startingPos);
+                        Grid.SetColumnSpan(TextLabel, FluidProportionsSplitIndex);
+                        Grid.SetColumn(Element, FluidProportionsSplitIndex);
+                        Grid.SetColumnSpan(Element, endingPos);
+
+                        // dont generate standard
+                        return;
                     }
+                }
 
-                    // duplicate the grid structure to main grid
-                    for (int i = startingPos; i < endingPos; i++) {
-                        ColumnDefinition currColumn = parent.ColumnDefinitions[i];
-                        MainGrid.ColumnDefinitions.Add(new ColumnDefinition() {
-                            Width = currColumn.Width
-                        });
-                    }
+                // - left fit layout mode -
+
+                if (LayoutMode == LabeledInputBaseLayoutModes.LeftFit) {
+                    // add column of fitting spacing 
+                    MainGrid.ColumnDefinitions.Add(new ColumnDefinition() {
+                        Width = new GridLength(
+                            (
+                                GetLabelDesiredWidth(TextLabel)
+                                + TextLabel.Margin.Left 
+                                + TextLabel.Margin.Right
+                                + LeftFitMargin
+                            ), 
+                            GridUnitType.Pixel
+                        )
+                    });
+
+                    // add fill column
+                    MainGrid.ColumnDefinitions.Add(new ColumnDefinition() {
+                        Width = new GridLength(
+                            1,
+                            GridUnitType.Star
+                        )
+                    });
 
                     // placing
-                    Grid.SetColumn(TextLabel, startingPos);
-                    Grid.SetColumnSpan(TextLabel, FluidProportionsSplitIndex);
-                    Grid.SetColumn(Element, FluidProportionsSplitIndex);
-                    Grid.SetColumnSpan(Element, endingPos);
+                    Grid.SetColumn(TextLabel, 0);
+                    Grid.SetColumn(Element, 1);
 
                     // dont generate standard
                     return;
                 }
+            }
 
             // - no parent grid -
             generate_standardly:
@@ -256,18 +312,18 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 Grid.SetColumn(TextLabel, 0);
                 Grid.SetColumn(Element, 1);
             }
-        }
 
         #endregion
 
         // --- CLIP CHECKING ---
+        #region CLIP CHECKING
 
         private void CheckClipping() {
             // ensure layout has completed
             if (
                 (!IsLoaded) 
                 || (TextLabel.ActualWidth == 0)
-                || (OriginalLayoutMode == LabeledInputBaseLayoutModes.Above)
+                || (OriginalLayoutMode != LabeledInputBaseLayoutModes.Left)
                 || (FluidProportionsSplitIndex == -1) // non-fluid proportions can't format change based on clipping
             ) {
                 return;
@@ -296,8 +352,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         private static double GetLabelDesiredWidth(Label label) {
             // do nothing is not valid
             if (
-                (label.ActualWidth == 0)
-                || (label.Content == null)
+                (label.Content == null)
                 || (
                     (label.Content is string)
                     && (string.IsNullOrWhiteSpace((string)label.Content))
@@ -331,5 +386,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             // return width
             return formattedText.Width;
         }
+
+        #endregion
     }
 }

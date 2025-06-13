@@ -1,0 +1,78 @@
+﻿<UserControl x:Class="MC_BSR_S2_Calculator.MainColumn.LandTracking.PropertySection"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
+             xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
+             xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             mc:Ignorable="d" 
+             Height="Auto"
+             Width="Auto">
+    
+    
+    <Border x:Name="MainBorder" VerticalAlignment="Top" Margin="6"
+            BorderThickness="2">
+        <Border.BorderBrush>
+            <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+        </Border.BorderBrush>
+            
+        <Grid x:Name="MainGrid" Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="3"/> <!-- Margin Space -->
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock x:Name="TitleText" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource MiniTitle}" HorizontalAlignment="Stretch"
+                       TextWrapping="Wrap"/>
+            <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                          Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+
+            <!-- Name -->
+            <util_labeledinputs:TextLabel x:Name="SectionName" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" LayoutMode="LeftFit"
+                                                LabelText="Section Name" TextBoxType="StringTextBox" TextBoxMaxLength="50"
+                                                ValidityChanged="SectionName_ValidityChanged" TextChanged="SectionName_TextChanged"/>
+
+            <!-- Coordinate Input -->
+            <util:CoordinateInput x:Name="CoordinateInputCornerA" Grid.Row="3" Grid.Column="0"
+                                  NameExtension="Corner A"
+                                  ShowYInput="False"
+                                  ValidityChanged="CoordinateInputCornerA_ValidityChanged" CoordinatesChanged="CalculateAndDisplayMetric"/>
+            <util:CoordinateInput x:Name="CoordinateInputCornerB" Grid.Row="3" Grid.Column="1"
+                                  NameExtension="Corner B"
+                                  ShowYInput="False"
+                                  ValidityChanged="CoordinateInputCornerB_ValidityChanged" CoordinatesChanged="CalculateAndDisplayMetric"/>
+            
+            <!-- Grid for Result and Delete -->
+            <Grid x:Name="ResultAndDeleteGrid" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Display Metric -->
+                <util_labeledinputs:ResultDisplay x:Name="MetricResult" Grid.Column="0" LayoutMode="LeftFit"
+                                  LabelText="Section Metric" DefaultResult="Section doesn't meet minimum size requirements (5x5)"/>
+
+                <!-- Delete Button -->
+                <util:ChargingButton x:Name="DeleteButton" Grid.Column="1" Style="{StaticResource InputButton}"
+                                 Content="Delete Section" Width="100" HorizontalAlignment="Right" ColorPalette="Red" Visibility="{Binding ShowDeleteButtonVisibility}"
+                                 ChargeCycled="DeleteButton_ChargeCycled"/>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

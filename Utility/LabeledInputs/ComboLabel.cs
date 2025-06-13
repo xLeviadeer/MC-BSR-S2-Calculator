@@ -43,6 +43,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         public object SelectedItem {
             get => Element.SelectedItem;
+            set => Element.SelectedItem = value;
         }
 
         #endregion
@@ -63,7 +64,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             Element.HorizontalContentAlignment = HorizontalAlignment.Left;
             Element.VerticalContentAlignment = VerticalAlignment.Center;
             Element.Height = (double)Application.Current.Resources["ComboBoxHeight"];
-            Element.Margin = new Thickness(3, 1, 3, 3);
+            Element.Margin = new Thickness(3);
             Element.FontSize = 11;
 
             // event exposure

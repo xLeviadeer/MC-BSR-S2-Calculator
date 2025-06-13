@@ -231,12 +231,12 @@ namespace MC_BSR_S2_Calculator.Utility {
                     break;
                 case ChargingButtonColorPalettes.Red:
                     // border/foreground colors
-                    BorderBrush = new SolidColorBrush(ColorResources.DarkeRedColor);
-                    Foreground = new SolidColorBrush(ColorResources.MediumRedColor);
+                    BorderBrush = new SolidColorBrush(ColorResources.DarkerRedColor);
+                    Foreground = new SolidColorBrush(ColorResources.MediumerRedColor);
 
                     // charge colors
                     ChargingColor = new SolidColorBrush(ColorResources.BrighterRedColor);
-                    ChargedColor = new SolidColorBrush(ColorResources.MediumRedColor);
+                    ChargedColor = new SolidColorBrush(ColorResources.MediumerRedColor);
 
                     break;
             }

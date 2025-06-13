@@ -28,9 +28,17 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="7"/>
         </Style>
+        
+        <!-- Mini Titles -->
+        <Style x:Key="MiniTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
 
         <!-- Text Box Height -->
-        <sys:Double x:Key="TextBoxHeight">22.0</sys:Double>
+        <sys:Double x:Key="LabelHeight">22.0</sys:Double>
 
         <!-- Combo Box Height -->
         <sys:Double x:Key="ComboBoxHeight">22.0</sys:Double>

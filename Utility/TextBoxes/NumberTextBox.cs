@@ -352,7 +352,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
             }
 
             // base validation
-            base.Validate(sender, new());
+            base.Validate(this, new());
         }
 
         #endregion

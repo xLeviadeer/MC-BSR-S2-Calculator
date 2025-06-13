@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System.Windows.Media;
 using System.Security.Policy;
+using System.Diagnostics;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
     public class TextLabel : LabeledInputBase<TextBox> {
@@ -30,7 +31,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             nameof(TextBoxType),
             typeof(TextBoxTypes),
             typeof(TextLabel),
-            new PropertyMetadata(TextBoxTypes.TextBox)
+            new PropertyMetadata(TextBoxTypes.EnterTextBox)
         );
 
         // - TextBoxMaxLength -
@@ -91,6 +92,8 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         // - expose Text -
 
+        public event EventHandler<EventArgs>? TextChanged;
+
         public string Text {
             get => Element.Text;
             set => Element.Text = value;
@@ -122,6 +125,52 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             new PropertyMetadata(double.MaxValue)
         );
 
+        // - expose highlight upon tab -
+
+        public bool HightlightUponTabFromTextLabel {
+            get => (bool)GetValue(HightlightUponTabFromTextLabelProperty);
+            set => SetValue(HightlightUponTabFromTextLabelProperty, value);
+        }
+
+        public static readonly DependencyProperty HightlightUponTabFromTextLabelProperty = DependencyProperty.Register(
+            nameof(HightlightUponTabFromTextLabel),
+            typeof(bool),
+            typeof(TextLabel),
+            new PropertyMetadata(false)
+        );
+
+        // - expose highlight upon click -
+
+        public bool HighlightUponClickFromTextLabel {
+            get => (bool)GetValue(HighlightUponClickFromTextLabelProperty);
+            set => SetValue(HighlightUponClickFromTextLabelProperty, value);
+        }
+
+        public static readonly DependencyProperty HighlightUponClickFromTextLabelProperty = DependencyProperty.Register(
+            nameof(HighlightUponClickFromTextLabel),
+            typeof(bool),
+            typeof(TextLabel),
+            new PropertyMetadata(false)
+        );
+
+        // - input finalized exposure -
+
+        public event EventHandler<EventArgs>? InputFinalized;
+
+        // - expose value for number textboxes -
+        
+        /// <typeparam name="T"> The primitive type to try to cast to </typeparam>
+        /// <returns> A value of type T </returns>
+        public T? TryGetValue<T>()
+            where T : IParsable<T> {
+            if (Element is TypedTextBox<T> typedTextBox) {
+                var value = typedTextBox.Value;
+                if (value == null) { throw new NullReferenceException($"TypedTextBox's value was null"); }
+                return (T)value;
+            }
+            throw new NullReferenceException($"Element was not of type TypedTextBox<{typeof(T)}> ({Element.GetType()})");
+        }
+
         // - has been loaded -
 
         private bool HasBeenLoaded { get; set; } = false;
@@ -144,19 +193,24 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
             // create text box of specified type
             Element = TextBoxType switch {
-                TextBoxTypes.TextBox => new TextBox(),
+                TextBoxTypes.EnterTextBox => new EnterTextBox(),
                 TextBoxTypes.IntegerTextBox => new IntegerTextBox(),
                 TextBoxTypes.DoubleTextBox => new DoubleTextBox(),
                 TextBoxTypes.StringTextBox => new StringTextBox(),
                 _ => new TextBox()
             };
 
+            // text changed exposure
+            Element.TextChanged += (_, args) => {
+                TextChanged?.Invoke(this, args);
+            };
+
             // text box input settings
             Element.MaxLength = TextBoxMaxLength;
             Element.HorizontalContentAlignment = HorizontalAlignment.Left;
             Element.VerticalContentAlignment = VerticalAlignment.Center;
-            Element.Height = (double)Application.Current.Resources["TextBoxHeight"];
-            Element.Margin = new Thickness(3, 1, 3, 3);
+            Element.Height = (double)Application.Current.Resources["LabelHeight"];
+            Element.Margin = new Thickness(3);
             Element.FontSize = 11;
 
             // if the textbox is color validated, expose IsValid
@@ -173,12 +227,20 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 // expose event
                 enterTextBox.KeyDownEnter += (object? sender, KeyEventArgs args) => { this.KeyDownEnterInvoke(this, args); };
                 enterTextBox.KeyUpEnter += (object? sender, KeyEventArgs args) => { this.KeyUpEnterInvoke(this, args); };
+
+                // highlight settings
+                enterTextBox.HighlightUponTab = HightlightUponTabFromTextLabel;
+                enterTextBox.HighlightUponClick = HighlightUponClickFromTextLabel;
             }
 
             // if it's a number text box
             if (Element is NumberTextBox numberTextBox) {
+                // expose event
+                numberTextBox.InputFinalized += (_, args) => InputFinalized?.Invoke(this, args);
+
+                // numeric exposure
                 numberTextBox.MinInput = MinInputFromTextLabel;
-                numberTextBox.MaxInput = MaxInputFromTextLabel; 
+                numberTextBox.MaxInput = MaxInputFromTextLabel;
             }
 
             // apply layout mode

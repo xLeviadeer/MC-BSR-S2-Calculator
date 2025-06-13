@@ -19,6 +19,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using MC_BSR_S2_Calculator.Utility.XamlConverters;
 
 namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
@@ -220,35 +221,6 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         #region General
 
         /// <summary>
-        /// Attempts to find a ScrollBar from a parent
-        /// </summary>
-        /// <param name="parent"> The object to search for a ScrollBar </param>
-        /// <returns> A ScrollBar object </returns>
-        private static ScrollBar? FindVerticalScrollBar(DependencyObject parent) {
-
-            // get children amount
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-            if (childrenCount == 0) { return null; }
-
-            // for every child of the parent
-            for (int i = 0; i < childrenCount; i++) {
-
-                // check the child for a vertical scroll bar
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if ((child is ScrollBar sb) && (sb.Orientation == Orientation.Vertical))
-                    return sb;
-
-                // if the scroll bar wasn't directly found, then try recursing to find it
-                ScrollBar? scrollBar = FindVerticalScrollBar(child);
-                if (scrollBar != null) {
-                    return scrollBar;
-                }
-
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Changes the visibility and margin for the scrollbar and manages display max height when the layout is changed
         /// </summary>
         private void OnMainGridSizeChange(object? sender, EventArgs args) {
@@ -369,7 +341,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             // scroll bar settings
             Application.Current.Dispatcher.InvokeAsync(() => {
                 // find scroll bar
-                ScrollBar? scrollBar = FindVerticalScrollBar(MainScrollViewer);
+                ScrollBar? scrollBar = XamlConverter.FindVerticalScrollBar(MainScrollViewer);
                 if (scrollBar == null) { throw new ArgumentException($"MainScrollViewer didn't contain a ScrollBar"); }
 
                 // scroll width

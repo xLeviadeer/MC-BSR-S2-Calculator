@@ -25,7 +25,7 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
         private void AddTextBoxToGrid(TextBoxTypes textBoxType, int textBoxMaxLength) {
             // create text box of specified type
             TextBoxInput = textBoxType switch {
-                TextBoxTypes.TextBox => new TextBox(),
+                TextBoxTypes.EnterTextBox => new TextBox(),
                 TextBoxTypes.IntegerTextBox => new IntegerTextBox(),
                 TextBoxTypes.DoubleTextBox => new DoubleTextBox(),
                 TextBoxTypes.StringTextBox => new StringTextBox(),
@@ -71,7 +71,7 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
 
         public TextConfirmationWindow() 
             : base() {
-            AddTextBoxToGrid(TextBoxTypes.TextBox, 0);
+            AddTextBoxToGrid(TextBoxTypes.EnterTextBox, 0);
         }
 
         public TextConfirmationWindow(
@@ -81,7 +81,7 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             string descriptionText = "",
             string useConfirmColor = "",
             bool useChargingButton = false,
-            TextBoxTypes textBoxType = TextBoxTypes.TextBox,
+            TextBoxTypes textBoxType = TextBoxTypes.EnterTextBox,
             int textMaxLength = 0,
             bool startHighlighted = true,
             double? chargeTime = null

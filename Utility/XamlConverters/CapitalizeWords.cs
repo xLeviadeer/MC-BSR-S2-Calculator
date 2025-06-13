@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Markup;
 
-namespace MC_BSR_S2_Calculator.Utility.StringHelper {
+namespace MC_BSR_S2_Calculator.Utility.XamlConverters {
     public class CapitalizeWords : MarkupExtension {
         public string? Str { get; set; }
         public string[]? Arr { get; set; }
@@ -15,17 +15,17 @@ namespace MC_BSR_S2_Calculator.Utility.StringHelper {
         public override object ProvideValue(IServiceProvider serviceProvider) {
             // based on list or str
             if (Str != null) {
-                return StringHelper.CapitalizeWords(Str);
+                return XamlConverter.CapitalizeWords(Str);
             } else if (
                 (Arr != null)
                 && (Arr.Length > 0)
             ) {
-                return StringHelper.CapitalizeWords(Arr);
+                return XamlConverter.CapitalizeWords(Arr);
             } else if (
                 (List != null)
                 && (List.Count > 0)
             ) {
-                return StringHelper.CapitalizeWords(List);
+                return XamlConverter.CapitalizeWords(List);
             } else {
                 throw new ArgumentException("Str was not set");
             }

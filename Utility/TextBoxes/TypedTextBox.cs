@@ -14,6 +14,12 @@ using System.Windows.Input;
 using MC_BSR_S2_Calculator.Utility.Validations;
 
 namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
+
+    public class InputFinalizedEventArgs<T> : EventArgs {
+        public required T? OldValue { get; set; }
+        public required T? NewValue { get; set; }
+    }
+
     public abstract class TypedTextBox<T> : ColorValidatedTextBox 
         where T : IParsable<T> {
 
@@ -117,12 +123,24 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// </summary>
         private T? LastValue { get; set; }
 
+        /// <summary>
+        /// The last value the textbox had that was stable before the current value
+        /// </summary>
+        private T? LastStableValue { get; set; }
+
         // - LastText -
         
         /// <summary>
         /// The last text in the textbox that was successfully validated
         /// </summary>
         private string LastText { get; set; } = string.Empty;
+
+        // - InputFinalized Event -
+
+        /// <summary>
+        /// Runs when the input has been finalized; when losing focus or pressing enter or text changed depending on settings
+        /// </summary>
+        public event EventHandler<EventArgs>? InputFinalized;
 
         #endregion
 
@@ -135,16 +153,26 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         public TypedTextBox() {
             Loaded += Validate; // validate upon creation
 
+            // invoke helper
+            void InvokeInputFinalized(object? sender, EventArgs args) {
+                InputFinalized?.Invoke(this, new InputFinalizedEventArgs<T>() {
+                    OldValue = LastStableValue,
+                    NewValue = Value
+                });
+            }
+
             // set validation events
+            //    validate must always be set before the invoker because validation sets the last stable value
             switch (ValidationType) {
                 case ValidationTypes.Final:
-                    KeyDownEnter += (sender, args) => {
-                        Validate(sender, args);
-                    };
-                    LostFocus += Validate;
+                    KeyDownEnter += (_, args) => Validate(this, args);
+                    KeyDownEnter += (_, args) => InvokeInputFinalized(this, EventArgs.Empty);
+                    LostFocus += (_, args) => Validate(this, args);
+                    LostFocus += (_, args) => InvokeInputFinalized(this, EventArgs.Empty);
                     break;
                 case ValidationTypes.Constant:
-                    TextChanged += Validate;
+                    TextChanged += (_, args) => Validate(this, args);
+                    TextChanged += (_, args) => InvokeInputFinalized(this, EventArgs.Empty);
                     break;
             }
 
@@ -157,6 +185,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                 LastText = DefaultValue.ToString() ?? "";
             }
             LastValue = DefaultValue;
+            LastStableValue = DefaultValue;
         }
 
         #endregion
@@ -213,13 +242,13 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                     setLastvalues();
                     IsValid = false;
                     return;
-                } else {
-                    // set last values as defaults
-                    Value = default; // null
-                    setLastvalues();
-                    IsValid = true;
-                    return;
-                }
+                } //else {
+                //    // set last values as defaults
+                //    Value = default; // null
+                //    setLastvalues();
+                //    IsValid = true;
+                //    return;
+                //}
             }
 
             // validate type via parsing
@@ -235,6 +264,9 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                 IsValid = false;
                 return;
             }
+
+            // set last stable
+            LastStableValue = LastValue;
 
             // set last values to the current values
             setLastvalues();

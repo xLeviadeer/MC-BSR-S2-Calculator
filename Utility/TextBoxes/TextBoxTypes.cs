@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MC_BSR_S2_Calculator.Utility.TextBoxes
 {
     public enum TextBoxTypes {
-        TextBox,
+        EnterTextBox,
         IntegerTextBox,
         DoubleTextBox,
         StringTextBox
