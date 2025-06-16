@@ -68,6 +68,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public event EventHandler<EventArgs>? DeletionRequested;
 
+        // - Up Requested Event -
+
+        public event EventHandler<EventArgs>? MoveUpRequested;
+
+        // - Down Requested Event -
+
+        public event EventHandler<EventArgs>? MoveDownRequested;
+
         // - Metric Changed Event -
 
         public event EventHandler<EventArgs>? MetricChanged;
@@ -214,6 +222,15 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             DeletionRequested?.Invoke(this, args);
         }
 
+        private void DownButton_Click(object sender, RoutedEventArgs args) {
+            MoveDownRequested?.Invoke(this, args);
+        }
+
+        private void UpButton_Click(object sender, RoutedEventArgs args) {
+            MoveUpRequested?.Invoke(this, args);
+        }
+
         #endregion
+
     }
 }

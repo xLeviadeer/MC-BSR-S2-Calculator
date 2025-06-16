@@ -50,6 +50,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public event EventHandler<BoolEventArgs>? ValidityChanged;
 
+        // - Has Been Loaded -
+
+        private bool HasBeenLoaded { get; set; } = false;
+
         #endregion
 
         // --- CONSTRUCTOR ---
@@ -61,7 +65,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             // assign Sections and deletion events
             Loaded += (_, __) => {
-                ResetSections();
+                if (!HasBeenLoaded) {
+                    ResetSections();
+                    HasBeenLoaded = true;
+                }
 
                 // try to add margin to scroll bar
                 var scrollBar = XamlConverter.FindVerticalScrollBar(MainScrollViewer);

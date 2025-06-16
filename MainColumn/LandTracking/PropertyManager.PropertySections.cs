@@ -1,17 +1,19 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.Validations;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MC_BSR_S2_Calculator.Utility.Validations;
-using System.Windows.Controls;
-using System.Collections.ObjectModel;
-using System.Windows;
-using System.Diagnostics;
-using System.Windows.Threading;
 using System.Threading.Tasks.Dataflow;
-using MC_BSR_S2_Calculator.Utility;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Threading;
+using System.Xml.Linq;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public partial class PropertyManager : UserControl, IValidityHolder {
@@ -32,41 +34,69 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - check sections overlap -
 
-        private string GetSectionIntersectionInvalidityMessage(int propertySectionIndex) {
-            string name = Sections[propertySectionIndex].SectionName.Text;
-            return $"This section intersects with section {(string.IsNullOrWhiteSpace(name) ? $"at index {propertySectionIndex}" : $"\"{name}\"")}";
+        private enum PropertySectionErrorTypes {
+            None = 0,
+            Spacing = 1,
+            Area = 2,
+            AtLeastOneValid = 3,
+            Intersection = 4,
+            Size = 5
         }
 
-        private void CheckSectionsOverlap(int? checkForIndex = null) {
-            // only runs if there's 2 or more sections
-            bool onlyRunSizeChecks = false;
-            if (Sections.Count <= 1) {
-                // set valid to true
-                if (Sections.Count == 1) {
-                    Sections[0].IsValidByConstraints = true;
-                }
+        private int GetPropertySectionErrorPriority(PropertySectionErrorTypes errorType) {
+            return (int)errorType;
+        }
 
-                // return
-                onlyRunSizeChecks = true;
+        private string GetSectionIntersectionInvalidityMessage(int propertySectionIndex) {
+            string name = Sections[propertySectionIndex].SectionName.Text;
+            return $"This section intersects with section {
+                (string.IsNullOrWhiteSpace(name) 
+                ? $"at index {propertySectionIndex}" 
+                : $"\"{name}\"")
+            }";
+        }
+
+        private void SetSectionErrorMessage(int propertySectionindex, bool doSet, string message) {
+            PropertySection section = Sections[propertySectionindex];
+
+            if (doSet) {
+                // override normal result text
+                section.MetricResult.Result = message;
+
+                // coloring
+                section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.BrightRedColor);
+                section.MetricResult.ResultForeground = new SolidColorBrush(ColorResources.RedColor);
+            } else {
+                section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerBorderVeryLightColor);
+                section.MetricResult.ResultForeground = new SolidColorBrush(Colors.Black);
             }
+        }
 
-            // holds an array of "sections" where each "section" is a HashSet containing a list of "section" indexes correlated with the already checked sections
-            var defaultFoundStates = Enumerable.Repeat(true, Sections.Count).ToArray(); // true array of sections.count length
+        private void CheckSectionsOverlap() {
+            // array (length of sections) of tuples
+            // which contains the error type found by other checks of highest priority
+            // and the index (in Sections) which this error occured at
+            var errorsBySection = new (PropertySectionErrorTypes error, int index)[Sections.Count];
 
-            // helper for setting error messages
-            void setSectionErrorMessage(int propertySectionindex, bool doSet, string message) {
-                PropertySection section = Sections[propertySectionindex];
+            // array (length of sections)
+            // which contains hashsets
+            // which contain a list of indexes which have already been checked
+            var alreadyChecked = new HashSet<int>[Sections.Count];
 
-                if (doSet) {
-                    // override normal result text
-                    section.MetricResult.Result = message;
+            void checkSectionForMinSize(int propertySectionIndex) {
+                PropertySection section = Sections[propertySectionIndex];
+                const int minSize = 5;
 
-                    // coloring
-                    section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.BrightRedColor);
-                    section.MetricResult.ResultForeground = new SolidColorBrush(ColorResources.RedColor);
-                } else {
-                    section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerBorderVeryLightColor);
-                    section.MetricResult.ResultForeground = new SolidColorBrush(Colors.Black);
+                // check height and width
+                if (
+                    (section.MetricX < minSize)
+                    || (section.MetricZ < minSize)
+                ) {
+                    // set error
+                    errorsBySection[propertySectionIndex] = (
+                        PropertySectionErrorTypes.Size, 
+                        propertySectionIndex
+                    );
                 }
             }
 
@@ -92,179 +122,208 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 }
             }
 
-            // function for checking a square against other squares
-            (bool, string) checkSectionForPerimeterSharing(int propertySectionIndex) {
-                // get the section
+            // function for checking a square against other squares for intersection, area and spacing
+            void checkSectionForPerimeterSharing(int propertySectionIndex) {
+                // returning from this function means holding whatever validity state was determined in the size check
+                // error priorities are as follows
+                // - intersect : immediate return
+                // - area : still checks intersections
+                // - spacing : still checks area and intersect
+                // - none : all checks
+                // error priority is found from the enum position
+                // - higher error priority is more restrictive
+                // - lower error priority is less restrictive
+
+                // section reference
                 PropertySection section = Sections[propertySectionIndex];
+                int errorPriority = GetPropertySectionErrorPriority(errorsBySection[propertySectionIndex].error);
 
-                // tracking variables (flags basically)
-                string errorMessage = "";
-                bool foundAtLeastOneSpacingError = false;
-                bool foundAtLeastOneValidConnection = false;
+                // don't run if there's not enough sections
+                if (Sections.Count <= 1) { return; }
 
-                // get coordinates for section
-                int aMinX = getEdge(section, getMax: false, getFromZAxis: false);
-                int aMaxX = getEdge(section, getMax: true, getFromZAxis: false);
-                int aMinZ = getEdge(section, getMax: false, getFromZAxis: true);
-                int aMaxZ = getEdge(section, getMax: true, getFromZAxis: true);
+                // don't run if the error priority is an intersection or more
+                if (errorPriority >= GetPropertySectionErrorPriority(PropertySectionErrorTypes.Intersection)) { return; }
 
                 // for every other section which hasn't already been checked
                 for (int i = 0; i < Sections.Count; i++) {
+                    // set the alreadyChecked hashmap if not set
+                    if (alreadyChecked[i] is null) {
+                        alreadyChecked[i] = new();
+                    }
+
+                    // skip if attempting to check against self
+                    // skip if already checked
+                    if (
+                        (i == propertySectionIndex)
+                        || alreadyChecked[propertySectionIndex].Contains(i)
+                    ) { continue; }
+
+                    // re-assess error priority
+                    errorPriority = GetPropertySectionErrorPriority(errorsBySection[propertySectionIndex].error);
+
+                    // section reference
                     PropertySection againstSection = Sections[i];
 
-                    // don't run if the section combo has already been checked
-                    if (i == propertySectionIndex) { continue; }
+                    // helper for setting errorsBySection
+                    void SetError(PropertySectionErrorTypes errorType) {
+                        errorsBySection[propertySectionIndex] = (
+                            errorType,
+                            propertySectionIndex
+                        );
+                        errorsBySection[i] = (
+                            errorType,
+                            i
+                        );
+                    }
 
-                    // - get the intersection space - 
+                    // - get coordinates for box c - 
+                    // checks for (indirect) spacing errors
 
                     // check x
-                    int left = Math.Max(
-                        aMinX,
-                        getEdge(againstSection, getMax: false, getFromZAxis: false) // bMinX
+                    int cLeft = Math.Max(
+                        getEdge(section, getMax: false, getFromZAxis: false), // a left
+                        getEdge(againstSection, getMax: false, getFromZAxis: false) // b left
                     );
-                    int right = Math.Min( 
-                        aMaxX,
-                        getEdge(againstSection, getMax: true, getFromZAxis: false) // bMaxX
+                    int cRight = Math.Min(
+                        getEdge(section, getMax: true, getFromZAxis: false), // a right
+                        getEdge(againstSection, getMax: true, getFromZAxis: false) // b right
                     );
-                    if ( // bounds less than 0 (not touching)
-                        !foundAtLeastOneValidConnection
-                        && (right < left)
-                    ) { goto spacing_error; }
-
+                    if (cRight < cLeft) { // spacing error
+                        if (errorPriority <= GetPropertySectionErrorPriority(PropertySectionErrorTypes.None)) { // if spacing errors are in priority
+                            goto spacing_error;
+                        } else { // spacing errors are not in priority
+                            continue;
+                        }
+                    } 
+                    
                     // check z
-                    int bottom = Math.Max( 
-                        aMinZ,
-                        getEdge(againstSection, getMax: false, getFromZAxis: true) // bMinZ
+                    int cBottom = Math.Max(
+                        getEdge(section, getMax: false, getFromZAxis: true), // a bottom
+                        getEdge(againstSection, getMax: false, getFromZAxis: true) // b bottom
                     );
-                    int top = Math.Min( 
-                        aMaxZ,
-                        getEdge(againstSection, getMax: true, getFromZAxis: true) // bMaxZ
+                    int cTop = Math.Min(
+                        getEdge(section, getMax: true, getFromZAxis: true), // a top
+                        getEdge(againstSection, getMax: true, getFromZAxis: true) // b top
                     );
-                    if ( // bounds less than 0 (not touching)
-                        !foundAtLeastOneValidConnection
-                        && (top < bottom)
-                    ) { goto spacing_error; }
+                    if (cTop < cBottom) { // spacing error
+                        if (errorPriority <= GetPropertySectionErrorPriority(PropertySectionErrorTypes.None)) { // if spacing errors are in priority
+                            goto spacing_error;
+                        } else { // spacing errors are not in priority
+                            continue;
+                        }
+                    }
 
-                    // find the intersection square dimensions
-                    int width = Math.Abs(right - left) + 1;
-                    int height = Math.Abs(top - bottom) + 1; 
-                    if ((width > 1) && (height > 1)) { // intersecting
-                        // set regardless of sections.count
-                        defaultFoundStates[propertySectionIndex] = false;
-                        defaultFoundStates[i] = false;
-                        errorMessage = GetSectionIntersectionInvalidityMessage(i);
+                    // get dimensions of box c
+                    int width = Math.Abs(cRight - cLeft) + 1;
+                    int height = Math.Abs(cTop - cBottom) + 1;
+
+                    // - check for intersection errors -
+
+                    // check intersection
+                    // must be less than intersection priority
+                    // aka equal to area or less because that's the total function scope
+                    if ((width > 1) && (height > 1)) {
+                        SetError(PropertySectionErrorTypes.Intersection);
                         section.IsInvalidByIntersection = true;
-                        continue;
-                    } else if ( // not touching 
-                        !foundAtLeastOneValidConnection
-                        && ((width < 2) && (height < 2))
-                    ) { goto spacing_error; } 
+                        alreadyChecked[i].Add(propertySectionIndex);
+                        return; // immediate return, highest priority
+                    } 
 
-                    // find area and verify perimeter length min requrirement
+                    // - check for area errors -
+
+                    // find area 
                     int area = Math.Max(height, width);
-                    if ( // perimeter share less than 3
-                        !foundAtLeastOneValidConnection
-                        && (area < 3)
-                    ) {
-                        defaultFoundStates[propertySectionIndex] = false;
-                        defaultFoundStates[i] = false;
-                        errorMessage = "This section doesn't share a perimeter of at least 3 with another section";
-                        section.IsInvalidByIntersection = false;
+
+                    // check area
+                    if (area < 3) {
+                        // check if area is in priority
+                        if (errorPriority <= GetPropertySectionErrorPriority(PropertySectionErrorTypes.Spacing)) {
+                            SetError(PropertySectionErrorTypes.Area);
+                            goto non_spacing_error;
+                        }
+
+                        // don't make further checks
                         continue;
                     }
 
-                    // found a valid connection
-                    foundAtLeastOneValidConnection = true;
+                    // - check for (direct) spacing errors -
+
+                    // check spacing
+                    if ((width < 2) && (height < 2)) {
+                        if (errorPriority <= GetPropertySectionErrorPriority(PropertySectionErrorTypes.None)) {
+                            goto spacing_error;
+                        }
+
+                        // don't make further checks
+                        continue;
+                    }
+
+                    // found a valid connection; don't run spacing error
+                    SetError(PropertySectionErrorTypes.AtLeastOneValid);
                     continue;
 
-                // continuation helper
+                // spacing errors
                 spacing_error:
-                    foundAtLeastOneSpacingError = true;
-                    errorMessage = "This section is not touching any other section";
+                    SetError(PropertySectionErrorTypes.Spacing);
                     section.IsInvalidByIntersection = false;
+
+                    // don't make further checks
+                    continue;
+
+                // non-spacing errors
+                non_spacing_error:
+                    // set against's alreadyChecked
+                    // self's alreadyChecked isn't set because we never recursively check this element again
+                    alreadyChecked[i].Add(propertySectionIndex);
+
+                    // isn't an intersection error
+                    section.IsInvalidByIntersection = false;
+
+                    // don't make further checks
                     continue;
                 }
-
-                // check for spacing error
-                // - if a spacing error was found but the section is otherwise valid, turn it to invalid
-                bool isValid = defaultFoundStates[propertySectionIndex];
-                if (!foundAtLeastOneValidConnection && defaultFoundStates[propertySectionIndex] && foundAtLeastOneSpacingError) {
-                    isValid = false;
-                }
-                
-                // update real validity
-                section.IsValidByConstraints = isValid;
-                return (!isValid, errorMessage);
             }
 
-            // function for checking if a square is at least 5 by 5
-            (bool, string) checkSectionForMinSize(int propertySectionIndex) {
-                PropertySection section = Sections[propertySectionIndex];
-                const int minSize = 5;
+            // check every section
+            for (int i = 0; i < Sections.Count; i++) {
+                PropertySection section = Sections[i];
 
-                // check height and width
-                bool doSet = false;
-                if (
-                    (section.MetricX < minSize)
-                    || (section.MetricZ < minSize)
-                ) {
-                    section.IsValidByConstraints = false;
-                    doSet = true;
+                // recalculate metric (clears error text)
+                if (Sections.Count > 1) {
+                    section.CalculateAndDisplayMetric();
+                } else if (Sections.Count == 1) {
+                    // set default to valid
+                    // because size check will only be ran anyway, which overrides this
+                    errorsBySection[0] = (
+                        PropertySectionErrorTypes.AtLeastOneValid,
+                        0
+                    );
                 }
 
-                return (doSet, section.MetricResult.DefaultResult);
-            }
+                // always run size checks (can set errorsBySection)
+                checkSectionForMinSize(i);
 
-            // check one section or check all of them
-            if (checkForIndex != null) {
-                bool doSet = false;
-                string message = "";
-                if (!onlyRunSizeChecks) {
-                    (doSet, message) = checkSectionForPerimeterSharing((int)checkForIndex);
-                }
-                (bool doSetFromMinSize, string messageFromMinSize) = checkSectionForMinSize((int)checkForIndex);
+                // perimeter check (can set errorsBySection)
+                checkSectionForPerimeterSharing(i);
 
-                // check do set override for min size
-                if (doSetFromMinSize) {
-                    message = messageFromMinSize;
-                    doSet = doSetFromMinSize;
-                }
-
-                // message and colors
-                setSectionErrorMessage((int)checkForIndex, doSet, message);
-            } else {
-                for (int i = 0; i < Sections.Count; i++) {
-                    bool doSet = false;
-                    string message = "";
-                    if (!onlyRunSizeChecks) {
-                        Sections[i].CalculateAndDisplayMetric(); // recalculate metric (clears error text)
-                        (doSet, message) = checkSectionForPerimeterSharing(i);
-                    }
-                    (bool doSetFromMinSize, string messageFromMinSize) = checkSectionForMinSize(i);
-
-                    // check do set override for min size
-                    if (doSetFromMinSize) {
-                        message = messageFromMinSize;
-                        doSet = doSetFromMinSize;
-                    }
-
-                    // message and colors
-                    setSectionErrorMessage(i, doSet, message);
-                }
+                // set section color and validity
+                section.IsValidByConstraints = (errorsBySection[i].error == PropertySectionErrorTypes.AtLeastOneValid);
+                string message = errorsBySection[i].error switch {
+                    PropertySectionErrorTypes.Size => section.MetricResult.DefaultResult,
+                    PropertySectionErrorTypes.Intersection => GetSectionIntersectionInvalidityMessage(errorsBySection[i].index),
+                    PropertySectionErrorTypes.AtLeastOneValid => "",
+                    PropertySectionErrorTypes.Area => "This section doesn't share a perimeter of at least 3 with another section",
+                    PropertySectionErrorTypes.Spacing => "This section is not touching any other section",
+                    PropertySectionErrorTypes.None => "",
+                    _ => ""
+                };
+                SetSectionErrorMessage(i, !section.IsValidByConstraints, message);
             }
         }
 
         // - update total metric result -
 
         private void UpdateTotalMetricResult() {
-            Debug.WriteLine("first");
-            Debug.WriteLine(Sections.Any(section => !section.IsValidByConstraints));
-            foreach (var section in Sections) {
-                Debug.WriteLine(section.IsValidByConstraints);
-            }
-
-
-
             if (Sections.Any(section => !section.IsValidByConstraints)) {
                 // text
                 TotalMetricResult.Result = TotalMetricResult.DefaultResult;
@@ -298,6 +357,15 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             section.DeletionRequested += (_, __) => {
                 RemoveSection(section);
             };
+            section.MoveUpRequested += (_, __) => {
+                MoveSectionUp(section);
+            };
+            section.MoveDownRequested += (_, __) => {
+                MoveSectionDown(section);
+            };
+            section.MoveUpRequested += (_, __) => {
+
+            };
             section.ValidityChanged += (_, __) => {
                 CheckAndSetSectionsValidity();
                 UpdateCreateButtonEnabledStatus();
@@ -319,6 +387,58 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             };
         }
 
+        // - per item section movement -
+
+        private void DisableTopBottomSectionMoveButtons() {
+            // enable all sections
+            foreach (PropertySection section in Sections) {
+                section.UpButton.IsEnabled = true;
+                section.DownButton.IsEnabled = true;
+            }
+
+            // disable top
+            Sections[0].UpButton.IsEnabled = false;
+
+            // disable bottom
+            Sections[Sections.Count - 1].DownButton.IsEnabled = false;
+        }
+
+        private void MoveSectionUp(PropertySection section) {
+            // find index
+            int currPos = Sections.IndexOf(section);
+
+            // button disable/enable handling
+            if (currPos == 0) {
+                section.UpButton.IsEnabled = false;
+            } else {
+                section.UpButton.IsEnabled = true;
+            }
+
+            // move
+            Sections.Move(currPos, currPos - 1);
+
+            // apply enable disable
+            DisableTopBottomSectionMoveButtons();
+        }
+
+        private void MoveSectionDown(PropertySection section) {
+            // find index
+            int currPos = Sections.IndexOf(section);
+
+            // button disable/enable handling
+            if (currPos == (Sections.Count - 1)) {
+                section.DownButton.IsEnabled = false;
+            } else {
+                section.DownButton.IsEnabled = true;
+            }
+
+            // move
+            Sections.Move(currPos, currPos + 1);
+
+            // apply enable disable
+            DisableTopBottomSectionMoveButtons();
+        }
+
         // - per item section delete -
 
         private void RemoveSection(PropertySection section) {
@@ -334,6 +454,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             // update button and validity
             CheckSectionsOverlap();
             CheckAndSetSectionsValidity();
+            DisableTopBottomSectionMoveButtons();
             UpdateCreateButtonEnabledStatus();
             UpdateTotalMetricResult();
 
@@ -387,6 +508,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // update button and validity
             CheckAndSetSectionsValidity();
+            DisableTopBottomSectionMoveButtons();
             UpdateCreateButtonEnabledStatus();
 
             // check if there are no longer too many sections            
@@ -405,6 +527,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             Sections.Add(new());
             CheckSectionsOverlap();
             UpdateRemainingSectionsDisplay();
+            DisableTopBottomSectionMoveButtons();
             UpdateTotalMetricResult();
 
             // section events
