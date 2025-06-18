@@ -72,17 +72,17 @@
 
                 <!-- Down Button -->
                 <Button x:Name="UpButton" Grid.Column="1" Style="{StaticResource InputButton}"
-                        Content="↑" Width="20" HorizontalAlignment="Right"
+                        Content="↑" Width="20" HorizontalAlignment="Right" IsTabStop="False"
                         Click="UpButton_Click"/>
 
                 <!-- Down Button -->
                 <Button x:Name="DownButton" Grid.Column="2" Style="{StaticResource InputButton}"
-                        Content="↓" Width="20" HorizontalAlignment="Right"
+                        Content="↓" Width="20" HorizontalAlignment="Right" IsTabStop="False"
                         Click="DownButton_Click"/>
 
                 <!-- Delete Button -->
                 <util:ChargingButton x:Name="DeleteButton" Grid.Column="3" Style="{StaticResource InputButton}"
-                                 Content="Delete Section" Width="100" HorizontalAlignment="Right" ColorPalette="Red" Visibility="{Binding ShowDeleteButtonVisibility}"
+                                 Content="Delete Section" Width="100" HorizontalAlignment="Right" ColorPalette="Red" IsTabStop="False" Visibility="{Binding ShowDeleteButtonVisibility}"
                                  ChargeCycled="DeleteButton_ChargeCycled"/>
             </Grid>
         </Grid>

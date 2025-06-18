@@ -30,7 +30,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // - Column Width -
 
-        public int ColumnWidth { get; init; }
+        public GridLength ColumnWidth { get; init; }
 
         // - Column Alignment -
 
@@ -45,6 +45,10 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         }
 
         public ColumnContentAlignmnetRecord ColumnContentAlignment { get; init; }
+
+        // - Display Order -
+
+        public int DisplayOrder { get; init; }
 
         // - Hit Testing -
 
@@ -61,8 +65,10 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// <param name="displayLayer"> The layer to be displayed on </param>
         public DisplayValueAttribute(
             string displayName, 
-            int columnWidth, 
+            double columnWidth,
+            GridUnitType columnWidthUnit,
             int displayLayer=-1,
+            int displayOrder=0,
             bool isHitTestVisible=false
         ) {
             // set name
@@ -73,13 +79,16 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // column width
             if (columnWidth >= 0) {
-                ColumnWidth = columnWidth + 1;
+                ColumnWidth = new GridLength(columnWidth, columnWidthUnit);
             } else {
                 throw new ArgumentException($"the provided columnWidth was less than 0");
             }
 
             // default content alignmet
             ColumnContentAlignment = new(HorizontalAlignment.Left, VerticalAlignment.Center);
+
+            // display order
+            DisplayOrder = displayOrder;
 
             // hit testing
             IsHitTestVisible = isHitTestVisible;
@@ -90,9 +99,11 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         /// <param name="displayLayers"> An array of layers to be displayed on </param>
         public DisplayValueAttribute(
-            string displayName, 
-            int columnWidth, 
+            string displayName,
+            double columnWidth,
+            GridUnitType columnWidthUnit,
             int[] displayLayers,
+            int displayOrder=0,
             bool isHitTestVisible=false
         ) {
             // set name
@@ -104,13 +115,16 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // column width
             if (columnWidth >= 0) {
-                ColumnWidth = columnWidth + 1;
+                ColumnWidth = new GridLength(columnWidth, columnWidthUnit);
             } else {
                 throw new ArgumentException($"the provided columnWidth was less than 0");
             }
 
             // default content alignmet
             ColumnContentAlignment = new(HorizontalAlignment.Left, VerticalAlignment.Center);
+
+            // display order
+            DisplayOrder = displayOrder;
 
             // hit testing
             IsHitTestVisible = isHitTestVisible;
@@ -121,11 +135,13 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         /// <param name="displayLayer"> The layer to be displayed on </param>
         public DisplayValueAttribute(
-            string displayName, 
-            int columnWidth, 
+            string displayName,
+            double columnWidth,
+            GridUnitType columnWidthUnit,
             HorizontalAlignment columnContentHorizontalAlignment, 
             VerticalAlignment columnContentVerticalAlignment, 
             int displayLayer=-1,
+            int displayOrder=0,
             bool isHitTestVisible=false
         ) {
             // set name
@@ -136,13 +152,16 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // column width
             if (columnWidth >= 0) {
-                ColumnWidth = columnWidth + 1;
+                ColumnWidth = new GridLength(columnWidth, columnWidthUnit);
             } else {
                 throw new ArgumentException($"the provided columnWidth was less than 0");
             }
 
             // content alignment
             ColumnContentAlignment = new(columnContentHorizontalAlignment, columnContentVerticalAlignment);
+
+            // display order
+            DisplayOrder = displayOrder;
 
             // hit testing
             IsHitTestVisible = isHitTestVisible;
@@ -153,11 +172,13 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         /// <param name="displayLayers"> An array of layers to be displayed on </param>
         public DisplayValueAttribute(
-            string displayName, 
-            int columnWidth, 
+            string displayName,
+            double columnWidth,
+            GridUnitType columnWidthUnit,
             HorizontalAlignment columnContentHorizontalAlignment, 
             VerticalAlignment columnContentVerticalAlignment, 
             int[] displayLayers,
+            int displayOrder=0,
             bool isHitTestVisible=false
         ) {
             // set name
@@ -169,13 +190,16 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // column width
             if (columnWidth >= 0) {
-                ColumnWidth = columnWidth + 1;
+                ColumnWidth = new GridLength(columnWidth, columnWidthUnit);
             } else {
                 throw new ArgumentException($"the provided columnWidth was less than 0");
             }
 
             // content alignment
             ColumnContentAlignment = new(columnContentHorizontalAlignment, columnContentVerticalAlignment);
+
+            // display order
+            DisplayOrder = displayOrder;
 
             // hit testing
             IsHitTestVisible = isHitTestVisible;

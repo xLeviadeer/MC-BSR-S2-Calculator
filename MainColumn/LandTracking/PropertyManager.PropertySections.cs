@@ -363,9 +363,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             section.MoveDownRequested += (_, __) => {
                 MoveSectionDown(section);
             };
-            section.MoveUpRequested += (_, __) => {
-
-            };
             section.ValidityChanged += (_, __) => {
                 CheckAndSetSectionsValidity();
                 UpdateCreateButtonEnabledStatus();

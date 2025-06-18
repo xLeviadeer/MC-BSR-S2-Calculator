@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
@@ -31,11 +32,22 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             get => Element.Items;
         }
 
-        public System.Collections.IEnumerable ItemsSource {
-            get => Element.ItemsSource;
-            set => Element.ItemsSource = value;
+        public IEnumerable ItemsSource {
+            get => (IEnumerable)GetValue(ItemsSourceProperty);
+            set => SetValue(ItemsSourceProperty, value);
         }
-        
+        public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
+            nameof(ItemsSource),
+            typeof(IEnumerable),
+            typeof(ComboLabel),
+            new PropertyMetadata(null, OnItemsSourcePropertyChanged)
+        );
+        private static void OnItemsSourcePropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
+            if (sender is ComboLabel control) {
+                control.Element.ItemsSource = control.ItemsSource;
+            }
+        }
+
         public int SelectedIndex {
             get => Element.SelectedIndex;
             set => Element.SelectedIndex = value;

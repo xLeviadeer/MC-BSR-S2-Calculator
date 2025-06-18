@@ -59,6 +59,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                         var value = propertyInfo.GetValue(this);
                         if (value is DisplayValueBase displayValue) {
                             DisplayValues[attribute.DisplayName] = displayValue;
+                            DisplayOrders[attribute.DisplayName] = attribute.DisplayOrder;
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
                             DisplayLayers[attribute.DisplayName] = attribute.DisplayLayers;
@@ -68,6 +69,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                         var value = fieldInfo.GetValue(this);
                         if (value is DisplayValueBase displayValue) {
                             DisplayValues[attribute.DisplayName] = displayValue;
+                            DisplayOrders[attribute.DisplayName] = attribute.DisplayOrder;
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
                             DisplayLayers[attribute.DisplayName] = attribute.DisplayLayers;
@@ -95,14 +97,28 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             set => _displayValues = value;
         }
 
+        // - Display Orders -
+
+        private Dictionary<string, int> _displayOrders = new();
+
+        public Dictionary<string, int> DisplayOrders {
+            get {
+                if (!AttributeValuesHaveBeenBuilt) {
+                    BuildAttributeValues();
+                }
+                return _displayOrders;
+            }
+            set => _displayOrders = value;
+        }
+
         // - Column Widths -
 
-        private Dictionary<string, int> _columnWidths = new();
+        private Dictionary<string, GridLength> _columnWidths = new();
 
         /// <summary>
         /// holds a list of column width values locatable by header name
         /// </summary>
-        public Dictionary<string, int> ColumnWidths {
+        public Dictionary<string, GridLength> ColumnWidths {
             get {
                 if (!AttributeValuesHaveBeenBuilt) { // only builds once
                     BuildAttributeValues();

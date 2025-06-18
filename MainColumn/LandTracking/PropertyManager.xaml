@@ -27,7 +27,7 @@
             <Setter Property="FluidProportionsSplitIndex" Value="1"/>
             <Setter Property="LayoutMode" Value="Left"/>
         </Style>
-        <sys:Int32 x:Key="LastRow">11</sys:Int32>
+        <sys:Int32 x:Key="LastRow">14</sys:Int32>
     </UserControl.Resources>
 
     <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
@@ -50,6 +50,10 @@
                 <RowDefinition Height="3"/> <!-- GridSpacer margin row -->
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="3"/> <!-- GridSpace margin row -->
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
@@ -99,12 +103,24 @@
                     Content="Add Section"
                     Click="AddPropertySectionButton_Click"/>
 
+            <!-- Tax Incentives -->
+            <TextBlock Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
+                    Text="Property Tax Incentives"/>
+            <GridSplitter Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="4" 
+                    Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+            <local:IncentivesManager x:Name="TaxIncentives" Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4"
+                                     IncentiveListType="Tax"/>
+
             <!-- Completion Buttons -->
             <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"
                              Content="Create Property"
                              FullyCharged="OnCreateClicked"/>
             <util:ChargingButton x:Name="ClearButton" Grid.Row="{StaticResource LastRow}" Grid.Column="2" Style="{StaticResource InputButton}"
-                             Content="Clear Form" ChargeTime="0.75" ColorPalette="Red"
+                             Content="Clear Form" ChargeTime="0.75" ColorPalette="Red" IsTabStop="False"
                              FullyCharged="OnClearClicked"/>
         </Grid>
     </ScrollViewer>

@@ -30,7 +30,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         private TextBlock NameTextBlock { get; set; } = new();
 
-        [DisplayValue("Name", 5)]
+        [DisplayValue("Name", 5, GridUnitType.Star)]
         [JsonProperty("name")]
         public BoundDisplayValue<TextBlock, string> Name { get; init; }
 
@@ -40,7 +40,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         public event EventHandler<EventArgs>? WasActiveChanged;
 
-        [DisplayValue("Active", 3, HorizontalAlignment.Center, VerticalAlignment.Center, isHitTestVisible: true)]
+        [DisplayValue("Active", 3, GridUnitType.Star, HorizontalAlignment.Center, VerticalAlignment.Center, isHitTestVisible: true)]
         [JsonProperty("was_active")]
         public BoundDisplayValue<CheckBox, bool> WasActive { get; set; }
 
@@ -50,7 +50,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         public event EventHandler<EventArgs>? IsElectableChanged;
 
-        [DisplayValue("Electable", 4, HorizontalAlignment.Center, VerticalAlignment.Center, isHitTestVisible: true)]
+        [DisplayValue("Electable", 4, GridUnitType.Star, HorizontalAlignment.Center, VerticalAlignment.Center, isHitTestVisible: true)]
         [JsonProperty("electable")]
         public BoundDisplayValue<CheckBox, bool> IsElectable { get; set; }
 

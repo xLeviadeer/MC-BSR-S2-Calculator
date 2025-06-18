@@ -1,6 +1,8 @@
-﻿using MC_BSR_S2_Calculator.PlayerColumn;
+﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
+using MC_BSR_S2_Calculator.PlayerColumn;
 using MC_BSR_S2_Calculator.Utility.DisplayList;
 using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.XamlConverters;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using MC_BSR_S2_Calculator.Utility.XamlConverters;
 
 namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
@@ -105,6 +106,11 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // - List Headers -
 
+        private record HeaderOrderPair(
+            string header,
+            int order
+        );
+
         /// <summary>
         /// Gets the headers for this list
         /// </summary>
@@ -113,7 +119,17 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                 if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableList<string>.Empty; }
 
                 if (ClassDataList.Count > 0) {
-                    return ClassDataList[0].DisplayHeaders.ToImmutableList();
+                    // gets the display headers in the order of their display order 
+                    // this means that the display will be built in the order the headers are in
+                    return ClassDataList[0].DisplayHeaders
+                        .Zip(
+                            ClassDataList[0].DisplayOrders, (header, order) => {
+                                return new HeaderOrderPair(header, order.Value);
+                            }
+                        )
+                        .OrderBy(pair => pair.order)
+                        .Select(pair => pair.header)
+                        .ToImmutableList();
                 } else {
                     return ImmutableList<string>.Empty;
                 }
@@ -122,9 +138,9 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // - Column Widths -
 
-        private ImmutableDictionary<string, int> ColumnWidths {
+        private ImmutableDictionary<string, GridLength> ColumnWidths {
             get {
-                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableDictionary<string, int>.Empty; }
+                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableDictionary<string, GridLength>.Empty; }
 
                 return ClassDataList[0].DisplayHeaders.ToImmutableDictionary(
                     key => key, // key
@@ -132,6 +148,14 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                 );
             }
         }
+
+        // - Rebuilt Event -
+
+        public event EventHandler<EventArgs>? Rebuilt;
+
+        // - Has Been Loaded -
+
+        private bool HasBeenLoaded { get; set; } = false;
 
         #endregion
 
@@ -142,21 +166,20 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// Extensions of this class MUST define which exact data to display (parameterless constructor)
         /// </remarks
         public ListDisplay() {
-            // loads data list and builds grid
             Loaded += (object sender, RoutedEventArgs args) => {
+                // has been loaded
+                if (HasBeenLoaded) { return; }
+                HasBeenLoaded = true;
+
+                // loads data list and builds grid
                 SetClassDataList();
                 ExtraSetup();
                 BuildGrid();
-            };
 
-            // event handling for ensuring content never overlaps the scrollbar
-            MainGrid.SizeChanged += OnMainGridSizeChange;
-            ListDisplayGrid.ChildrenChanged += OnMainGridSizeChange;
+                // sets the original scroll bar visibility
+                SetOriginalScrollBarVisibilityOnLoaded(sender, args);
 
-            // sets the original scroll bar visibility
-            Loaded += SetOriginalScrollBarVisibilityOnLoaded;
-            // set the scroll bar visibility state when starting up
-            Loaded += (sender, args) => {
+                // set the scroll bar visibility state when starting up
                 if (OriginalScrollBarVisbility == ScrollBarVisibility.Visible) {
                     OnMainGridSizeChange(sender, args); // ensures the sizing immediately takes place
                 } else {
@@ -164,6 +187,10 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                     OnShowScrollBarChanged(this, new DependencyPropertyChangedEventArgs(ShowScrollBarProperty, null, ShowScrollBar));
                 }
             };
+
+            // event handling for ensuring content never overlaps the scrollbar
+            MainGrid.SizeChanged += OnMainGridSizeChange;
+            ListDisplayGrid.ChildrenChanged += OnMainGridSizeChange;
 
             // set main content parents
             this.Content = MainGrid;
@@ -216,6 +243,34 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         #endregion
 
         // --- METHODS ---
+
+        // -- Operations --
+        #region Operations
+
+        public void Add(T cls) {
+            ClassDataList.Add(cls);
+            BuildGrid();
+        }
+
+        public void Remove(T cls) {
+            ClassDataList.Remove(cls);
+            BuildGrid();
+        }
+
+        public void RemoveAt(int index) {
+            // range check
+            if (
+                (index >= ClassDataList.Count)
+                || (index < 0)
+            ) {
+                throw new ArgumentOutOfRangeException(nameof(index), index, "The provided index was out of range of the ClassDataList");
+            }
+
+            // remove at
+            ClassDataList.RemoveAt(index);
+        }
+
+        #endregion
 
         // -- General --
         #region General
@@ -438,6 +493,9 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             AddItemGridBottoms(); // add the item grid bottoms
             AddClickableButtons(); // add buttons if applicable
             AddItemGridTops(); // add the item grid tops
+
+            // rebuilt
+            Rebuilt?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion
@@ -467,7 +525,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
                 // create a new column with each header
                 ListDisplayGrid.ColumnDefinitions.Add(new ColumnDefinition() {
-                    Width = new GridLength(ColumnWidths[header], GridUnitType.Star),
+                    Width = ColumnWidths[header],
                 });
 
                 // add header grid to main grid

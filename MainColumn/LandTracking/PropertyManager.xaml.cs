@@ -103,6 +103,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             ResetSections();
 
+            TaxIncentives.Reset();
+
             // allow updates again and manually update buttons
             DoUpdateButtons = true;
             UpdateCreateButtonEnabledStatus();

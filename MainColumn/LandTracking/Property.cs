@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Web;
+using System.Windows;
 using System.Windows.Controls;
 using MC_BSR_S2_Calculator.Utility.DisplayList;
 using MC_BSR_S2_Calculator.Utility.Identification;
@@ -60,7 +61,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Name -
 
         [JsonProperty("name")]
-        [DisplayValue("Name", 0)]
+        [DisplayValue("Name", 0, GridUnitType.Star)]
         public BoundDisplayValue<Label, string> Name { get; set; }
 
         #endregion

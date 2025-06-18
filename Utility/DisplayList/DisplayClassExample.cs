@@ -12,12 +12,12 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
     internal class DisplayClassExample : Displayable {
 
         // a bound display value which can be updated
-        [DisplayValue("Boolean Value", 0, 0)]
+        [DisplayValue("Boolean Value", 0, GridUnitType.Star, 0)]
         [JsonProperty("Boolean Value")]
         public BoundDisplayValue<TextBlock, bool> BooleanTextBlock { get; init; }
 
         // a display value button
-        [DisplayValue("Button", 0, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 1)]
+        [DisplayValue("Button", 0, GridUnitType.Star, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 1)]
         public DisplayValue<Button> ButtonUpdater { get; init; }
 
         // add a text block and button to the values

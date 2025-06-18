@@ -1,0 +1,69 @@
+﻿<UserControl x:Class="MC_BSR_S2_Calculator.MainColumn.LandTracking.IncentivesManager"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
+             xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
+             xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             mc:Ignorable="d" 
+             Height="Auto"
+             Width="Auto">
+
+    <Grid x:Name="MainGrid" Margin="3">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Selection Combo -->
+        <util_labeledinputs:ComboLabel x:Name="SelectionComboLabel" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" LayoutMode="Left" FluidProportionsSplitIndex="1"
+                                       LabelText="Select Incentive"
+                                       SelectionChanged="SelectionComboLabel_SelectionChanged"/>
+
+        <!-- Add Incentive Button -->
+        <Button x:Name="AddIncentiveButton" Grid.Row="1" Grid.Column="2" Style="{StaticResource InputButton}"
+                Content="Add Selected Incentive" Width="135" Margin="3" VerticalAlignment="Bottom" IsEnabled="False"
+                Click="AddIncentiveButton_Click"/>
+
+        <!-- Description -->
+        <Border x:Name="DescriptionBorder" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                VerticalAlignment="Top" Margin="3" BorderThickness="2" Visibility="Collapsed">
+            <Border.BorderBrush>
+                <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+            </Border.BorderBrush>
+
+            <Grid x:Name="DescriptionGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>                
+                
+                <!-- Description Title -->
+                <TextBlock x:Name="DescriptionTitle" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                           Text="Description" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5" FontSize="12"/>
+
+                <!-- Description Body -->
+                <TextBlock x:Name="DescriptionBody" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                           HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" FontSize="12"
+                           TextWrapping="Wrap">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Color="{x:Static util:ColorResources.DarkGreyColor}"/>
+                    </TextBlock.Foreground>
+                </TextBlock>
+            </Grid>
+        </Border>
+        
+        <!-- Total Incentive Vaue -->
+        <util_labeledinputs:ResultDisplay x:Name="TotalIncentiveResult" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" LayoutMode="LeftFit"
+                                          LabelText="Net Incentives Value" DefaultResult="0"/>
+    </Grid>
+</UserControl>
