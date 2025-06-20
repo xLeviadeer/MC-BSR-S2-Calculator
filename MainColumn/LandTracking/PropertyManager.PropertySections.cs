@@ -260,6 +260,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
                     // found a valid connection; don't run spacing error
                     SetError(PropertySectionErrorTypes.AtLeastOneValid);
+                    section.IsInvalidByIntersection = false;
                     continue;
 
                 // spacing errors

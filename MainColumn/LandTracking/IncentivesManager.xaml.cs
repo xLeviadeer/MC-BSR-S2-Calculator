@@ -1,4 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,6 +8,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Printing;
+using System.Reflection;
+using System.Runtime.InteropServices.ObjectiveC;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,6 +21,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     /// <summary>
@@ -28,14 +32,18 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // --- VARIABLES ---
         #region VARIABLES
 
-        // - Info Target -
+        // - Info Target and Casting Type -
 
-        public IInfoHolder InfoTarget { get; set; }
+        public IIncentiveInfoHolder InfoTarget { get; set; }
+
+        private Type CastingType { get; set; }
 
         // - IncentivesList Type -
 
         public enum IncentivesListTypes {
             None,
+            Violation,
+            Purchase,
             Tax
         }
 
@@ -53,7 +61,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Incentive List -
 
-        public IncentiveList IncentivesDisplay { get; set; }
+        public IncentivesList IncentivesDisplay { get; set; }
 
         // - property changes -
 
@@ -114,7 +122,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // --- CONSTRUCTOR ---
         #region CONSTRUCTOR
-
+        
         public IncentivesManager() {
             InitializeComponent();
 
@@ -129,6 +137,19 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                         InfoTarget = IncentiveInfo.Tax.Instance;
                         IncentivesDisplay = new TaxIncentivesList();
                         IncentivesDisplay.EmptyText = "No tax incentives";
+                        CastingType = typeof(TaxIncentive);
+                        break;
+                    case IncentivesListTypes.Violation:
+                        InfoTarget = IncentiveInfo.Violation.Instance;
+                        IncentivesDisplay = new ViolationIncentivesList();
+                        IncentivesDisplay.EmptyText = "No violation incentives";
+                        CastingType = typeof(ViolationIncentive);
+                        break;
+                    case IncentivesListTypes.Purchase:
+                        InfoTarget = IncentiveInfo.Purchase.Instance;
+                        IncentivesDisplay = new PurchaseIncentivesList();
+                        IncentivesDisplay.EmptyText = "No purchase incentives";
+                        CastingType = typeof(PurchaseIncentive);
                         break;
                     case IncentivesListTypes.None:
                     default:
@@ -141,13 +162,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 Grid.SetColumn(IncentivesDisplay, 0);
                 Grid.SetColumnSpan(IncentivesDisplay, 3);
                 IncentivesDisplay.Margin = new Thickness(3);
-                IncentivesDisplay.ShowScrollBar = ScrollBarVisibility.Hidden;
+                IncentivesDisplay.ShowScrollBar = ScrollBarVisibility.Disabled;
                 IncentivesDisplay.ItemBorderBrushSides = new SolidColorBrush(Color.FromRgb(179, 179, 176));
-                IncentivesDisplay.Updated += (_, __) => UpdateTotalIncentiveResult();
+                IncentivesDisplay.Updated += (sender, args) => {
+                    Dispatcher.BeginInvoke(new Action(() => {
+                        UpdateTotalIncentiveResult();
+                    }), DispatcherPriority.Background);
+                };
 
                 // set incentive option default values
                 IncentiveOptions.Add(new() { Name = IncentiveInfo.None });
-                foreach (IncentiveInfo incentiveInfo in InfoTarget.SelectableIncentives) {
+                foreach (IncentiveInfo incentiveInfo in InfoTarget.Selectable) {
                     var incentiveOption = new IncentiveOption() { Name = incentiveInfo.Name };
                     incentiveOption.PropertyChanged += (_, __) => {
                         UpdateOptions();
@@ -185,8 +210,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         public void Reset() {
             // remove until empty
-            while (IncentivesDisplay.ClassDataList.Count > 0) {
-                Remove(IncentivesDisplay.ClassDataList[0]);
+            // ensures that it's cleared properly
+            while (IncentivesDisplay.Count > 0) {
+                Remove(IncentivesDisplay[0]);
             }
         }
 
@@ -195,11 +221,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             IncentiveInfo info = TryGetInfo();
 
             // add incentive to displaylist
-            TaxIncentive incentive = new(info.Name, info.Value);
+            object? instance = Activator.CreateInstance(CastingType, info.Name, info.Value);
+            if (instance is null) { throw new NullReferenceException("the instance of an Incentive extension was null"); }
+            Incentive incentive = (Incentive)instance;
             incentive.RemoveRequested += (_, __) => {
                 Remove(incentive);
             };
-            IncentivesDisplay.Add(incentive);
+            dynamic incentiveExtension = instance;
+            IncentivesDisplay.Add(incentiveExtension);
 
             // remove incentive option
             FindByName(info.Name).IsEnabled = false;
@@ -228,7 +257,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         private void UpdateTotalIncentiveResult() {
             double total = 0;
             foreach (Incentive incentive in IncentivesDisplay.ClassDataList) {
-                total += incentive.Value;
+                total += incentive.AddValue;
             }
             TotalIncentiveResult.Result = Math.Round(total, 2).ToString();
         }

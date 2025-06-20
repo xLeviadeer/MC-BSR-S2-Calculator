@@ -104,6 +104,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             ResetSections();
 
             TaxIncentives.Reset();
+            ViolationIncentives.Reset();
+            PurchaseIncentives.Reset();
 
             // allow updates again and manually update buttons
             DoUpdateButtons = true;
@@ -228,6 +230,27 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             Validity[nameof(ResidentsCountInput)].IsValid = args.Value ?? false;
             UpdateCreateButtonEnabledStatus();
         }
+
+        private void HideSubItemScrollPassToParent(object sender, MouseWheelEventArgs args) {
+            args.Handled = true;
+
+            // Manually raise MouseWheel on parent
+            var eventArg = new MouseWheelEventArgs(args.MouseDevice, args.Timestamp, args.Delta) {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = sender
+            };
+
+            MainScrollViewer.RaiseEvent(eventArg);
+        }
+
+        private void TaxIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args) 
+            => HideSubItemScrollPassToParent(sender, args);
+
+        private void ViolationIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args)
+            => HideSubItemScrollPassToParent(sender, args);
+
+        private void PurchaseIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args)
+            => HideSubItemScrollPassToParent(sender, args);
 
         #endregion
     }

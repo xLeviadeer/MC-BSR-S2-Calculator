@@ -1,15 +1,12 @@
-﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
-    public class TaxIncentive : Incentive {
+    public class PurchaseIncentive : Incentive {
 
         // --- VARIABLES ---
 
@@ -24,16 +21,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // remove button
             var button = new Button();
-            button.Content = "Remove";
+            button.Content = "Revoke";
             button.Click += (_, args) => RemoveRequested?.Invoke(this, args);
             button.IsTabStop = false;
             RemoveButton = new(button);
         }
 
         #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-        public TaxIncentive() => SetDefaultValues(string.Empty, 0.0d);
+        public PurchaseIncentive() => SetDefaultValues(string.Empty, 0.0d);
 
-        public TaxIncentive(
+        public PurchaseIncentive(
             string name,
             double value
         ) => SetDefaultValues(name, value);

@@ -69,9 +69,15 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         /// <param name="index"> The element to retrieve </param>
         /// <returns> A dictionary element with a header name and it's associated DisplayValueBase </returns>
-        public Dictionary<string, DisplayValueBase> this[int index] {
-            get => DataListByRows[index];
-            set => DataListByRows[index] = value;
+        public T this[int index] {
+            get => ClassDataList[index];
+            set => ClassDataList[index] = value;
+        }
+
+        // - Count -
+
+        public int Count {
+            get => ClassDataList.Count;
         }
 
         // - Data List by Columns -
@@ -218,6 +224,11 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         // - row and new item helper overridable -
 
         private void ExtraSetup() {
+            // expose scroll wheel updates
+            //MainScrollViewer.PreviewMouseWheel += (_, args) => {
+            //    PreviewMouseWheel.Invoke(this, args);
+            //};
+
             // on item added
             ClassDataList.ItemAdded += (sender, args) => {
                 if (args is ListChangedEventArgs argsCasted) {
@@ -247,10 +258,13 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         // -- Operations --
         #region Operations
 
+        // - Add -
         public void Add(T cls) {
             ClassDataList.Add(cls);
             BuildGrid();
         }
+
+        // - Remove -
 
         public void Remove(T cls) {
             ClassDataList.Remove(cls);
@@ -268,6 +282,13 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
             // remove at
             ClassDataList.RemoveAt(index);
+        }
+
+        // - Clear -
+
+        public void Clear() {
+            ClassDataList.Clear();
+            BuildGrid();
         }
 
         #endregion

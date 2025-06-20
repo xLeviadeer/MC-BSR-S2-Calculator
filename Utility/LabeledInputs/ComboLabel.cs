@@ -73,11 +73,19 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             HasBeenLoaded = true;
 
             // combo box settings
-            Element.HorizontalContentAlignment = HorizontalAlignment.Left;
-            Element.VerticalContentAlignment = VerticalAlignment.Center;
+            var horiAlign = HorizontalAlignment.Left;
+            var vertAlign = VerticalAlignment.Center;
+            Element.HorizontalContentAlignment = horiAlign;
+            Element.VerticalContentAlignment = vertAlign;
             Element.Height = (double)Application.Current.Resources["ComboBoxHeight"];
             Element.Margin = new Thickness(3);
             Element.FontSize = 11;
+
+            // fixes (debug only) faulty binding message
+            var itemContainerStyle = new Style(typeof(ComboBoxItem));
+            itemContainerStyle.Setters.Add(new Setter(ComboBoxItem.HorizontalContentAlignmentProperty, horiAlign));
+            itemContainerStyle.Setters.Add(new Setter(ComboBoxItem.VerticalContentAlignmentProperty, vertAlign));
+            Element.ItemContainerStyle = itemContainerStyle;
 
             // event exposure
             Element.SelectionChanged += (_, args) => {

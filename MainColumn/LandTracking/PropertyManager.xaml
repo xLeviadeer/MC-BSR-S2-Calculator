@@ -27,7 +27,7 @@
             <Setter Property="FluidProportionsSplitIndex" Value="1"/>
             <Setter Property="LayoutMode" Value="Left"/>
         </Style>
-        <sys:Int32 x:Key="LastRow">14</sys:Int32>
+        <sys:Int32 x:Key="LastRow">20</sys:Int32>
     </UserControl.Resources>
 
     <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
@@ -51,6 +51,12 @@
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="3"/> <!-- GridSpace margin row -->
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="3"/> <!-- GridSpace margin row -->
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition Height="3"/> <!-- GridSpace margin row -->
@@ -113,7 +119,34 @@
                 </GridSplitter.Background>
             </GridSplitter>
             <local:IncentivesManager x:Name="TaxIncentives" Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4"
-                                     IncentiveListType="Tax"/>
+                                     IncentiveListType="Tax"
+                                     PreviewMouseWheel="TaxIncentives_PreviewMouseWheel"/>
+
+            <!-- Violation Incentives -->
+            <TextBlock Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
+                    Text="Property Violation Incentives"/>
+            <GridSplitter Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" 
+                    Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+            <local:IncentivesManager x:Name="ViolationIncentives" Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="4"
+                                     IncentiveListType="Violation"
+                                     PreviewMouseWheel="ViolationIncentives_PreviewMouseWheel"/>
+
+            <!-- Purchase Incentives -->
+            <TextBlock Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
+                    Text="Property Purchase Incentives"/>
+            <GridSplitter Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="4" 
+                    Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+            <local:IncentivesManager x:Name="PurchaseIncentives" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="4"
+                         IncentiveListType="Purchase"
+                         PreviewMouseWheel="PurchaseIncentives_PreviewMouseWheel"/>
 
             <!-- Completion Buttons -->
             <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"

@@ -62,7 +62,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// </summary>
         /// <exception cref="ArgumentException">Thrown if invalid ValidationType string</exception>
         private static void OnValidationTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (ValidationTypes.All.Any(type => type != (string)e.NewValue)) {
+            if (ValidationTypes.All.All(type => type != (string)e.NewValue)) {
                 throw new ArgumentException($"ValidationType was not set to a valid string");
             }
         }
@@ -151,28 +151,17 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// Adds the validate method as a listener to the validation event
         /// </summary>
         public TypedTextBox() {
-            Loaded += Validate; // validate upon creation
-
-            // invoke helper
-            void InvokeInputFinalized(object? sender, EventArgs args) {
-                InputFinalized?.Invoke(this, new InputFinalizedEventArgs<T>() {
-                    OldValue = LastStableValue,
-                    NewValue = Value
-                });
-            }
+            Loaded += ValidateAndFinalize; // validate upon creation
 
             // set validation events
             //    validate must always be set before the invoker because validation sets the last stable value
             switch (ValidationType) {
                 case ValidationTypes.Final:
-                    KeyDownEnter += (_, args) => Validate(this, args);
-                    KeyDownEnter += (_, args) => InvokeInputFinalized(this, EventArgs.Empty);
-                    LostFocus += (_, args) => Validate(this, args);
-                    LostFocus += (_, args) => InvokeInputFinalized(this, EventArgs.Empty);
+                    KeyDownEnter += (_, args) => ValidateAndFinalize(this, args);
+                    LostFocus += (_, args) => ValidateAndFinalize(this, args);
                     break;
                 case ValidationTypes.Constant:
-                    TextChanged += (_, args) => Validate(this, args);
-                    TextChanged += (_, args) => InvokeInputFinalized(this, EventArgs.Empty);
+                    TextChanged += (_, args) => ValidateAndFinalize(this, args);
                     break;
             }
 
@@ -207,6 +196,16 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
             } else {
                 textBox.CaretIndex = cursorPosition;
             }
+        }
+
+        private void ValidateAndFinalize(object sender, EventArgs args) {
+            Validate(sender, args);
+
+            // invoke finalize
+            InputFinalized?.Invoke(this, new InputFinalizedEventArgs<T>() {
+                OldValue = LastStableValue,
+                NewValue = Value
+            });
         }
 
         /// <summary>
