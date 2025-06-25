@@ -11,7 +11,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
-    public class ResultDisplay : LabeledInputBase<Border> {
+    public class ResultDisplay : LabeledInput<Border> {
 
         // --- VARIABLES ---
 
@@ -100,7 +100,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             nameof(ResultBorderBrush),
             typeof(SolidColorBrush),
             typeof(ResultDisplay),
-            new PropertyMetadata(new SolidColorBrush(ColorResources.InnerBorderVeryLightColor), OnResultBorderBrushChanged)
+            new PropertyMetadata(new SolidColorBrush(ColorResources.InnerColorL3), OnResultBorderBrushChanged)
         );
 
         private static void OnResultBorderBrushChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {

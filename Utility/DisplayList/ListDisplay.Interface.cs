@@ -161,7 +161,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             nameof(MainBorderBrush),
             typeof(SolidColorBrush),
             typeof(ListDisplay<T>),
-            new PropertyMetadata(new SolidColorBrush(ColorResources.InnerBorderColor), OnMainBorderBrushPropertyChanged)
+            new PropertyMetadata(new SolidColorBrush(ColorResources.InnerColorML5), OnMainBorderBrushPropertyChanged)
         );
 
         private static void OnMainBorderBrushPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {

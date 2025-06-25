@@ -14,7 +14,7 @@
         Height="700" 
         Width="1100"
         MinHeight="600"
-        MinWidth="900"
+        MinWidth="1100"
         FontFamily="Arial Round MT Bold"
         WindowStartupLocation="CenterScreen">
 
@@ -23,7 +23,7 @@
         <Grid x:Name="SectionsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="PlayerColumn" Width="*" MinWidth="240" MaxWidth="310"/>
-                <ColumnDefinition x:Name="MainColumn" Width="3*" MinWidth="400"/>
+                <ColumnDefinition x:Name="MainColumn" Width="3*" MinWidth="600"/>
                 <ColumnDefinition x:Name="ViewColumn" Width="*" MinWidth="260" MaxWidth="330"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>

@@ -27,7 +27,7 @@
             <Setter Property="FluidProportionsSplitIndex" Value="1"/>
             <Setter Property="LayoutMode" Value="Left"/>
         </Style>
-        <sys:Int32 x:Key="LastRow">20</sys:Int32>
+        <sys:Int32 x:Key="LastRow">25</sys:Int32>
     </UserControl.Resources>
 
     <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
@@ -62,6 +62,11 @@
                 <RowDefinition Height="3"/> <!-- GridSpace margin row -->
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition Height="3"/> <!-- GridSpace margin row -->
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
 
             <!-- Title -->
@@ -70,7 +75,7 @@
             <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" 
                       Height="3" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </GridSplitter.Background>
             </GridSplitter>
 
@@ -96,7 +101,7 @@
             <GridSplitter Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" 
                           Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </GridSplitter.Background>
             </GridSplitter>
             <util:ControlStack x:Name="PropertySections" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="4"
@@ -115,7 +120,7 @@
             <GridSplitter Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="4" 
                     Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </GridSplitter.Background>
             </GridSplitter>
             <local:IncentivesManager x:Name="TaxIncentives" Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4"
@@ -128,7 +133,7 @@
             <GridSplitter Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" 
                     Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </GridSplitter.Background>
             </GridSplitter>
             <local:IncentivesManager x:Name="ViolationIncentives" Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="4"
@@ -141,20 +146,48 @@
             <GridSplitter Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="4" 
                     Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </GridSplitter.Background>
             </GridSplitter>
             <local:IncentivesManager x:Name="PurchaseIncentives" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="4"
                          IncentiveListType="Purchase"
                          PreviewMouseWheel="PurchaseIncentives_PreviewMouseWheel"/>
 
+            <!-- Other Title -->
+            <TextBlock Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
+                    Text="Other"/>
+            <GridSplitter Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="4" 
+                    Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
+
+            <!-- Subsurface Land Provision -->
+            <util_labeledinputs:CheckBoxDisplay x:Name="SubsurfaceLandProvisionCheck" Grid.Row="22" Grid.Column="0" Grid.ColumnSpan="4" 
+                                                util_labeledinputs:CheckBoxLabelProperties.LayoutMode="LeftSwapFit"
+                                                util_labeledinputs:CheckBoxLabelProperties.LabelText="Subsurface Land Provision">
+                <!-- the upper bound on this is set in the Loaded method -->
+                <util:CoordinateInput ShowXInput="False" ShowZInput="False" DisplayMode="Simple"/>
+            </util_labeledinputs:CheckBoxDisplay>
+
+            <!-- Mailbox -->
+            <util_labeledinputs:CheckBoxLabel x:Name="HasMailboxCheck" Grid.Row="23" Grid.Column="0" Grid.ColumnSpan="4"
+                                              LabelText="Has Mailbox" LayoutMode="LeftSwapFit"
+                                              CheckChanged="HasMailboxCheck_CheckChanged"/>
+
+            <!-- Edge Spacing -->
+            <util_labeledinputs:CheckBoxLabel x:Name="HasEdgeSpacingCheck" Grid.Row="24" Grid.Column="0" Grid.ColumnSpan="4"
+                                  LabelText="Follows Property Metric Guidelines" LayoutMode="LeftSwapFit"
+                                  CheckChanged="HasEdgeSpacingCheck_CheckChanged"/>
+
             <!-- Completion Buttons -->
             <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"
                              Content="Create Property"
-                             FullyCharged="OnCreateClicked"/>
+                             FullyCharged="OnCreateCharged"/>
             <util:ChargingButton x:Name="ClearButton" Grid.Row="{StaticResource LastRow}" Grid.Column="2" Style="{StaticResource InputButton}"
                              Content="Clear Form" ChargeTime="0.75" ColorPalette="Red" IsTabStop="False"
-                             FullyCharged="OnClearClicked"/>
+                             FullyCharged="OnClearCharged"/>
         </Grid>
     </ScrollViewer>
 </UserControl>

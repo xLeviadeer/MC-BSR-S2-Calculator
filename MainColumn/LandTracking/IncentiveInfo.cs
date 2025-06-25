@@ -97,6 +97,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             public const string LandAntiMutilation = "Land Anti-Mutilation";
             public const string GroundedStructures = "Grounded Structures";
             public const string AntiInflation = "Anti-Inflation";
+            public const string InvalidEdgeSpacing = "Doesn't Have Edge Spacing";
+            public const string InvalidSignage = "Invalid or Nonexistent Signage";
             public ImmutableList<IncentiveInfo> Selectable { get; } = [
                 new(
                     LandAntiMutilation,
@@ -112,6 +114,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                     AntiInflation,
                     30d,
                     "The Anti-Inflation Incentive works to stop the value of Diamonds to inflate and hence make currency less valuable.\r\n\r\nIf a Citizen wishes to construct a staircase reaching into the ground (a staircase which cumulatively reaches 20 blocks below Surface Blocks) on their land they must pay 30 Diamonds.\r\nA staircase separated by rooms or areas counts as a singular staircase."
+                ),
+                new (
+                    InvalidEdgeSpacing,
+                    7d,
+                    "A property must have no constructions that reach to it's outermost perimeter line of 1 block thickness. Flat construction or lines of blocks defining the edge of the property are permitted, however, any form of obstruction for player mobility is considered a crime, where each violation is worth a recurring 5 Diamond Fine."
+                ),
+                new (
+                    InvalidSignage,
+                    20d,
+                    "If a Citizen fails to follow the Signage Requirements they will be Fined at a rate of 20 currency for each level of determined \"severity\" of Signage violation.\r\n\r\nA misspelling would be of low severity; severity level 1\r\nA missing sign would be of medium severity; severity level 2 or 3\r\nEntirely missing signage would be of high severity; severity level 4+"
                 )
             ];
 

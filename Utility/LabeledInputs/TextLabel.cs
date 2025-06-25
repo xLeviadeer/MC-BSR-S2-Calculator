@@ -14,7 +14,7 @@ using System.Security.Policy;
 using System.Diagnostics;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
-    public class TextLabel : LabeledInputBase<TextBox> {
+    public class TextLabel : LabeledInput<TextBox> {
         // --- VARIABLES ---
         #region VARIABLES
 

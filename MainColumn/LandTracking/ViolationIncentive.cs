@@ -1,6 +1,7 @@
 ﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -15,9 +16,19 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // --- VARIABLES ---
 
+        // - Violation Type -
+
+        public enum ViolationTypes {
+            Once,
+            Recur
+        }
+
+        [DisplayValue("Type", 40, GridUnitType.Pixel, HorizontalAlignment.Center, VerticalAlignment.Center, displayOrder: 1)]
+        public BoundDisplayValue<Label, ViolationTypes> ViolationType { get; set; }
+
         // - Violation Count -
 
-        [DisplayValue("Violations", 50, GridUnitType.Pixel, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, displayOrder: 1, isHitTestVisible: true)]
+        [DisplayValue("#", 30, GridUnitType.Pixel, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, displayOrder:1, isHitTestVisible: true)]
         public BoundDisplayValue<IntegerTextBox, int> ViolationCount { get; set; }
 
         public event EventHandler<EventArgs>? ViolationCountChanged;
@@ -62,6 +73,20 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 violationInput,
                 IntegerTextBox.TextProperty,
                 minimum
+            );
+
+            // violation type
+            ViolationType = new(
+                new Label(),
+                Label.ContentProperty,
+                (name switch {
+                    IncentiveInfo.Violation.AntiInflation => ViolationTypes.Once,
+                    IncentiveInfo.Violation.GroundedStructures => ViolationTypes.Once,
+                    IncentiveInfo.Violation.LandAntiMutilation => ViolationTypes.Once,
+                    IncentiveInfo.Violation.InvalidEdgeSpacing => ViolationTypes.Recur,
+                    IncentiveInfo.Violation.InvalidSignage => ViolationTypes.Recur,
+                    _ => ViolationTypes.Once
+                })
             );
 
             // remove button

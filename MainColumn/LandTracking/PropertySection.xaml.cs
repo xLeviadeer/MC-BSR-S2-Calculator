@@ -122,7 +122,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 if (value == false) {
                     MainBorder.BorderBrush = new SolidColorBrush(ColorResources.LightRedColor);
                 } else {
-                    MainBorder.BorderBrush = new SolidColorBrush(ColorResources.InnerBorderVeryLightColor);
+                    MainBorder.BorderBrush = new SolidColorBrush(ColorResources.InnerColorL3);
                 }
 
                 // set

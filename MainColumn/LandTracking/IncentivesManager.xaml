@@ -38,7 +38,7 @@
         <Border x:Name="DescriptionBorder" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
                 VerticalAlignment="Top" Margin="3" BorderThickness="2" Visibility="Collapsed">
             <Border.BorderBrush>
-                <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
             </Border.BorderBrush>
 
             <Grid x:Name="DescriptionGrid">

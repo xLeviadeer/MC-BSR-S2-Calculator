@@ -28,7 +28,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Remove Button -
 
-        [DisplayValue("", 85, GridUnitType.Pixel, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, displayOrder:2, isHitTestVisible:true)]
+        [DisplayValue("", 70, GridUnitType.Pixel, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, displayOrder:2, isHitTestVisible:true)]
         public DisplayValue<Button> RemoveButton { get; set; }
 
         public abstract event EventHandler<EventArgs>? RemoveRequested;

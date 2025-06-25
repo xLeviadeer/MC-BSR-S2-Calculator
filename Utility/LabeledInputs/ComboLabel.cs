@@ -13,7 +13,7 @@ using System.Windows.Markup;
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
     [ContentProperty(nameof(Items))] // allows the class to take combo box items
-    public class ComboLabel : LabeledInputBase<ComboBox> {
+    public class ComboLabel : LabeledInput<ComboBox> {
 
         // --- VARIABLES ---
         #region VARIABLES

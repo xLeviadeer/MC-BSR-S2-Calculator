@@ -22,9 +22,23 @@ namespace MC_BSR_S2_Calculator.Utility {
         public static readonly Color VeryLightGreyColor = Color.FromRgb(192, 192, 192);
 
         // border colors
-        public static readonly Color InnerBorderColor = Color.FromRgb(187, 187, 187);
-        public static readonly Color InnerBorderLightColor = Color.FromRgb(200, 200, 200);
-        public static readonly Color InnerBorderVeryLightColor = Color.FromRgb(220, 220, 220);
+        // 0 - 64 D
+        // 64 - 128 MD
+        // 128 - 192 ML
+        // 192 - 255 L
+        public static readonly Color InnerColorM = Color.FromRgb(128, 128, 128);
+        public static readonly Color InnerColorML = Color.FromRgb(140, 140, 140);
+        public static readonly Color InnerColorML1 = Color.FromRgb(150, 150, 150);
+        public static readonly Color InnerColorML2 = Color.FromRgb(160, 160, 160);
+        public static readonly Color InnerColorML3 = Color.FromRgb(170, 170, 170);
+        public static readonly Color InnerColorML4 = Color.FromRgb(180, 180, 180);
+        public static readonly Color InnerColorML5 = Color.FromRgb(192, 192, 192); // main tab color
+        public static readonly Color InnerColorL = Color.FromRgb(200, 200, 200); // sub tab color
+        public static readonly Color InnerColorL2 = Color.FromRgb(210, 210, 210); // tab inner backgrounded content border color
+        public static readonly Color InnerColorL3 = Color.FromRgb(220, 220, 220); // tab inner content border color
+        public static readonly Color InnerColorL4 = Color.FromRgb(230, 230, 230);
+        public static readonly Color InnerColorL5 = Color.FromRgb(240, 240, 240); // tab inner backgrounded content background
+        public static readonly Color InnerColorL6 = Color.FromRgb(250, 250, 250);
 
         // hovering 
         public static readonly Color HoverColor = Color.FromArgb(77, 80, 180, 255);

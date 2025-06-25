@@ -1,4 +1,5 @@
 ﻿<UserControl x:Class="MC_BSR_S2_Calculator.Utility.CoordinateInput"
+             x:Name="root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -10,7 +11,13 @@
              mc:Ignorable="d" 
              Height="Auto"
              Width="Auto">
+    
+    <!-- Default border color -->
+    <UserControl.BorderBrush>
+        <SolidColorBrush Color="{x:Static local:ColorResources.InnerColorL3}"/>
+    </UserControl.BorderBrush>
 
+    <!-- Resources -->
     <UserControl.Resources>
         <Style TargetType="util_labeledinputs:TextLabel">
             <Setter Property="Grid.Column" Value="0"/>
@@ -23,6 +30,7 @@
         </Style>
     </UserControl.Resources>
 
+    <!-- Content -->
     <Grid x:Name="MainGrid" d:Width="200">
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -34,12 +42,9 @@
             Text="{Binding DisplayName}" FontSize="12"/>
 
         <!-- Coordinate Input -->
-        <Border Grid.Row="1" Margin="3" Padding="1"
-                BorderThickness="2">
-            <Border.BorderBrush>
-                <SolidColorBrush Color="{x:Static local:ColorResources.InnerBorderVeryLightColor}"/>
-            </Border.BorderBrush>
-            
+        <Border x:Name="CoordinateInputBorder" Grid.Row="1" Margin="3" Padding="1"
+                BorderThickness="2" BorderBrush="{Binding BorderBrush, ElementName=root}">
+
             <Grid x:Name="InputsGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -55,7 +60,7 @@
                                       LabelText="X" Visibility="{Binding ShowXInputVisibility}"
                                       ValidityChanged="XInput_ValidityChanged"/>
                 <util_labeledinputs:TextLabel x:Name="YInput" Grid.Row="1"
-                                      LabelText="Y" Visibility="{Binding ShowYInputVisibility}"
+                                      LabelText="Y" MaxInputFromTextLabel="320" MinInputFromTextLabel="-64" Visibility="{Binding ShowYInputVisibility}"
                                       ValidityChanged="YInput_ValidityChanged"/>
                 <util_labeledinputs:TextLabel x:Name="ZInput" Grid.Row="2"
                                       LabelText="Z" Visibility="{Binding ShowZInputVisibility}"

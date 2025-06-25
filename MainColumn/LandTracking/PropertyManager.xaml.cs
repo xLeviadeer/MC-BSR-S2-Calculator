@@ -40,7 +40,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 [nameof(NameInput)] = new(),
                 [nameof(PropertyTypeInput)] = new(),
                 [nameof(ResidentsCountInput)] = new() { IsEnabled = false }, // starts as disabled
-                [nameof(Sections)] = new() { IsValid = true } // sections start as valid
+                [nameof(Sections)] = new() { IsValid = true }, // sections start as valid
+                [nameof(HasMailboxCheck)] = new(),
+                [nameof(HasEdgeSpacingCheck)] = new()
             }
         );
 
@@ -75,6 +77,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 if (scrollBar != null) {
                     scrollBar.Margin = new Thickness(3, 0, 0, 0);
                 }
+
+                // set y input max to the surface land max
+                ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YInput.MaxInputFromTextLabel = LandDefinitions.SurfaceLandareaYLevelMax;
             };
         }
 
@@ -89,7 +94,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // -- Completion Buttons --
         #region Completion Buttons
 
-        private void OnClearClicked(object? sender, EventArgs args) {
+        private void OnClearCharged(object? sender, EventArgs args) {
             // temporarily dont update buttons (so we dont waste time validating on every change)
             DoUpdateButtons = false;
 
@@ -107,16 +112,20 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             ViolationIncentives.Reset();
             PurchaseIncentives.Reset();
 
+            SubsurfaceLandProvisionCheck.IsChecked = false;
+            HasMailboxCheck.IsChecked = false;
+            HasEdgeSpacingCheck.IsChecked = false;
+
             // allow updates again and manually update buttons
             DoUpdateButtons = true;
             UpdateCreateButtonEnabledStatus();
         }
 
-        private void OnCreateClicked(object? sender, EventArgs args) {
+        private void OnCreateCharged(object? sender, EventArgs args) {
             // create a new property and add it to the property list
 
             // clear values
-            OnClearClicked(this, args);
+            OnClearCharged(this, args);
 
             // tab the user to the view/modify page
         }
@@ -251,6 +260,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         private void PurchaseIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args)
             => HideSubItemScrollPassToParent(sender, args);
+
+        private void HasMailboxCheck_CheckChanged(object sender, BoolEventArgs args) {
+            Validity[nameof(HasMailboxCheck)].IsValid = args.Value ?? false;
+            UpdateCreateButtonEnabledStatus();
+        }
+
+        private void HasEdgeSpacingCheck_CheckChanged(object sender, BoolEventArgs args) {
+            Validity[nameof(HasEdgeSpacingCheck)].IsValid = args.Value ?? false;
+            UpdateCreateButtonEnabledStatus();
+        }
 
         #endregion
     }

@@ -34,7 +34,7 @@
             <Border x:Name="OuterBorder"
                 BorderThickness="3">
                 <Border.BorderBrush>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </Border.BorderBrush>
             </Border>
             <Grid x:Name="OuterGrid" Margin="3">

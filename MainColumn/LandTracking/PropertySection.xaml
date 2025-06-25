@@ -15,7 +15,7 @@
     <Border x:Name="MainBorder" VerticalAlignment="Top" Margin="6"
             BorderThickness="2">
         <Border.BorderBrush>
-            <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+            <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
         </Border.BorderBrush>
             
         <Grid x:Name="MainGrid" Margin="3">
@@ -38,7 +38,7 @@
             <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                           Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerBorderVeryLightColor}"/>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
                 </GridSplitter.Background>
             </GridSplitter>
 

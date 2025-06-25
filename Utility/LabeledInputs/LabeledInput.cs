@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
     /// A framework element with an associated label
     /// </summary>
     /// <typeparam name="T"> The type of framework element that this class uses </typeparam>
-    public abstract class LabeledInputBase<T> : UserControl 
+    public abstract class LabeledInput<T> : UserControl 
         where T : FrameworkElement {
         // --- VARIABLES ---
         #region VARIABLES
@@ -36,7 +37,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         public static readonly DependencyProperty LabelTextProperty = DependencyProperty.Register(
             nameof(LabelText),
             typeof(string),
-            typeof(LabeledInputBase<T>),
+            typeof(LabeledInput<T>),
             new PropertyMetadata(null)
         );
 
@@ -52,7 +53,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         public static readonly DependencyProperty FluidProportionsSplitIndexProperty = DependencyProperty.Register(
             nameof(FluidProportionsSplitIndex),
             typeof(int),
-            typeof(LabeledInputBase<T>),
+            typeof(LabeledInput<T>),
             new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.AffectsMeasure, null, CoerceFluidProportionsSplitIndex)
         );
 
@@ -67,7 +68,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         // - LayoutMode -
 
-        public enum LabeledInputBaseLayoutModes {
+        public enum LabeledInputLayoutModes {
             Above,
             Left,
             LeftFit,
@@ -75,24 +76,24 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             LeftSwapFit
         }
 
-        private LabeledInputBaseLayoutModes? OriginalLayoutMode { get; set; }
+        private LabeledInputLayoutModes? OriginalLayoutMode { get; set; }
 
         [Category("Common")]
         [Description("The text to be placed in the TextBlock label")]
-        public LabeledInputBaseLayoutModes LayoutMode {
-            get => (LabeledInputBaseLayoutModes)GetValue(LayoutModeProperty);
+        public LabeledInputLayoutModes LayoutMode {
+            get => (LabeledInputLayoutModes)GetValue(LayoutModeProperty);
             set => SetValue(LayoutModeProperty, value);
         }
 
         public static readonly DependencyProperty LayoutModeProperty = DependencyProperty.Register(
             nameof(LayoutMode),
-            typeof(LabeledInputBaseLayoutModes),
-            typeof(LabeledInputBase<T>),
-            new PropertyMetadata(LabeledInputBaseLayoutModes.Left, OnLayoutModeChanged)
+            typeof(LabeledInputLayoutModes),
+            typeof(LabeledInput<T>),
+            new PropertyMetadata(LabeledInputLayoutModes.LeftFit, OnLayoutModeChanged)
         );
 
         private static void OnLayoutModeChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
-            var control = (LabeledInputBase<T>)sender;
+            var control = (LabeledInput<T>)sender;
             control.ApplyLayoutMode(); // re-apply visuals on changes
         }
 
@@ -106,20 +107,20 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         public static readonly DependencyProperty LabelIsClippedProperty = DependencyProperty.Register(
             nameof(LabelIsClipped),
             typeof(bool),
-            typeof(LabeledInputBase<T>),
+            typeof(LabeledInput<T>),
             new PropertyMetadata(false, OnLabelIsClippedChanged)
         );
 
         public static void OnLabelIsClippedChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {            
             // get values
-            var control = (LabeledInputBase<T>)sender;
+            var control = (LabeledInput<T>)sender;
             bool isClipped = (bool)args.NewValue;
 
             // update layout mode (only if started as left)
-            if (control.OriginalLayoutMode == LabeledInputBaseLayoutModes.Left) {
-                control.LayoutMode = isClipped ? LabeledInputBaseLayoutModes.Above : LabeledInputBaseLayoutModes.Left;
-            } else if (control.OriginalLayoutMode == LabeledInputBaseLayoutModes.LeftSwap) {
-                control.LayoutMode = isClipped ? LabeledInputBaseLayoutModes.Above : LabeledInputBaseLayoutModes.LeftSwap;
+            if (control.OriginalLayoutMode == LabeledInputLayoutModes.Left) {
+                control.LayoutMode = isClipped ? LabeledInputLayoutModes.Above : LabeledInputLayoutModes.Left;
+            } else if (control.OriginalLayoutMode == LabeledInputLayoutModes.LeftSwap) {
+                control.LayoutMode = isClipped ? LabeledInputLayoutModes.Above : LabeledInputLayoutModes.LeftSwap;
             }
         }
 
@@ -128,6 +129,14 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         // - text block label -
         public Label TextLabel { get; set; } = new();
+
+        // - context - 
+        // handles grid parenting and such when set
+        private FrameworkElement? _context { get; set; } = null;
+        public FrameworkElement Context {
+            get => (_context != null) ? _context : this;
+            set => _context = value;
+        }
 
         // - some framework element -
         public abstract T Element { get; set; }
@@ -140,7 +149,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         // --- CONSTRUCTOR ---
         #region CONSTRUCTOR
 
-        public LabeledInputBase() {
+        public LabeledInput() {
             // startup settings
             Loaded += OnLoaded;
 
@@ -185,8 +194,6 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             TextLabel.HorizontalAlignment = HorizontalAlignment.Left;
             TextLabel.VerticalAlignment = VerticalAlignment.Center;
 
-            // -- above layout mode --
-
             // standard generation
             void generateStandardly() {
                 // main grid divisions
@@ -202,7 +209,9 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 Grid.SetColumn(Element, 1);
             }
 
-            if (LayoutMode == LabeledInputBaseLayoutModes.Above) {
+            // -- above layout mode --
+
+            if (LayoutMode == LabeledInputLayoutModes.Above) {
                 // label font size
                 TextLabel.FontSize = 11;
                 TextLabel.Margin = new Thickness(3, 3, 3, 0);
@@ -220,7 +229,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
                 // set column span to label if parent is grid
                 if (
-                    (this.Parent is Grid parent)
+                    (Context.Parent is Grid parent)
                     && (parent.ColumnDefinitions.Count > 0)
                 ) {
                     Grid.SetColumnSpan(TextLabel, parent.ColumnDefinitions.Count);
@@ -252,11 +261,11 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     // - yes parent grid -
                     if (
                         (FluidProportionsSplitIndex != -1)
-                        && (this.Parent is Grid parent)
+                        && (Context.Parent is Grid parent)
                     ) { // if parent is a grid
                         // get starting and ending pos
-                        int startingPos = Grid.GetColumn(this);
-                        int endingPos = startingPos + Grid.GetColumnSpan(this);
+                        int startingPos = Grid.GetColumn(Context);
+                        int endingPos = startingPos + Grid.GetColumnSpan(Context);
 
                         // if parent has at least 2 columns
                         if ((endingPos - startingPos) < 2) { generateStandardly(); return; }
@@ -279,7 +288,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     }
                 }
 
-                if (LayoutMode == LabeledInputBaseLayoutModes.Left) {
+                if (LayoutMode == LabeledInputLayoutModes.Left) {
                     // fluid
                     setUpFluidLayout((startingPos, endingPos) => {
                         // placing
@@ -291,7 +300,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
                     // dont generate standard
                     return;
-                } else if (LayoutMode == LabeledInputBaseLayoutModes.LeftSwap) {
+                } else if (LayoutMode == LabeledInputLayoutModes.LeftSwap) {
                     // fluid
                     setUpFluidLayout((startingPos, endingPos) => {
                         // placing
@@ -333,7 +342,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     });
                 }
 
-                if (LayoutMode == LabeledInputBaseLayoutModes.LeftFit) {
+                if (LayoutMode == LabeledInputLayoutModes.LeftFit) {
                     addFit(TextLabel);
                     addFiller();
 
@@ -343,7 +352,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
                     // dont generate standard
                     return;
-                } else if (LayoutMode == LabeledInputBaseLayoutModes.LeftSwapFit) {
+                } else if (LayoutMode == LabeledInputLayoutModes.LeftSwapFit) {
                     addFit(Element);
                     addFiller();
 
@@ -370,24 +379,24 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             if (
                 (!IsLoaded) 
                 || (TextLabel.ActualWidth == 0)
-                || ((OriginalLayoutMode != LabeledInputBaseLayoutModes.Left)
-                    && (OriginalLayoutMode != LabeledInputBaseLayoutModes.LeftSwap)
+                || ((OriginalLayoutMode != LabeledInputLayoutModes.Left)
+                    && (OriginalLayoutMode != LabeledInputLayoutModes.LeftSwap)
                 ) || (FluidProportionsSplitIndex == -1) // non-fluid proportions can't format change based on clipping
             ) {
                 return;
             }
 
             // check parent
-            if (this.Parent is not Grid) { return; }
-            Grid parent = (Grid)this.Parent;
+            if (Context.Parent is not Grid) { return; }
+            Grid parent = (Grid)Context.Parent;
 
             // get columns from the parent so they can be checked even when in above mode
-            int startingPos = Grid.GetColumn(this);
+            int startingPos = Grid.GetColumn(Context);
             int endingPos = FluidProportionsSplitIndex;
             FrameworkElement checkAgainst;
-            if (OriginalLayoutMode == LabeledInputBaseLayoutModes.LeftSwap) {
+            if (OriginalLayoutMode == LabeledInputLayoutModes.LeftSwap) {
                 checkAgainst = Element;
-            } else if (OriginalLayoutMode == LabeledInputBaseLayoutModes.Left) {
+            } else if (OriginalLayoutMode == LabeledInputLayoutModes.Left) {
                 checkAgainst = TextLabel;
             } else { // not possible at this point
                 throw new ArgumentException("The OriginalLayoutMode was changed during execution");
@@ -401,9 +410,6 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             availableWidth -= TextLabel.Margin.Left + TextLabel.Margin.Right;
 
             // check if the label is too small
-            if (OriginalLayoutMode == LabeledInputBaseLayoutModes.LeftSwap) {
-                Debug.WriteLine($"available: {availableWidth}");
-            }
             bool clipped = (availableWidth < GetDesiredWidth(checkAgainst));
             LabelIsClipped = clipped;
         }

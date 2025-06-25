@@ -67,7 +67,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.BrightRedColor);
                 section.MetricResult.ResultForeground = new SolidColorBrush(ColorResources.RedColor);
             } else {
-                section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerBorderVeryLightColor);
+                section.MetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerColorL3);
                 section.MetricResult.ResultForeground = new SolidColorBrush(Colors.Black);
             }
         }
@@ -341,7 +341,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 TotalMetricResult.Result = result.ToString();
 
                 // colors
-                TotalMetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerBorderVeryLightColor);
+                TotalMetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerColorL3);
                 TotalMetricResult.ResultForeground = new SolidColorBrush(Colors.Black);
             }
         }

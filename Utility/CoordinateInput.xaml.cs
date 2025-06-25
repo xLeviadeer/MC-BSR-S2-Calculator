@@ -33,10 +33,79 @@ namespace MC_BSR_S2_Calculator.Utility
         protected void OnPropertyChanged(string name) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+        // - Display Mode -
+
+        public enum DisplayModes {
+            Fancy,
+            Simple
+        }
+
+        [Category("Common")]
+        [Description("How to display the coordinate input")]
+        public DisplayModes DisplayMode {
+            get => (DisplayModes)GetValue(DisplayModeProperty);
+            set => SetValue(DisplayModeProperty, value);
+        }
+
+        public static readonly DependencyProperty DisplayModeProperty = DependencyProperty.Register(
+            nameof(DisplayMode),
+            typeof(DisplayModes),
+            typeof(CoordinateInput),
+            new PropertyMetadata(DisplayModes.Fancy, OnDisplayModeChanged)
+        );
+
+        private static void OnDisplayModeChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
+            if (sender is CoordinateInput control) {
+                switch (control.DisplayMode) {
+                    case DisplayModes.Simple: {
+                        FrameworkElement? coordinateGrid = (FrameworkElement)control.CoordinateInputBorder.Child;
+                        if (coordinateGrid.Name == "InputsGrid") {
+                            // child handling
+                            control.CoordinateInputBorder.Child = null;
+                            control.MainGrid.Children.Add(coordinateGrid);
+                            Grid.SetRow(coordinateGrid, 1);
+
+                            // other visibility changes
+                            control.CoordinateInputBorder.Visibility = Visibility.Collapsed;
+                            control.TitleLabel.Visibility = Visibility.Collapsed;
+
+                            control.OnPropertyChanged(nameof(DisplayMode));
+                        }
+                        break;
+                    } case DisplayModes.Fancy: {
+                        // find coordinate grid
+                        FrameworkElement coordinateGrid;
+                        foreach (UIElement gridChild in control.MainGrid.Children) {
+                            if (
+                                (gridChild is FrameworkElement frameworkElement)
+                                && (frameworkElement.Name == "InputsGrid")
+                            ) {
+                                coordinateGrid = frameworkElement;
+                                goto found_coordinateGrid;
+                            }
+                        }
+                        break;
+
+                        found_coordinateGrid:
+                            // child handling
+                            control.MainGrid.Children.Remove(coordinateGrid);
+                            control.CoordinateInputBorder.Child = coordinateGrid;
+
+                            // other visibility changes
+                            control.CoordinateInputBorder.Visibility = Visibility.Visible;
+                            control.TitleLabel.Visibility = Visibility.Visible;
+
+                            control.OnPropertyChanged(nameof(DisplayMode));
+                            break;
+                    }
+                }
+            }
+        }
+
         // - Show X -
 
         [Category("Common")]
-        [Description("Wether or not to show the X input box")]
+        [Description("Whether or not to show the X input box")]
         public bool ShowXInput {
             get => (bool)GetValue(ShowXInputProperty);
             set => SetValue(ShowXInputProperty, value);
@@ -61,7 +130,7 @@ namespace MC_BSR_S2_Calculator.Utility
         // - Show Y -
 
         [Category("Common")]
-        [Description("Wether or not to show the Y input box")]
+        [Description("Whether or not to show the Y input box")]
         public bool ShowYInput {
             get => (bool)GetValue(ShowYInputProperty);
             set => SetValue(ShowYInputProperty, value);
@@ -86,7 +155,7 @@ namespace MC_BSR_S2_Calculator.Utility
         // - Show Z -
 
         [Category("Common")]
-        [Description("Wether or not to show the Z input box")]
+        [Description("Whether or not to show the Z input box")]
         public bool ShowZInput {
             get => (bool)GetValue(ShowZInputProperty);
             set => SetValue(ShowZInputProperty, value);
