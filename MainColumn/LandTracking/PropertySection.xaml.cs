@@ -100,13 +100,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public event EventHandler<BoolEventArgs>? ValidityChanged;
 
-        // - Metric -
+        // - Subsection (for metric) -
 
-        public int Metric { get => MetricX * MetricZ; }
-
-        public int MetricX { get; private set; } = 1;
-
-        public int MetricZ { get; private set; } = 1;
+        public PropertySubsection Subsection { get; } = new();
 
         // - Has Valid Connection -
 
@@ -172,17 +168,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public void CalculateAndDisplayMetric() {
             // find the x and y size of the square
-            MetricX = (int)(Math.Abs( // 1
-                ((IntegerTextBox)CoordinateInputCornerA.XInput.Element).Value
-                - ((IntegerTextBox)CoordinateInputCornerB.XInput.Element).Value
-            ) + 1);
-            MetricZ = (int)(Math.Abs( // 100
-                ((IntegerTextBox)CoordinateInputCornerA.ZInput.Element).Value
-                - ((IntegerTextBox)CoordinateInputCornerB.ZInput.Element).Value
-            ) + 1);
+            Subsection.A = new FlatCoordinate() {
+                X = (int)((IntegerTextBox)CoordinateInputCornerA.XInput.Element).Value,
+                Z = (int)((IntegerTextBox)CoordinateInputCornerA.ZInput.Element).Value
+            };
+            Subsection.B = new FlatCoordinate() {
+                X = (int)((IntegerTextBox)CoordinateInputCornerB.XInput.Element).Value,
+                Z = (int)((IntegerTextBox)CoordinateInputCornerB.ZInput.Element).Value
+            };
 
             // set metric
-            MetricResult.Result = Metric.ToString();
+            MetricResult.Result = Subsection.Metric.ToString();
         }
 
         private void CalculateAndDisplayMetric(object sender, EventArgs e) {

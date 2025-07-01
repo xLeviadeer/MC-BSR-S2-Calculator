@@ -15,21 +15,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Name -
 
         [DisplayValue("Name", 1, GridUnitType.Star, HorizontalAlignment.Left, VerticalAlignment.Center, displayOrder:0)]
-        public BoundDisplayValue<Label, string> Name { get; set; }
+        public BoundDisplayValue<Label, string> Name { get; protected set; }
 
         // - Value -
 
         [DisplayValue("Value", 50, GridUnitType.Pixel, HorizontalAlignment.Center, VerticalAlignment.Center, displayOrder:2)]
-        public BoundDisplayValue<Label, double> Value { get; set; }
-
-        public virtual double AddValue {
-            get => Value.Value;
-        }
+        public BoundDisplayValue<Label, double> Value { get; protected set; }
 
         // - Remove Button -
 
         [DisplayValue("", 70, GridUnitType.Pixel, HorizontalAlignment.Stretch, VerticalAlignment.Stretch, displayOrder:2, isHitTestVisible:true)]
-        public DisplayValue<Button> RemoveButton { get; set; }
+        public DisplayValue<Button> RemoveButton { get; protected set; }
 
         public abstract event EventHandler<EventArgs>? RemoveRequested;
 
@@ -65,7 +61,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         ) => SetDefaultValues(name, value);
         #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-
         #endregion
+
+        // --- METHODS ---
+
+        // - Get As Active Incentive -
+
+        public abstract ActiveIncentive GetActiveIncentive();
     }
 }

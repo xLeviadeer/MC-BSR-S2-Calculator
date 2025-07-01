@@ -114,6 +114,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             return IncentiveOptions[0]; // none
         }
 
+        public event EventHandler<EventArgs>? IncentivesChanged;
+
         // - Has Been Loaded -
 
         private bool HasBeenLoaded { get; set; } = false;
@@ -126,6 +128,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public IncentivesManager() {
             InitializeComponent();
 
+            // load event
             Loaded += (_, __) => {
                 // has been loaded check
                 if (HasBeenLoaded) { return; }
@@ -167,6 +170,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 IncentivesDisplay.Updated += (sender, args) => {
                     Dispatcher.BeginInvoke(new Action(() => {
                         UpdateTotalIncentiveResult();
+                        IncentivesChanged?.Invoke(this, args);
                     }), DispatcherPriority.Background);
                 };
 
@@ -192,6 +196,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // --- METHODS ---
         #region METHODS 
 
+        public ActiveIncentive[] GetActiveIncentives() 
+            => IncentivesDisplay.ClassDataList.Select(
+                incentive => incentive.GetActiveIncentive()
+            ).ToArray();
+
         private IncentiveInfo TryGetInfo() {
             if (SelectionComboLabel.SelectedIndex == -1) { return IncentiveInfo.NoneInfo; }
             return InfoTarget.FindByName(
@@ -200,15 +209,18 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         }
 
         private void Remove(Incentive incentive) {
+            // remove from display
             IncentivesDisplay.Remove(incentive);
             IncentiveOption incentiveOption = FindByName(incentive.Name);
             incentiveOption.IsEnabled = true;
+
+            // hold selected index
             if (IncentiveOptions.IndexOf(incentiveOption) < SelectionComboLabel.SelectedIndex) {
                 SelectionComboLabel.SelectedIndex += 1;
             }
         }
 
-        public void Reset() {
+        public void Clear() {
             // remove until empty
             // ensures that it's cleared properly
             while (IncentivesDisplay.Count > 0) {
@@ -254,13 +266,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             }
         }
 
-        private void UpdateTotalIncentiveResult() {
-            double total = 0;
-            foreach (Incentive incentive in IncentivesDisplay.ClassDataList) {
-                total += incentive.AddValue;
-            }
-            TotalIncentiveResult.Result = Math.Round(total, 2).ToString();
-        }
+        private void UpdateTotalIncentiveResult() 
+            => TotalIncentiveResult.Result = Property.GetTotalIncentivesValue(
+                IncentivesDisplay.ClassDataList
+                .Select(incentive => incentive.GetActiveIncentive())
+                .ToArray()
+            ).ToString();
 
         #endregion
     }

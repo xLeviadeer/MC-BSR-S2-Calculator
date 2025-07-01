@@ -27,7 +27,8 @@
             <Setter Property="FluidProportionsSplitIndex" Value="1"/>
             <Setter Property="LayoutMode" Value="Left"/>
         </Style>
-        <sys:Int32 x:Key="LastRow">25</sys:Int32>
+        <sys:Int32 x:Key="LastRow">34</sys:Int32>
+        <sys:Int32 x:Key="FinalResultFluidSplitIndex">2</sys:Int32>
     </UserControl.Resources>
 
     <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
@@ -67,6 +68,15 @@
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
 
             <!-- Title -->
@@ -93,7 +103,7 @@
             <util_labeledinputs:TextLabel x:Name="ResidentsCountInput" Grid.Row="4" Style="{StaticResource TextLabeledInput}"
                                           LabelText="Number of Residents" TextBoxType="IntegerTextBox" TextBoxMaxLength="20" Visibility="Collapsed"
                                           MaxInputFromTextLabel="100" MinInputFromTextLabel="1"
-                                          ValidityChanged="ResidentsCountInput_ValidityChanged"/>
+                                          InputFinalized="ResidentsCountInput_InputFinalized"/>
 
             <!-- Property Sections -->
             <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
@@ -125,7 +135,7 @@
             </GridSplitter>
             <local:IncentivesManager x:Name="TaxIncentives" Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="4"
                                      IncentiveListType="Tax"
-                                     PreviewMouseWheel="TaxIncentives_PreviewMouseWheel"/>
+                                     PreviewMouseWheel="TaxIncentives_PreviewMouseWheel" IncentivesChanged="TaxIncentives_IncentivesChanged"/>
 
             <!-- Violation Incentives -->
             <TextBlock Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
@@ -138,7 +148,7 @@
             </GridSplitter>
             <local:IncentivesManager x:Name="ViolationIncentives" Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="4"
                                      IncentiveListType="Violation"
-                                     PreviewMouseWheel="ViolationIncentives_PreviewMouseWheel"/>
+                                     PreviewMouseWheel="ViolationIncentives_PreviewMouseWheel" IncentivesChanged="ViolationIncentives_IncentivesChanged"/>
 
             <!-- Purchase Incentives -->
             <TextBlock Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
@@ -151,7 +161,7 @@
             </GridSplitter>
             <local:IncentivesManager x:Name="PurchaseIncentives" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="4"
                          IncentiveListType="Purchase"
-                         PreviewMouseWheel="PurchaseIncentives_PreviewMouseWheel"/>
+                         PreviewMouseWheel="PurchaseIncentives_PreviewMouseWheel" IncentivesChanged="PurchaseIncentives_IncentivesChanged"/>
 
             <!-- Other Title -->
             <TextBlock Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource MiniTitle}"
@@ -180,6 +190,56 @@
             <util_labeledinputs:CheckBoxLabel x:Name="HasEdgeSpacingCheck" Grid.Row="24" Grid.Column="0" Grid.ColumnSpan="4"
                                   LabelText="Follows Property Metric Guidelines" LayoutMode="LeftSwapFit"
                                   CheckChanged="HasEdgeSpacingCheck_CheckChanged"/>
+
+            <!-- Property Size -->
+            <util_labeledinputs:ResultDisplay x:Name="PropertySizeResult" Grid.Row="25" Grid.Column="0" Grid.ColumnSpan="4"
+                                              LabelText="Property Size" DefaultResult="{x:Static local:Property+PropertySize.Invalid}" 
+                                              LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Approved Check -->
+            <util_labeledinputs:CheckBoxLabel x:Name="ApprovedCheck" Grid.Row="26" Grid.Column="0" Grid.ColumnSpan="4"
+                                              LabelText="Has Been Approved" LayoutMode="LeftSwapFit" Visibility="Collapsed"
+                                              CheckChanged="ApprovedCheck_CheckChanged"/>
+
+            <!-- Property Purchase Value -->
+            <util_labeledinputs:ResultDisplay x:Name="PurchaseValueResult" Grid.Row="27" Grid.Column="0" Grid.ColumnSpan="4"
+                                  LabelText="Purchase Price" DefaultResult="-" ResultBorderBrush="Transparent"
+                                  Visibility="Collapsed"
+                                  LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Property Purchase Value Added by Incentives -->
+            <util_labeledinputs:ResultDisplay x:Name="PurchaseValueByIncentivesResult" Grid.Row="28" Grid.Column="0" Grid.ColumnSpan="4"
+                                              LabelText="Purchase Value Added by Incentives" DefaultResult="-" ResultBorderBrush="Transparent"
+                                              Visibility="Collapsed"
+                                              LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Final Property Purchase Value -->
+            <util_labeledinputs:ResultDisplay x:Name="FinalPurchaseValueResult" Grid.Row="29" Grid.Column="0" Grid.ColumnSpan="4"
+                      LabelText="Total Purchase Value" DefaultResult="-"
+                      LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Property Tax Value -->
+            <util_labeledinputs:ResultDisplay x:Name="TaxContributionResult" Grid.Row="30" Grid.Column="0" Grid.ColumnSpan="4"
+                                  LabelText="Tax Contribution" DefaultResult="-" ResultBorderBrush="Transparent"
+                                  Visibility="Collapsed"
+                                  LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Property Tax Value Added by Property Type -->
+            <util_labeledinputs:ResultDisplay x:Name="TaxContributionByPropertyTypeResult" Grid.Row="31" Grid.Column="0" Grid.ColumnSpan="4"
+                                  LabelText="Tax Contributed by Property Type" DefaultResult="-" ResultBorderBrush="Transparent" 
+                                  Visibility="Collapsed"
+                                  LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Property Tax Value Added by Incentives -->
+            <util_labeledinputs:ResultDisplay x:Name="TaxContributionByIncentivesResult" Grid.Row="32" Grid.Column="0" Grid.ColumnSpan="4"
+                                  LabelText="Tax Contribution by Incentives" DefaultResult="-" ResultBorderBrush="Transparent" 
+                                  Visibility="Collapsed"
+                                  LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
+
+            <!-- Final Property Tax Value -->
+            <util_labeledinputs:ResultDisplay x:Name="FinalTaxContributionResult" Grid.Row="33" Grid.Column="0" Grid.ColumnSpan="4"
+                      LabelText="Total Tax Contribution" DefaultResult="-"
+                      LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
 
             <!-- Completion Buttons -->
             <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"

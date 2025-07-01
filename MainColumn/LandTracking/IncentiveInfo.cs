@@ -155,13 +155,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             public ImmutableList<IncentiveInfo> Selectable { get; } = [
                 new(
                     UnderwaterConstruction,
-                    0.4d,
+                    -0.4d,
                     "If Citizens anticipate to construct a Private Property where no less than 80% of the Property Volumetric of the construction is underwater they will receive a 40% floored discount on their Property purchase. They will be given a book signed by an Elected Official signifying this. If the Property Owner doesn't follow the terms of this deal after buying the Property they will owe a Fine equal to the amount of the Diamonds they were discounted to the Government."
                 ),
                 new(
                     UnderIceConstruction,
-                    0.8d,
-                    "If Citizens anticipate to construct a Private Property where no less than 80% of the volume of the construction is underwater and the property is underneath Y62 in a Glacier biome and not underground they will receive a 80% floored discount on their Property purchase. They will be given a book signed by an Elected Official signifying this. If the Property Owner doesn't follow the terms of this deal after buying the Property they will owe a Fine equal to the amount of the Diamonds they were discounted to the Government."
+                    -0.4d,
+                    "Both this and the Underwater Construction Incentive should be applied if the Property Owner qualifies for this incentive!\r\n\r\nIf Citizens anticipate to construct a Private Property where no less than 80% of the volume of the construction is underwater and the property is underneath Y62 in a Glacier biome and not underground they will receive a 80% floored discount on their Property purchase. They will be given a book signed by an Elected Official signifying this. If the Property Owner doesn't follow the terms of this deal after buying the Property they will owe a Fine equal to the amount of the Diamonds they were discounted to the Government."
                 )
             ];
 

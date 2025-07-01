@@ -89,8 +89,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
                 // check height and width
                 if (
-                    (section.MetricX < minSize)
-                    || (section.MetricZ < minSize)
+                    (section.Subsection.Height < minSize)
+                    || (section.Subsection.Width < minSize)
                 ) {
                     // set error
                     errorsBySection[propertySectionIndex] = (
@@ -334,11 +334,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 TotalMetricResult.ResultForeground = new SolidColorBrush(ColorResources.DullRedColor);
             } else {
                 // text
-                double result = 0;
-                foreach (PropertySection section in Sections) {
-                    result += section.Metric;
-                }
-                TotalMetricResult.Result = result.ToString();
+                TotalMetricResult.Result = Property.GetPropertyMetric(Sections // selects all subsections from sections
+                    .Select(section => section.Subsection)
+                    .ToArray()
+                ).ToString();
 
                 // colors
                 TotalMetricResult.ResultBorderBrush = new SolidColorBrush(ColorResources.InnerColorL3);
@@ -540,6 +539,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         private void CheckAndSetSectionsValidity() {
             Validity[nameof(Sections)].IsValid = Sections.All(section => section.CheckValidity());
+            UpdateFinalResults();
         }
 
         #endregion

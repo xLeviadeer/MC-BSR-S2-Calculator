@@ -56,7 +56,13 @@ namespace MC_BSR_S2_Calculator.Utility.Validations {
 
         // - IsValid exposure -
 
-        public bool CheckValidity() => IsValid;
+        public bool CheckValidity() {
+            if (IsEnabled) {
+                return IsValid;
+            } else {
+                return true;
+            }
+        }
     }
 
     /// <summary>
@@ -122,14 +128,21 @@ namespace MC_BSR_S2_Calculator.Utility.Validations {
 
         public bool CheckValidity() {
             // get validity
-            return (Validity.Values.All(validityHolder => {
-                if (validityHolder.IsEnabled) {
-                    return validityHolder.IsValid;
-                } else {
-                    return true;
-                }
-            }));
+            return (Validity.Values.All(validityHolder => validityHolder.CheckValidity()));
         }
+
+        // - Copy -
+
+        /// <summary>
+        /// Copies validity so that it can be changed, however elemnts still refer to the same objects
+        /// </summary>
+        /// <returns> a new validity holder </returns>
+        public ValidityHolder SoftCopy()
+            => new ValidityHolder(this.Validity.ToDictionary());
+
+        // - Remove -
+
+        public void Remove(string key) => Validity.Remove(key);
 
         // - foreach support -
 

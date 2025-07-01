@@ -1,7 +1,13 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using MC_BSR_S2_Calculator.Utility.Validations;
+using MC_BSR_S2_Calculator.Utility.XamlConverters;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Printing;
@@ -18,10 +24,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.LabeledInputs;
-using MC_BSR_S2_Calculator.Utility.Validations;
-using MC_BSR_S2_Calculator.Utility.XamlConverters;
+using System.Windows.Threading;
+using static MC_BSR_S2_Calculator.MainColumn.LandTracking.Property;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 {
@@ -36,13 +40,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // - Validity Holder -
 
         private ValidityHolder Validity = new(
-            new () {
+            new() {
                 [nameof(NameInput)] = new(),
                 [nameof(PropertyTypeInput)] = new(),
-                [nameof(ResidentsCountInput)] = new() { IsEnabled = false }, // starts as disabled
-                [nameof(Sections)] = new() { IsValid = true }, // sections start as valid
+                [nameof(Sections)] = new(),
                 [nameof(HasMailboxCheck)] = new(),
-                [nameof(HasEdgeSpacingCheck)] = new()
+                [nameof(HasEdgeSpacingCheck)] = new(),
+                [nameof(ApprovedCheck)] = new() { IsEnabled = false }
             }
         );
 
@@ -108,13 +112,18 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             ResetSections();
 
-            TaxIncentives.Reset();
-            ViolationIncentives.Reset();
-            PurchaseIncentives.Reset();
+            TaxIncentives.Clear();
+            ViolationIncentives.Clear();
+            PurchaseIncentives.Clear();
 
             SubsurfaceLandProvisionCheck.IsChecked = false;
             HasMailboxCheck.IsChecked = false;
             HasEdgeSpacingCheck.IsChecked = false;
+
+            Dispatcher.BeginInvoke(new Action(() => {
+                ResetFinalResults();
+            }), DispatcherPriority.Background);
+            
 
             // allow updates again and manually update buttons
             DoUpdateButtons = true;
@@ -193,6 +202,166 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             }
         }
 
+        // - final results updates -
+
+        private void setApprovedCheck(int propertyMetric) {
+            if (Validity[nameof(Sections)].IsValid) {
+                // property size
+                string propertySize = Property.GetPropertySize(propertyMetric);
+                if (
+                    (propertySize == Property.PropertySize.Large)
+                    || (propertySize == Property.PropertySize.Massive)
+                ) {
+                    // show approved box
+                    ApprovedCheck.Visibility = Visibility.Visible;
+                    Validity[nameof(ApprovedCheck)].IsEnabled = true;
+                } else {
+                    // hide approved box
+                    ApprovedCheck.Visibility = Visibility.Collapsed;
+                    Validity[nameof(ApprovedCheck)].IsEnabled = false;
+                }
+                UpdateCreateButtonEnabledStatus();
+                PropertySizeResult.Result = propertySize;
+            } else {
+                // hide approved box
+                ApprovedCheck.Visibility = Visibility.Collapsed;
+                Validity[nameof(ApprovedCheck)].IsEnabled = false;
+
+                UpdateCreateButtonEnabledStatus();
+                PropertySizeResult.Result = Property.PropertySize.Invalid;
+            }
+        }
+
+        private void UpdateFinalResults() {
+            const int roundingDecimals = 2;
+
+            // addition format helper
+            void additionFormat(
+                ResultDisplay display,
+                double added, 
+                double total, 
+                bool showTotal=false
+            ) {
+                if (added != 0) {
+                    display.Visibility = Visibility.Visible;
+                    display.Result = $"{(
+                        (added > 0)
+                        ? "+"
+                        : string.Empty
+                    )}{Math.Round(added, roundingDecimals)} {(
+                        showTotal 
+                        ? $"({Math.Round(total, roundingDecimals)})" 
+                        : string.Empty
+                    )}";
+                } else {
+                    display.Visibility = Visibility.Collapsed;
+                }
+            }
+
+            // calculate metric
+            int propertyMetric = Property.GetPropertyMetric(Sections
+                .Select(section => section.Subsection)
+                .ToArray()
+            );
+
+            // - purchase results -
+
+            // if invalid
+            if (Validity[nameof(Sections)].CheckValidity() == false) {
+                PropertySizeResult.Result = Property.PropertySize.Invalid;
+                FinalPurchaseValueResult.Result = FinalPurchaseValueResult.DefaultResult;
+                setApprovedCheck(propertyMetric);
+
+            // if valid
+            } else {
+                // approved check box
+                setApprovedCheck(propertyMetric);
+
+                // property purchase values
+                int finalPurchaseValue = Property.GetPurchaseValueFinal(
+                    propertyMetric,
+                    ViolationIncentives.GetActiveIncentives()
+                        .Cast<ActiveViolationIncentive>()
+                        .ToArray(),
+                    PurchaseIncentives.GetActiveIncentives(),
+                    out int purchaseValue,
+                    out int addedByIncentives
+                );
+                additionFormat(PurchaseValueByIncentivesResult, addedByIncentives, finalPurchaseValue);
+
+                // original value
+                if (PurchaseValueByIncentivesResult.Visibility != Visibility.Collapsed) {
+                    PurchaseValueResult.Result = purchaseValue.ToString();
+                    PurchaseValueResult.Visibility = Visibility.Visible;
+                } else {
+                    PurchaseValueResult.Visibility = Visibility.Collapsed;
+                }
+
+                // final value
+                FinalPurchaseValueResult.Result = Math.Round((double)finalPurchaseValue, roundingDecimals).ToString();
+            }
+
+            // - tax results updates -
+
+            // if invalid
+            if (
+                (Validity[nameof(Sections)].CheckValidity() == false)
+                || (Validity[nameof(PropertyTypeInput)].CheckValidity() == false)
+            ) {
+                FinalTaxContributionResult.Result = FinalTaxContributionResult.DefaultResult;
+            
+            // if valid
+            } else {
+                // property tax values
+                int finalTaxValue = Property.GetTotalTaxContribution(
+                    propertyMetric,
+                    TaxIncentives.GetActiveIncentives(),
+                    ViolationIncentives.GetActiveIncentives()
+                        .Cast<ActiveViolationIncentive>()
+                        .ToArray(),
+                    PropertyTypeInput.SelectedItem.ToString(),
+                    (int)((IntegerTextBox)ResidentsCountInput.Element).Value,
+                    out double taxValue,
+                    out double addedByPropertyType,
+                    out double addedByIncentives
+                );
+                bool addedByPropertyTypeShowTotal = TaxContributionByIncentivesResult.Visibility != Visibility.Collapsed;
+                additionFormat(TaxContributionByPropertyTypeResult, addedByPropertyType, (taxValue + addedByPropertyType), addedByPropertyTypeShowTotal);
+                additionFormat(TaxContributionByIncentivesResult, addedByIncentives, finalTaxValue);
+
+                // original value
+                if (
+                    (TaxContributionByPropertyTypeResult.Visibility != Visibility.Collapsed)
+                    || (TaxContributionByIncentivesResult.Visibility != Visibility.Collapsed)
+                ) {
+                    TaxContributionResult.Result = taxValue.ToString();
+                    TaxContributionResult.Visibility = Visibility.Visible;
+                } else {
+                    TaxContributionResult.Visibility = Visibility.Collapsed;
+                }
+
+                // final value
+                FinalTaxContributionResult.Result = Math.Round((double)finalTaxValue, roundingDecimals).ToString();
+            }
+        }
+
+        private void ResetFinalResults() {
+            // purchase
+            PurchaseValueResult.Visibility = Visibility.Collapsed;
+            PurchaseValueByIncentivesResult.Visibility = Visibility.Collapsed;
+            FinalPurchaseValueResult.Result = FinalPurchaseValueResult.DefaultResult;
+            setApprovedCheck(0);
+
+            // property size
+            PropertySizeResult.Result = Property.PropertySize.Invalid;
+
+            // tax
+            TaxContributionResult.Visibility = Visibility.Collapsed;
+            TaxContributionByPropertyTypeResult.Visibility = Visibility.Collapsed;
+            TaxContributionByIncentivesResult.Visibility = Visibility.Collapsed;
+            FinalTaxContributionResult.Result = FinalTaxContributionResult.DefaultResult;
+        }
+
         #endregion
 
         // -- Per-Item Methods --
@@ -210,12 +379,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             void MakeVisible() {
                 ResidentsCountInput.Visibility = Visibility.Visible;
-                Validity[nameof(ResidentsCountInput)].IsEnabled = true;
             }
 
             void MakeInvisible() {
                 ResidentsCountInput.Visibility = Visibility.Collapsed;
-                Validity[nameof(ResidentsCountInput)].IsEnabled = false;
             }
 
             // update to invisible if -1
@@ -233,12 +400,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             Validity[nameof(PropertyTypeInput)].IsValid = (propertyTypeInput.SelectedIndex != -1);
             CheckAndSetSectionsValidity();
             UpdateCreateButtonEnabledStatus();
+            UpdateFinalResults();
         }
 
-        private void ResidentsCountInput_ValidityChanged(object sender, BoolEventArgs args) {
-            Validity[nameof(ResidentsCountInput)].IsValid = args.Value ?? false;
-            UpdateCreateButtonEnabledStatus();
-        }
+        private void ResidentsCountInput_InputFinalized(object sender, EventArgs args)
+            => UpdateFinalResults();
 
         private void HideSubItemScrollPassToParent(object sender, MouseWheelEventArgs args) {
             args.Handled = true;
@@ -252,11 +418,20 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             MainScrollViewer.RaiseEvent(eventArg);
         }
 
-        private void TaxIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args) 
+        private void TaxIncentives_IncentivesChanged(object sender, EventArgs args) 
+            => UpdateFinalResults();
+
+        private void TaxIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args)
             => HideSubItemScrollPassToParent(sender, args);
+
+        private void ViolationIncentives_IncentivesChanged(object sender, EventArgs args) 
+            => UpdateFinalResults();
 
         private void ViolationIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args)
             => HideSubItemScrollPassToParent(sender, args);
+
+        private void PurchaseIncentives_IncentivesChanged(object sender, EventArgs args) 
+            => UpdateFinalResults();
 
         private void PurchaseIncentives_PreviewMouseWheel(object sender, MouseWheelEventArgs args)
             => HideSubItemScrollPassToParent(sender, args);
@@ -268,6 +443,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         private void HasEdgeSpacingCheck_CheckChanged(object sender, BoolEventArgs args) {
             Validity[nameof(HasEdgeSpacingCheck)].IsValid = args.Value ?? false;
+            UpdateCreateButtonEnabledStatus();
+        }
+
+        private void ApprovedCheck_CheckChanged(object sender, BoolEventArgs args) {
+            Validity[nameof(ApprovedCheck)].IsValid = args.Value ?? false;
             UpdateCreateButtonEnabledStatus();
         }
 

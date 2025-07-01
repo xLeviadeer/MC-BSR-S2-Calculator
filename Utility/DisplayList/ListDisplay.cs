@@ -54,8 +54,6 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         public List<Dictionary<string, DisplayValueBase>> DataListByRows {
             get {
-                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return new(); }
-
                 return ClassDataList.Select(
                     cls => cls.DisplayValues
                 ).ToList();
@@ -87,8 +85,6 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         public Dictionary<string, List<DisplayValueBase>> DataListByColumns {
             get {
-                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return new(); }
-
                 return ClassDataList[0].DisplayHeaders.ToDictionary(
                     key => key, // key
                     key => ClassDataList.Select( // value
@@ -122,9 +118,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// </summary>
         public ImmutableList<string> Headers {
             get {
-                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableList<string>.Empty; }
-
-                if (ClassDataList.Count > 0) {
+               if (ClassDataList.Count > 0) {
                     // gets the display headers in the order of their display order 
                     // this means that the display will be built in the order the headers are in
                     return ClassDataList[0].DisplayHeaders
@@ -146,8 +140,6 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         private ImmutableDictionary<string, GridLength> ColumnWidths {
             get {
-                if ((ClassDataList == null) || (ClassDataList.Count == 0)) { return ImmutableDictionary<string, GridLength>.Empty; }
-
                 return ClassDataList[0].DisplayHeaders.ToImmutableDictionary(
                     key => key, // key
                     key => ClassDataList[0].ColumnWidths[key]

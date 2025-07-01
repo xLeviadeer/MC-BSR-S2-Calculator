@@ -5,11 +5,13 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public class ViolationIncentive : Incentive {
@@ -32,13 +34,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public BoundDisplayValue<IntegerTextBox, int> ViolationCount { get; set; }
 
         public event EventHandler<EventArgs>? ViolationCountChanged;
-
-        // - Add Value -
-
-        // multiplies the value by the amount of violations
-        public override double AddValue {
-            get => ViolationCount.Value * Value;
-        }
 
         // - Remove Request -
 
@@ -65,7 +60,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             violationInput.InputFinalized += (sender, args) => {
                 if (args is InputFinalizedEventArgs<double> inputFinalizedArgs) {
                     if (inputFinalizedArgs.OldValue != inputFinalizedArgs.NewValue) {
-                        ViolationCountChanged?.Invoke(sender, args);
+                        ViolationCountChanged?.Invoke(this, args);
                     }
                 }
             };
@@ -104,8 +99,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             string name,
             double value
         ) => SetDefaultValues(name, value);
-        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         #endregion
+
+        // --- METHODS ---
+
+        public override ActiveIncentive GetActiveIncentive() => new ActiveViolationIncentive() {
+            InfoTarget = IncentiveInfo.Violation.Instance,
+            Name = Name,
+            ViolationType = ViolationType,
+            ViolationCount = (int)((IntegerTextBox)ViolationCount.DisplayObject).Value
+        };
     }
 }
