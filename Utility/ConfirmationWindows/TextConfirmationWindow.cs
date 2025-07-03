@@ -46,7 +46,7 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             }
             
             // text box settings
-            TextBoxInput.Height = (double)Application.Current.Resources["TextBoxHeight"];
+            TextBoxInput.Height = (double)Application.Current.Resources["LabelHeight"];
             TextBoxInput.HorizontalAlignment = HorizontalAlignment.Stretch;
             TextBoxInput.VerticalAlignment = VerticalAlignment.Center;
             TextBoxInput.HorizontalContentAlignment = HorizontalAlignment.Left;

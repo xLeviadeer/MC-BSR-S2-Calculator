@@ -94,7 +94,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// <summary>
         /// The default value for this textbox
         /// </summary>
-        public T DefaultValue {
+        public override object? DefaultValue {
             get => (T)GetValue(DefaultValueProperty);
             set => SetValue(DefaultValueProperty, value);
         }
@@ -108,7 +108,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
             nameof(DefaultValue),
             typeof(T),
             typeof(TypedTextBox<T>),
-            new PropertyMetadata(default)
+            new PropertyMetadata()
         );
 
         // - Value -
@@ -170,11 +170,11 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                 Text = "";
                 LastText = "";
             } else {
-                Text = DefaultValue.ToString();
+                Text = DefaultValue.ToString() ?? "";
                 LastText = DefaultValue.ToString() ?? "";
             }
-            LastValue = DefaultValue;
-            LastStableValue = DefaultValue;
+            LastValue = (T?)DefaultValue;
+            LastStableValue = (T?)DefaultValue;
         }
 
         #endregion

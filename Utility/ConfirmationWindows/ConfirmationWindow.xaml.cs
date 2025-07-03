@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -120,6 +121,20 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
             ConfirmButton.Style = (Style)Application.Current.Resources["ConfirmButtons"];
             ConfirmButton.Content = confirmButtonText;
             ConfirmButton.Margin = new Thickness(5, 0, 3, 5);
+            ConfirmButton.Padding = new Thickness(3);
+
+            // type dependent settings
+            if (ConfirmButton is ChargingButton confirmChargingButton) {
+                // charge time
+                if (chargeTime != null) {
+                    confirmChargingButton.ChargeTime = (double)chargeTime;
+                }
+
+                // event
+                confirmChargingButton.ChargeCycled += (sender, args) => OnConfirm(this, new());
+            } else {
+                ConfirmButton.Click += OnConfirm;
+            }
 
             // confirm button color and dependent settings
             switch (useConfirmColor.ToLower()) {
@@ -128,21 +143,10 @@ namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
                     ConfirmButton.BorderBrush = new SolidColorBrush(ColorResources.DarkerRedColor);
                     ConfirmButton.Foreground = new SolidColorBrush(ColorResources.MediumerRedColor);
 
-                    // set charging settings
-                    if (ConfirmButton is ChargingButton confirmChargingButton) {
-                        confirmChargingButton.ColorPalette = ChargingButton.ChargingButtonColorPalettes.Red;
-                        confirmChargingButton.ApplyPalette();
-                        
-                        // charge time
-                        if (chargeTime != null) {
-                            confirmChargingButton.ChargeTime = (double)chargeTime;
-                        }
-                        
-                        // event
-                        confirmChargingButton.ChargeCycled += (sender, args) => OnConfirm(this, new());
-                    } else {
-                        // event
-                        ConfirmButton.Click += OnConfirm;
+                    // set charging colors
+                    if (ConfirmButton is ChargingButton confirmChargingButton0) {
+                        confirmChargingButton0.ColorPalette = ChargingButton.ChargingButtonColorPalettes.Red;
+                        confirmChargingButton0.ApplyPalette();
                     }
                     break;
             }

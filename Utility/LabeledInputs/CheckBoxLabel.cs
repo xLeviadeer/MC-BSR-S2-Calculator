@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,15 +10,15 @@ using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
-    public class CheckBoxLabelProperties : LabeledInputProperties<CheckBox>;
+    public class CheckBoxLabelProperties : LabeledInputProperties<SwitchManagedCheckBox>;
 
-    public class CheckBoxLabel : LabeledInput<CheckBox> {
+    public class CheckBoxLabel : LabeledInput<SwitchManagedCheckBox> {
         // --- VARIABLES ---
         #region VARIABLES
 
         // - Check Box -
 
-        public override CheckBox Element { get; set; } = new();
+        public override SwitchManagedCheckBox Element { get; set; } = new();
 
         // - Has Been Loaded -
         private bool HasBeenLoaded { get; set; } = false;

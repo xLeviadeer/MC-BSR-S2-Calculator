@@ -46,8 +46,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="75"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock x:Name="TitleText" Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0"
@@ -55,7 +55,7 @@
                 <TextBlock x:Name="DescriptionText" Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1"
                     Margin="5,0,5,10" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="9" MaxWidth="{Binding ThirdScreenWidth}" Text="Test Description" TextWrapping="Wrap"/>
                 <Button x:Name="DenyButton" Grid.Column="3" Grid.Row="2"
-                    Style="{StaticResource ConfirmButtons}" Margin="3,0,5,5" Content="Test No" Click="OnDeny"/>
+                    Style="{StaticResource ConfirmButtons}" Margin="3,0,5,5" Padding="3" Content="Test No" Click="OnDeny"/>
             </Grid>
         </Grid>
     </Grid>

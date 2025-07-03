@@ -1,5 +1,6 @@
 ﻿using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using MC_BSR_S2_Calculator.Utility.Validations;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
@@ -32,7 +33,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
     /// <summary>
     /// Interaction logic for PropertyManager.xaml
     /// </summary>
-    public partial class PropertyManager : UserControl, IValidityHolder
+    public partial class PropertyManager : UserControl, IValidityHolder, ISwitchManaged
     {
         // --- VARIABLES ---
         #region VARIABLES
@@ -56,6 +57,22 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public event EventHandler<BoolEventArgs>? ValidityChanged;
 
+        // - Tab Contents Changed -
+
+        private Dictionary<string, Func<bool>> ContentChanges; // set in constructor
+
+        public bool TabContentsChanged { 
+            get {
+                foreach (var thing in ContentChanges) {
+                    Debug.WriteLine($"{thing.Key}: {thing.Value()}");
+                }
+
+                return ContentChanges.Any(item => item.Value() == true);
+            }
+        }
+
+        public bool RequiresReset { get; set; } = true;
+
         // - Has Been Loaded -
 
         private bool HasBeenLoaded { get; set; } = false;
@@ -68,6 +85,21 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         public PropertyManager()
         {
             InitializeComponent();
+
+            // setup content changed
+            ContentChanges = new Dictionary<string, Func<bool>>() {
+                [nameof(NameInput)] = () => NameInput.Element.TabContentsChanged,
+                [nameof(PropertyTypeInput)] = () => PropertyTypeInput.Element.TabContentsChanged,
+                [nameof(ResidentsCountInput)] = () => NameInput.Element.TabContentsChanged,
+                [nameof(Sections)] = CheckIfSectionsChanged,
+                [nameof(TaxIncentives)] = () => (TaxIncentives.IncentivesDisplay.Count > 0),
+                [nameof(ViolationIncentives)] = () => (ViolationIncentives.IncentivesDisplay.Count > 0),
+                [nameof(PurchaseIncentives)] = () => (PurchaseIncentives.IncentivesDisplay.Count > 0),
+                [nameof(SubsurfaceLandProvisionCheck)] = () => SubsurfaceLandProvisionCheck.CheckBoxLabelObject.Element.TabContentsChanged,
+                [nameof(HasMailboxCheck)] = () => HasMailboxCheck.Element.TabContentsChanged,
+                [nameof(HasEdgeSpacingCheck)] = () => HasEdgeSpacingCheck.Element.TabContentsChanged,
+                [nameof(ApprovedCheck)] = () => ApprovedCheck.Element.TabContentsChanged
+            };
 
             // assign Sections and deletion events
             Loaded += (_, __) => {
@@ -98,7 +130,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // -- Completion Buttons --
         #region Completion Buttons
 
-        private void OnClearCharged(object? sender, EventArgs args) {
+        private void OnClearCharged(object? sender, EventArgs args) => Reset();
+
+        public void Reset() {
             // temporarily dont update buttons (so we dont waste time validating on every change)
             DoUpdateButtons = false;
 
@@ -123,7 +157,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             Dispatcher.BeginInvoke(new Action(() => {
                 ResetFinalResults();
             }), DispatcherPriority.Background);
-            
+
 
             // allow updates again and manually update buttons
             DoUpdateButtons = true;

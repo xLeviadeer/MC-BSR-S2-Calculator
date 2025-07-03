@@ -1,4 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
 using System.Collections.Generic;

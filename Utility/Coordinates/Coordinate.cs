@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MC_BSR_S2_Calculator.MainColumn {
+namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
     /// <summary>
     /// Holds 3 integers representing a coordinate

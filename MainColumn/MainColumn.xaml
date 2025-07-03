@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn"
              xmlns:land="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
+             xmlns:util_switchmanagedtab="clr-namespace:MC_BSR_S2_Calculator.Utility.SwitchManagedTab"
              mc:Ignorable="d"
              Height="Auto"
              Width="Auto">
@@ -13,12 +14,12 @@
     <Grid x:Name="MainGrid">
         
         <!-- PlayerGrid Content -->
-        <TabControl x:Name="MainTabControl" Style="{StaticResource MainTabControlStyle}">
-            <TabItem x:Name="TabLandTracking" Style="{StaticResource MainTabStyle}" 
+        <util_switchmanagedtab:SwitchManagedTabControl x:Name="MainTabControl" Style="{StaticResource MainTabControlStyle}">
+            <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabLandTracking" Style="{StaticResource MainTabStyle}" 
                      Header="Land Tracking">
                 <land:LandTracking/>
-            </TabItem>
-            <TabItem x:Name="TabTest" Style="{StaticResource MainTabStyle}" Header="Test"/>
-        </TabControl>
+            </util_switchmanagedtab:SwitchManagedTabItem>
+            <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabTest" Style="{StaticResource MainTabStyle}" Header="Test"/>
+        </util_switchmanagedtab:SwitchManagedTabControl>
     </Grid>
 </UserControl>

@@ -542,6 +542,21 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             UpdateFinalResults();
         }
 
+        private bool CheckIfSectionsChanged() {
+            // changed checks
+            if (
+                (Sections.Count != 1) // check for section count
+                || (Sections[0].SectionName.Element.TabContentsChanged) // check for name
+                || (Sections[0].Subsection.TopLeft != new FlatCoordinate(0, 0)) // check if section isn't at 0,0
+                || (Sections[0].Subsection.BottomRight != new FlatCoordinate(0, 0)) // check if section isn't at 0,0
+            ) {
+                return true;
+            }
+
+            // no changes
+            return false;
+        }
+
         #endregion
 
     }

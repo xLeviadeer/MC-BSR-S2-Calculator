@@ -14,7 +14,7 @@ using System.Security.Policy;
 using System.Diagnostics;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
-    public class TextLabel : LabeledInput<TextBox> {
+    public class TextLabel : LabeledInput<EnterTextBox> {
         // --- VARIABLES ---
         #region VARIABLES
 
@@ -51,7 +51,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         );
 
         // - text box input -
-        public override TextBox Element { get; set; } = new();
+        public override EnterTextBox Element { get; set; } = new();
 
         // - expose IsValid -
 
@@ -197,7 +197,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 TextBoxTypes.IntegerTextBox => new IntegerTextBox(),
                 TextBoxTypes.DoubleTextBox => new DoubleTextBox(),
                 TextBoxTypes.StringTextBox => new StringTextBox(),
-                _ => new TextBox()
+                _ => new EnterTextBox()
             };
 
             // text changed exposure
@@ -222,16 +222,13 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 this.ValidityChangedInvoke(this, new(colorTextBox.IsValid));
             }
 
-            // if it's an EnterTextBox
-            if (Element is EnterTextBox enterTextBox) {
-                // expose event
-                enterTextBox.KeyDownEnter += (object? sender, KeyEventArgs args) => { this.KeyDownEnterInvoke(this, args); };
-                enterTextBox.KeyUpEnter += (object? sender, KeyEventArgs args) => { this.KeyUpEnterInvoke(this, args); };
-
-                // highlight settings
-                enterTextBox.HighlightUponTab = HightlightUponTabFromTextLabel;
-                enterTextBox.HighlightUponClick = HighlightUponClickFromTextLabel;
-            }
+            // enter text box settings
+            // expose event
+            Element.KeyDownEnter += (object? sender, KeyEventArgs args) => { this.KeyDownEnterInvoke(this, args); };
+            Element.KeyUpEnter += (object? sender, KeyEventArgs args) => { this.KeyUpEnterInvoke(this, args); };
+            // highlight settings
+            Element.HighlightUponTab = HightlightUponTabFromTextLabel;
+            Element.HighlightUponClick = HighlightUponClickFromTextLabel;
 
             // if it's a number text box
             if (Element is NumberTextBox numberTextBox) {

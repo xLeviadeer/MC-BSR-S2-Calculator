@@ -1,4 +1,5 @@
-﻿using MC_BSR_S2_Calculator.Utility.TextBoxes;
+﻿using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,13 +14,13 @@ using System.Windows.Markup;
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
     [ContentProperty(nameof(Items))] // allows the class to take combo box items
-    public class ComboLabel : LabeledInput<ComboBox> {
+    public class ComboLabel : LabeledInput<SwitchManagedComboBox> {
 
         // --- VARIABLES ---
         #region VARIABLES
 
         // - combo box -
-        public override ComboBox Element { get; set; } = new();
+        public override SwitchManagedComboBox Element { get; set; } = new();
 
         // - has been loaded -
         private bool HasBeenLoaded { get; set; } = false;

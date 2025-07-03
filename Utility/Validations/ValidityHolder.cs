@@ -20,7 +20,7 @@ namespace MC_BSR_S2_Calculator.Utility.Validations {
     /// <summary>
     /// A single validity holder that is valid/invalid and enabled/disabled
     /// </summary>
-    public class SingleValidityHolder : IValidityHolder {
+    public sealed class SingleValidityHolder : IValidityHolder {
 
         // - validity changed event -
 
@@ -68,7 +68,7 @@ namespace MC_BSR_S2_Calculator.Utility.Validations {
     /// <summary>
     /// Holds multiple single validity holders for validity checking
     /// </summary>
-    public class ValidityHolder : IValidityHolder, IEnumerable<KeyValuePair<string, SingleValidityHolder>> {
+    public sealed class ValidityHolder : IValidityHolder, IEnumerable<KeyValuePair<string, SingleValidityHolder>> {
 
         // --- VARIABLES ---
 

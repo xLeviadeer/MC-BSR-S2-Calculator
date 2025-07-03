@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.Coordinates;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
