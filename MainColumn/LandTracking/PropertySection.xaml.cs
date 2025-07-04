@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.Coordinates;
 using MC_BSR_S2_Calculator.Utility.LabeledInputs;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using MC_BSR_S2_Calculator.Utility.Validations;

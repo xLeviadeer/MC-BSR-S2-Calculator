@@ -1,4 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.Coordinates;
 using MC_BSR_S2_Calculator.Utility.Validations;
 using System;
 using System.Collections.Generic;

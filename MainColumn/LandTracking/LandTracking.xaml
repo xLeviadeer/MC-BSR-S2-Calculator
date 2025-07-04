@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
+             xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
              xmlns:util_switchmanagedtab="clr-namespace:MC_BSR_S2_Calculator.Utility.SwitchManagedTab"
              mc:Ignorable="d" 
              Height="Auto"
@@ -20,7 +21,12 @@
         <!-- Modify/View Properties -->
         <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabModifyViewProperty" Style="{StaticResource SubTabStyle}"
                      Header="Modify/View Properties">
-
+            <Grid x:Name="ModifyViewPropertyGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+            </Grid>
         </util_switchmanagedtab:SwitchManagedTabItem>
 
         <!-- Land Type Checking -->

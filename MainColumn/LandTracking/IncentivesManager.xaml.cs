@@ -1,4 +1,5 @@
-﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.LabeledInputs;
 using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
@@ -167,7 +168,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 Grid.SetColumnSpan(IncentivesDisplay, 3);
                 IncentivesDisplay.Margin = new Thickness(3);
                 IncentivesDisplay.ShowScrollBar = ScrollBarVisibility.Disabled;
-                IncentivesDisplay.ItemBorderBrushSides = new SolidColorBrush(Color.FromRgb(179, 179, 176));
+                IncentivesDisplay.ItemBorderBrushSides = new SolidColorBrush(ColorResources.ItemBorderBrushSidesLighter);
                 IncentivesDisplay.Updated += (sender, args) => {
                     Dispatcher.BeginInvoke(new Action(() => {
                         UpdateTotalIncentiveResult();

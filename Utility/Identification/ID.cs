@@ -23,7 +23,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
     }
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public abstract class ID : IComparable<ID> {
+    public abstract partial class ID : IComparable<ID> {
 
         // --- STATIC ---
 
@@ -40,7 +40,10 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
         public static MutableKeysDictionary<IDPrimaryMark, List<IDTraceMark>> TraceList {
             get {
-                if ((!TraceListHasBeenBuilt) && (_tracelist.Count <= 0)) {
+                if (
+                    (!TraceListHasBeenBuilt) 
+                    && (_tracelist.Count <= 0)
+                ) {
                     SetUpTraceList();
                 }
                 return _tracelist;
@@ -70,6 +73,8 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         #endregion
 
         // -- METHODS --
+
+        // - Startup -
 
         // - Conversion Methods -
         #region Conversion Methods

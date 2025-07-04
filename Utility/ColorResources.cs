@@ -49,5 +49,8 @@ namespace MC_BSR_S2_Calculator.Utility {
         public static readonly Color DarkerRedColor = Color.FromRgb(108, 49, 49);
         public static readonly Color MediumerRedColor = Color.FromRgb(164, 33, 33);
         public static readonly Color BrighterRedColor = Color.FromRgb(204, 73, 73);
+
+        // display list
+        public static readonly Color ItemBorderBrushSidesLighter = Color.FromRgb(179, 179, 176);
     }
 }

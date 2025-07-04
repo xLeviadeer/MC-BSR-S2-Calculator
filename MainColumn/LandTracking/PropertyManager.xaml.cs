@@ -61,15 +61,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         private Dictionary<string, Func<bool>> ContentChanges; // set in constructor
 
-        public bool TabContentsChanged { 
-            get {
-                foreach (var thing in ContentChanges) {
-                    Debug.WriteLine($"{thing.Key}: {thing.Value()}");
-                }
-
-                return ContentChanges.Any(item => item.Value() == true);
-            }
-        }
+        public bool TabContentsChanged => ContentChanges.Any(item => item.Value() == true);
 
         public bool RequiresReset { get; set; } = true;
 
@@ -166,9 +158,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         private void OnCreateCharged(object? sender, EventArgs args) {
             // create a new property and add it to the property list
+            Singletons.PropertiesDisplay.Add(new Property(
+                NameInput.Text
+            ));
 
             // clear values
-            OnClearCharged(this, args);
+            Reset();
 
             // tab the user to the view/modify page
         }
@@ -346,14 +341,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             
             // if valid
             } else {
-                // property tax values
+                // property tax 
                 int finalTaxValue = Property.GetTotalTaxContribution(
                     propertyMetric,
                     TaxIncentives.GetActiveIncentives(),
                     ViolationIncentives.GetActiveIncentives()
                         .Cast<ActiveViolationIncentive>()
                         .ToArray(),
+                    #pragma warning disable CS8604 // Possible null reference argument.
                     PropertyTypeInput.SelectedItem.ToString(),
+                    #pragma warning restore CS8604 // Possible null reference argument.
                     (int)((IntegerTextBox)ResidentsCountInput.Element).Value,
                     out double taxValue,
                     out double addedByPropertyType,

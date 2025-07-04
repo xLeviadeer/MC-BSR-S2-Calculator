@@ -153,6 +153,10 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // - Has Been Loaded -
 
+        private bool FoundScrollbar { get; set; } = false;
+
+        protected bool RebuildOnEveryLoad { get; set; } = false;
+
         private bool HasBeenLoaded { get; set; } = false;
 
         #endregion
@@ -166,7 +170,16 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         public ListDisplay() {
             Loaded += (object sender, RoutedEventArgs args) => {
                 // has been loaded
-                if (HasBeenLoaded) { return; }
+                if (HasBeenLoaded) {
+                    // try scrollbar if build doesn't do it
+                    if (!RebuildOnEveryLoad && !FoundScrollbar) { PrepareScrollBar(); }
+
+                    // rebuild on every load (except first load)
+                    if (RebuildOnEveryLoad) { BuildGrid(); }
+
+                    // don't continue
+                    return; 
+                }
                 HasBeenLoaded = true;
 
                 // loads data list and builds grid
@@ -251,19 +264,19 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         #region Operations
 
         // - Add -
-        public void Add(T cls) {
+        public virtual void Add(T cls) {
             ClassDataList.Add(cls);
             BuildGrid();
         }
 
         // - Remove -
 
-        public void Remove(T cls) {
+        public virtual void Remove(T cls) {
             ClassDataList.Remove(cls);
             BuildGrid();
         }
 
-        public void RemoveAt(int index) {
+        public virtual void RemoveAt(int index) {
             // range check
             if (
                 (index >= ClassDataList.Count)
@@ -278,7 +291,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // - Clear -
 
-        public void Clear() {
+        public virtual void Clear() {
             ClassDataList.Clear();
             BuildGrid();
         }
@@ -389,6 +402,26 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             // no sorting default
         }
 
+        private void PrepareScrollBar() {
+            // skip if found
+            if (FoundScrollbar) { return; }
+
+            // scroll bar settings
+            Application.Current.Dispatcher.InvokeAsync(() => {
+                // find scroll bar
+                ScrollBar? scrollBar = XamlConverter.FindVerticalScrollBar(MainScrollViewer);
+                if (scrollBar == null) { return; } // try to find again next time
+                FoundScrollbar = true;
+
+                // scroll width
+                scrollBar.MinWidth = 10;
+                scrollBar.Width = ScrollBarWidth;
+            }, DispatcherPriority.Loaded);
+
+            // scroll viewer margins
+            MainScrollViewer.Margin = MainBorder.BorderThickness;
+        }
+
         private void PrepareGridForBuilding() {
             // clear current grid contents
             MainGrid.Children.Clear();
@@ -407,18 +440,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
             MainBorder.Background = MainBorderBackground;
 
             // scroll bar settings
-            Application.Current.Dispatcher.InvokeAsync(() => {
-                // find scroll bar
-                ScrollBar? scrollBar = XamlConverter.FindVerticalScrollBar(MainScrollViewer);
-                if (scrollBar == null) { throw new ArgumentException($"MainScrollViewer didn't contain a ScrollBar"); }
-
-                // scroll width
-                scrollBar.MinWidth = 10;
-                scrollBar.Width = ScrollBarWidth;
-            }, DispatcherPriority.Loaded);
-
-            // scroll viewer margins
-            MainScrollViewer.Margin = MainBorder.BorderThickness;
+            PrepareScrollBar();
 
             // if class data is null or empty
             if ((ClassDataList == null) || (ClassDataList.Count == 0)) {
@@ -495,6 +517,8 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// Font Size is set to the listContentTotalHeight of it's associated grid
         /// </remarks>
         public void BuildGrid() {
+
+
             // prepare main grid
             PrepareGridForBuilding();
             SortClassData();

@@ -17,14 +17,16 @@ using Newtonsoft.Json;
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Player : Displayable {
+    public class Player : Displayable, IIDHolder {
 
         // --- VARIABLES ---
 
         // - IDPrimary -
 
+        public static char TypeCharacter { get; } = 'p';
+
         [JsonProperty("player_id")]
-        public IDPrimary PlayerID { get; set; } = new(typeof(Player), 'p');
+        public IDPrimary PlayerID { get; set; } = new(typeof(Player), TypeCharacter);
 
         // - Name -
 

@@ -33,8 +33,12 @@
             <Button x:Name="MarkAllAsInactiveButton" Grid.Row="0" 
                 Style="{StaticResource InputButton}" Content="Mark All as Inactive" Margin="5,5,5,0" Click="OnMarkAllAsInactiveButtonClicked"/>
             <local:PlayerList x:Name="_playersList" Grid.Row="1" 
-                ScrollBarWidth="10" Margin="5,3,5,10" ShowScrollBar="Auto" ItemBorderBrushSides="#FFB3B3B3"
-                EmptyText="No Players found"/>
+                ScrollBarWidth="10" Margin="5,3,5,10" ShowScrollBar="Auto" 
+                EmptyText="No Players found">
+                <local:PlayerList.ItemBorderBrushSides>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.ItemBorderBrushSidesLighter}"/>
+                </local:PlayerList.ItemBorderBrushSides>
+            </local:PlayerList>
         </Grid>
 
         <!-- AddGrid Layout -->

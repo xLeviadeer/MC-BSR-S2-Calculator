@@ -1,7 +1,12 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.Identification;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -10,12 +15,11 @@ using System.Web;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
-using MC_BSR_S2_Calculator.Utility.Identification;
-using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
-    public class Property : Displayable {
+
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+    public class Property : Displayable, IIDHolder {
 
         // --- VARIABLES ---
 
@@ -72,13 +76,15 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - ID -
 
+        public static char TypeCharacter { get; } = 'o';
+
         [JsonProperty("property_id")]
-        public IDPrimary PropertyID { get; set; } = new(typeof(Property), 'o');
+        public IDPrimary PropertyID { get; set; } = new(typeof(Property), TypeCharacter);
 
         // - Name -
 
         [JsonProperty("name")]
-        [DisplayValue("Name", 0, GridUnitType.Star)]
+        [DisplayValue("Name", 1, GridUnitType.Star)]
         public BoundDisplayValue<Label, string> Name { get; set; }
 
         #endregion
@@ -87,9 +93,39 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         #region CONSTRUCTOR
 
-        public Property() {
-            
+        private void SetDefaultValues(
+            string name
+        ) {
+            // name
+            Name = new(
+                new Label(),
+                Label.ContentProperty,
+                name
+            );
         }
+
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+        /// <summary>
+        /// JSON entry only; DO NOT USE
+        /// </summary>
+        public Property() {
+            SetDefaultValues(
+                string.Empty
+            );
+        }
+
+        /// <summary>
+        /// Use this constructor only
+        /// </summary>
+        public Property(string name) {
+            PropertyID.AssignNewID(this);
+            SetDefaultValues(
+                name
+            );
+        }
+
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         #endregion
 

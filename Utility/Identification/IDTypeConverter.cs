@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -12,13 +13,23 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
     /// </summary>
     public class IDTypeConverter<T> : TypeConverter
         where T : ID, new() {
+
+        public static char? ReadOnlyForTypeChar { get; set; } = null;
+
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) {
             return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
         }
 
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) {
             if (value is string s) {
-                return new T { Identifier = s };
+                if (
+                    (ReadOnlyForTypeChar == null)
+                    || (ReadOnlyForTypeChar == s[2])
+                ) {
+                    return new T { Identifier = s };
+                } else {
+                    throw new InvalidKeyReadException();
+                }
             }
             return base.ConvertFrom(context, culture, value);
         }

@@ -1,16 +1,25 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 
 namespace MC_BSR_S2_Calculator.Utility.Identification {
+
+    public sealed class InvalidKeyReadException : Exception {
+        public InvalidKeyReadException() : base() { }
+
+        public InvalidKeyReadException(string message) : base(message) { }
+
+        public InvalidKeyReadException(string message, Exception innerException) : base(message, innerException) { }
+    }
 
     public class FakeDictionaryConverter<T, U> : JsonConverter<MutableKeysDictionary<T, U>> {
         public override void WriteJson(JsonWriter writer, MutableKeysDictionary<T, U>? value, JsonSerializer serializer) {
@@ -19,10 +28,14 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
         #nullable disable
         public override MutableKeysDictionary<T, U> ReadJson(JsonReader reader, Type objectType, MutableKeysDictionary<T, U>? existingValue, bool hasExistingValue, JsonSerializer serializer) {
-            var dict = serializer.Deserialize<Dictionary<T, U>>(reader);
+            var dict = JObject.Load(reader);
             var fakeDict = new MutableKeysDictionary<T, U>();
-            foreach (var kvp in dict) {
-                fakeDict[kvp.Key] = kvp.Value;
+            foreach (var prop in dict.Properties()) {
+                try {
+                    var key = (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString(prop.Name);
+                    var value = prop.Value.ToObject<U>(serializer);
+                    fakeDict[key] = value;
+                } catch (InvalidKeyReadException) { } // don't include this key in the dictionary
             }
             return fakeDict;
         }
