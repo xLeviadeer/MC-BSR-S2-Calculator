@@ -1,8 +1,15 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.MainColumn;
+using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
+using MC_BSR_S2_Calculator.Utility.Identification;
+using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,28 +20,34 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
-using MC_BSR_S2_Calculator.Utility.Identification;
-using MC_BSR_S2_Calculator.Utility.Json;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
     /// <summary>
     /// Interaction logic for PlayerColumn.xaml
     /// </summary>
     public partial class PlayerColumn : UserControl {
-        
+
         // --- VARIABLES ---
 
-        // - player list reference
+        // - player list reference -
 
-        private PlayerList PlayersList { get => (PlayerList) this.FindName("_playersList"); }
+        private PlayerList PlayersList => MainResources.PlayersDisplay;
 
         // --- CONSTRUCTORS ---
         
         public PlayerColumn() {
             InitializeComponent();
+
+            // set up PlayerList
+            Loaded += (_, _) => {
+                ViewGrid.Children.Add(PlayersList);
+                Grid.SetRow(PlayersList, 1);
+                PlayersList.ScrollBarWidth = 10;
+                PlayersList.ShowScrollBar = ScrollBarVisibility.Auto;
+                PlayersList.Margin = new Thickness(5, 3, 5, 10);
+                PlayersList.EmptyText = "No Players found";
+                PlayersList.ItemBorderBrushSides = new SolidColorBrush(ColorResources.ItemBorderBrushSidesLighter);
+            };
         }
 
         // --- METHODS ---

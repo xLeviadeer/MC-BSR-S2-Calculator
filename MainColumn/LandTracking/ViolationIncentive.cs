@@ -1,4 +1,4 @@
-﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
+﻿using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
 using System.CodeDom;

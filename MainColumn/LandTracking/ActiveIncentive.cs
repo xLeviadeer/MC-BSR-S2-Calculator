@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -6,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
+
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public record ActiveIncentive {
         // --- VARIABLES ---
         #region VARIABLES
@@ -16,6 +19,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Name -
 
+        [JsonProperty("name")]
         public required string Name { get; init; }
 
         // - Total -

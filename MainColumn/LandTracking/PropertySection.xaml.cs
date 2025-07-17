@@ -159,12 +159,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // -- Other --
         #region Other
 
-        // - update title from name -
-
-        private void SectionName_TextChanged(object sender, EventArgs args) {
-            TitleText.Text = XamlConverter.CapitalizeWords(SectionName.Text);
-        }
-
         // - calculate new metric -
 
         public void CalculateAndDisplayMetric() {
@@ -198,6 +192,15 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         // -- Per-Item Methods
         #region Per-Item Methods
+
+        // - update title from name -
+
+        private void SectionName_TextChanged(object sender, EventArgs args) {
+            TitleText.Text = XamlConverter.CapitalizeWords(SectionName.Text);
+            Subsection.Name = (string.IsNullOrWhiteSpace(TitleText.Text)) // update subsection name
+                ? null 
+                : TitleText.Text;
+        }
 
         private void SectionName_ValidityChanged(object sender, BoolEventArgs args) {
             Validity[nameof(SectionName)].IsValid = args.Value ?? true; // true if empty

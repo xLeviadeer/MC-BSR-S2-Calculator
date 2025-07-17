@@ -10,23 +10,20 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Identification;
 using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Player : Displayable, IIDHolder {
+    public class Player : IDDisplayable, IIDHolder {
 
         // --- VARIABLES ---
 
         // - IDPrimary -
 
         public static char TypeCharacter { get; } = 'p';
-
-        [JsonProperty("player_id")]
-        public IDPrimary PlayerID { get; set; } = new(typeof(Player), TypeCharacter);
 
         // - Name -
 
@@ -149,7 +146,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         public Player(string name) {
             Name = new(NameTextBlock, TextBlock.TextProperty, name);
-            PlayerID.AssignNewID(this);
+            AssignNewID();
             SetDefaultValues();
         }
         #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.

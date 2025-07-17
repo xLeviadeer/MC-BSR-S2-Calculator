@@ -1,4 +1,4 @@
-﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
+﻿using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Json;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
     public abstract partial class ListDisplay<T> : UserControl
         where T : Displayable {
 

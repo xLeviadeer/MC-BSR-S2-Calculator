@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using MC_BSR_S2_Calculator.Utility.Validations;
 
 namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
@@ -34,7 +35,8 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         public struct ValidationTypes {
             public const string Constant = "Constant";
             public const string Final = "Final";
-            public static readonly string[] All = { Constant, Final };
+            public const string Manual = "Manual";
+            public static readonly string[] All = { Constant, Final, Manual };
         };
 
         /// <summary>
@@ -61,9 +63,37 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// checks if the ValidationType is a valid ValidationTypes string
         /// </summary>
         /// <exception cref="ArgumentException">Thrown if invalid ValidationType string</exception>
-        private static void OnValidationTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (ValidationTypes.All.All(type => type != (string)e.NewValue)) {
+        private static void OnValidationTypeChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
+            // check if valid mode
+            if (ValidationTypes.All.All(type => type != (string)args.NewValue)) {
                 throw new ArgumentException($"ValidationType was not set to a valid string");
+            }
+
+            // set validation events
+            //    validate must always be set before the invoker because validation sets the last stable value
+            if (sender is TypedTextBox<T> control) {
+                UpdateValidationTypeEventAllocation(control);
+            }
+        }
+
+        private static void UpdateValidationTypeEventAllocation(TypedTextBox<T> control) {
+            // remove all events
+            control.KeyDownEnter -= control.ValidateAndFinalize;
+            control.LostFocus -= control.ValidateAndFinalize;
+            control.TextChanged -= control.ValidateAndFinalize;
+
+            // add events
+            switch (control.ValidationType) {
+                case ValidationTypes.Final:
+                    control.KeyDownEnter += (_, args) => control.ValidateAndFinalize(control, args);
+                    control.LostFocus += (_, args) => control.ValidateAndFinalize(control, args);
+                    break;
+                case ValidationTypes.Constant:
+                    control.TextChanged += (_, args) => control.ValidateAndFinalize(control, args);
+                    break;
+                case ValidationTypes.Manual:
+                    // no validation, done manually
+                    break;
             }
         }
 
@@ -94,9 +124,12 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// <summary>
         /// The default value for this textbox
         /// </summary>
-        public override object? DefaultValue {
+        public new T DefaultValue {
             get => (T)GetValue(DefaultValueProperty);
-            set => SetValue(DefaultValueProperty, value);
+            set { // set base and new
+                base.DefaultValue = value;
+                SetValue(DefaultValueProperty, value);
+            }
         }
 
         /// <summary>
@@ -142,6 +175,10 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// </summary>
         public event EventHandler<EventArgs>? InputFinalized;
 
+        // - Has Been Loaded -
+
+        private bool HasBeenLoaded { get; set; } = false;
+
         #endregion
 
         // --- CONSTRUCTOR ---
@@ -151,19 +188,13 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// Adds the validate method as a listener to the validation event
         /// </summary>
         public TypedTextBox() {
-            Loaded += ValidateAndFinalize; // validate upon creation
+            Loaded += (sender, args) => { 
+                if (HasBeenLoaded) { return; }
+                HasBeenLoaded = true;
 
-            // set validation events
-            //    validate must always be set before the invoker because validation sets the last stable value
-            switch (ValidationType) {
-                case ValidationTypes.Final:
-                    KeyDownEnter += (_, args) => ValidateAndFinalize(this, args);
-                    LostFocus += (_, args) => ValidateAndFinalize(this, args);
-                    break;
-                case ValidationTypes.Constant:
-                    TextChanged += (_, args) => ValidateAndFinalize(this, args);
-                    break;
-            }
+                UpdateValidationTypeEventAllocation(this);
+                ValidateAndFinalize(sender, args); // validate upon creation
+            };
 
             // set default values
             if (DefaultValue == null) {
@@ -198,7 +229,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
             }
         }
 
-        private void ValidateAndFinalize(object sender, EventArgs args) {
+        private void ValidateAndFinalize(object? sender, EventArgs args) {
             Validate(sender, args);
 
             // invoke finalize

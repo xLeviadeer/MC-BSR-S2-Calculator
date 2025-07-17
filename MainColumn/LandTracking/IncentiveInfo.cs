@@ -6,6 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
+
+    // incentives types
+    public enum IncentiveTypes {
+        Purchase,
+        Violation,
+        Tax
+    }
+
+    // incentive info holder
     public interface IIncentiveInfoHolder {
         public ImmutableList<IncentiveInfo> Selectable { get; }
         public ImmutableList<IncentiveInfo> All { get; }
@@ -18,6 +27,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         }
     }
 
+    // class holder for actual incentive info
     public class IncentiveInfo {
 
         // --- VARIABLES ---

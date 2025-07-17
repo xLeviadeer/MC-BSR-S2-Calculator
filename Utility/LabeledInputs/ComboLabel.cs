@@ -33,7 +33,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             get => Element.Items;
         }
 
-        public IEnumerable ItemsSource {
+        public IEnumerable? ItemsSource {
             get => (IEnumerable)GetValue(ItemsSourceProperty);
             set => SetValue(ItemsSourceProperty, value);
         }
@@ -54,9 +54,14 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             set => Element.SelectedIndex = value;
         }
 
-        public object SelectedItem {
+        public object? SelectedItem {
             get => Element.SelectedItem;
             set => Element.SelectedItem = value;
+        }
+
+        public string DisplayMemberPath {
+            get => Element.DisplayMemberPath;
+            set => Element.DisplayMemberPath = value;
         }
 
         #endregion

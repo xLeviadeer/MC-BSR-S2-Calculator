@@ -1,4 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.Utility.Coordinates;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -11,15 +12,23 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     /// <summary>
     /// Holds 2 sets of coordinates to create a square property subsection
     /// </summary>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class PropertySubsection {
 
         // --- VARIABLES ---
         #region VARIABLES
 
+        // - Name -
+
+        [JsonProperty("name")]
+        public string? Name { get; set; } = null;
+
         // - A and B -
 
+        [JsonProperty("set1")]
         public required FlatCoordinate A { get; set; } = new();
 
+        [JsonProperty("set2")]
         public required FlatCoordinate B { get; set; } = new();
 
         // - Edges -
@@ -77,8 +86,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public PropertySubsection() {}
 
         [SetsRequiredMembers]
-        public PropertySubsection(FlatCoordinate a, FlatCoordinate b) {
+        public PropertySubsection(FlatCoordinate a, FlatCoordinate b, string? name=null) {
             A = a; B = b;
+            Name = name;
         }
 
         #endregion

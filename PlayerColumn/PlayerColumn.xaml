@@ -7,7 +7,7 @@
              xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
              xmlns:util_textboxes="clr-namespace:MC_BSR_S2_Calculator.Utility.TextBoxes"
              xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
-             xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
+             xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.ListDisplay"
              xmlns:util_validations="clr-namespace:MC_BSR_S2_Calculator.Utility.Validations"
              mc:Ignorable="d"
              Height="Auto"
@@ -32,13 +32,6 @@
             <!-- ViewGrid Content -->
             <Button x:Name="MarkAllAsInactiveButton" Grid.Row="0" 
                 Style="{StaticResource InputButton}" Content="Mark All as Inactive" Margin="5,5,5,0" Click="OnMarkAllAsInactiveButtonClicked"/>
-            <local:PlayerList x:Name="_playersList" Grid.Row="1" 
-                ScrollBarWidth="10" Margin="5,3,5,10" ShowScrollBar="Auto" 
-                EmptyText="No Players found">
-                <local:PlayerList.ItemBorderBrushSides>
-                    <SolidColorBrush Color="{x:Static util:ColorResources.ItemBorderBrushSidesLighter}"/>
-                </local:PlayerList.ItemBorderBrushSides>
-            </local:PlayerList>
         </Grid>
 
         <!-- AddGrid Layout -->

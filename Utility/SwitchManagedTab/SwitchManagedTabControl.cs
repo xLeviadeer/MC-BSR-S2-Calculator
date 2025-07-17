@@ -3,6 +3,7 @@ using MC_BSR_S2_Calculator.Utility.Validations;
 using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,8 +56,15 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                                 "exit without saving",
                                 "stay here"
                             ).ShowDialog() == true) {
-                                ((SwitchManagedTabItem)SelectedItem).ResetContent();
-                                SelectedItem = clickedTab;
+                                // find the containing tabcontrol (assumes 3 up)
+                                source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
+                                source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
+                                source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
+                                SwitchManagedTabControl containingTabControl = (SwitchManagedTabControl)source;
+
+                                // switch tab
+                                ((SwitchManagedTabItem)containingTabControl.SelectedItem).ResetContent();
+                                containingTabControl.SelectedItem = clickedTab;
                             }
                             args.Handled = true;
 

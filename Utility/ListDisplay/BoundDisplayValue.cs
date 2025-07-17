@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
     /// <summary>
     /// Regular DisplayValue class, extension with a constructor

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Json;
 using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
 using Newtonsoft.Json;
@@ -19,7 +19,7 @@ using System.Diagnostics;
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public partial class PlayerList : ListDisplay<Player>, IStorable {
+    public partial class PlayerList : IDListDisplay<Player>, IStorable {
 
         // --- VARIABLES ---
 
@@ -37,6 +37,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         }
 
         protected override void ForAllLoadedRowsAndNewItems(Player instance) {
+            base.ForAllLoadedRowsAndNewItems(instance);
             instance.IsElectableChanged += (s, e) => AsIStorable.Save();
             instance.IsElectableChanged += (s, e) => BuildGrid();
             instance.IsElectedOfficialChanged += (s, e) => AsIStorable.Save();
@@ -44,7 +45,6 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
             instance.WasActiveChanged += (s, e) => AsIStorable.Save();
             instance.DeleteContextClicked += (s, e) => DeletePlayer(instance);
             instance.RenameContextClicked += (s, e) => RenamePlayer(instance);
-            instance.PlayerID.AssignInstance(instance);
         }
 
         private void DeletePlayer(Player player) {
@@ -57,7 +57,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
                 useChargingButton: true,
                 chargeTime: 2
             ).ShowDialog() == true) {
-                player.PlayerID.Delete(); // delete id
+                player.DisplayableID.Delete(); // delete id
                 ClassDataList.Remove(player); // delete player from list
                 AsIStorable.Save();
                 BuildGrid();

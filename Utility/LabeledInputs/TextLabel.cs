@@ -158,7 +158,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         public event EventHandler<EventArgs>? InputFinalized;
 
         // - expose value for number textboxes -
-        
+
         /// <typeparam name="T"> The primitive type to try to cast to </typeparam>
         /// <returns> A value of type T </returns>
         public T? TryGetValue<T>()

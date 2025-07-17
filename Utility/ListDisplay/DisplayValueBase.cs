@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
     /// <summary>
     /// Attribute class for DisplayValue; used to mark values as to-be-displayed
     /// </summary>

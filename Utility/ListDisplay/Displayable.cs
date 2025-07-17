@@ -11,7 +11,7 @@ using System.Windows.Ink;
 using MC_BSR_S2_Calculator.Utility.Validations;
 using Newtonsoft.Json;
 
-namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
     /// <summary>
     /// Class to extend to mark a class as containing DisplayValues
@@ -202,13 +202,32 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         // --- METHODS ---
         #region METHODS
 
+        protected virtual void ValidateForEachMemberInfo(Displayable displayable, MemberInfo memberInfo) {
+            // check if attribute's associated value is of type DisplayValue
+            if (memberInfo is PropertyInfo propertyInfo) { // property value
+                var value = propertyInfo.GetValue(displayable);
+                if (value == null) { return; }
+                if (value is not DisplayValueBase) { // check if it's not a display value
+                    IsValid = false;
+                    throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
+                }
+            } else if (memberInfo is FieldInfo fieldInfo) { // field value
+                var value = fieldInfo.GetValue(displayable);
+                if (value == null) { return; }
+                if (value is not DisplayValueBase) { // check if it's not a display value
+                    IsValid = false;
+                    throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
+                }
+            }
+        }
+
         /// <summary>
         /// Validates that the class contains at least one DisplayValue marked value
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <exception cref="ValidationException"></exception>
-        public void Validate(object sender, EventArgs args) {
+        public virtual void Validate(object sender, EventArgs args) {
             // check that sender is not null and is displayable
             if (sender == null) {
                 IsValid = false;
@@ -232,22 +251,8 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                         // found at least one attribute
                         foundAnyDisplayValues = true;
 
-                        // check if attribute's associated value is of type DisplayValue
-                        if (memberInfo is PropertyInfo propertyInfo) { // property value
-                            var value = propertyInfo.GetValue(displayable);
-                            if (value == null) { continue; }
-                            if (value is not DisplayValueBase) { // check if it's not a display value
-                                IsValid = false;
-                                throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
-                            }
-                        } else if (memberInfo is FieldInfo fieldInfo) { // field value
-                            var value = fieldInfo.GetValue(displayable);
-                            if (value == null) { continue; }
-                            if (value is not DisplayValueBase) { // check if it's not a display value
-                                IsValid = false;
-                                throw new ValidationException($"A value attributed with DisplayValueBase in class {displayable} was not an DisplayValueBase");
-                            }
-                        }
+                        // validate member
+                        ValidateForEachMemberInfo(displayable, memberInfo);
                     }
                 }
 

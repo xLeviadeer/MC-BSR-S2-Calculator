@@ -1,4 +1,4 @@
-﻿using MC_BSR_S2_Calculator.Utility.DisplayList;
+﻿using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using System;
 using System.Collections.Generic;
 using System.Linq;

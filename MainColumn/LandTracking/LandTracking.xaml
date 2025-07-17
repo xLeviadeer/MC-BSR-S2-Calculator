@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
-             xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.DisplayList"
+             xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.ListDisplay"
              xmlns:util_switchmanagedtab="clr-namespace:MC_BSR_S2_Calculator.Utility.SwitchManagedTab"
              mc:Ignorable="d" 
              Height="Auto"
@@ -15,7 +15,8 @@
         <!-- Add New Property -->
         <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabAddProperty" Style="{StaticResource SubTabStyle}"
                      Header="Add New Property">
-            <local:PropertyManager Grid.Column="0" Grid.ColumnSpan="2"/>
+            <local:PropertyManager Grid.Column="0" Grid.ColumnSpan="2"
+                                   CreateCompleted="PropertyManager_CreateCompleted"/>
         </util_switchmanagedtab:SwitchManagedTabItem>
 
         <!-- Modify/View Properties -->

@@ -1,11 +1,13 @@
 ﻿using MC_BSR_S2_Calculator.PlayerColumn;
 using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
+using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.Json;
 using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +16,7 @@ using System.Windows.Media;
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class PropertyList : ListDisplay<Property>, IStorable, ISwitchManaged {
+    public class PropertyList : IDListDisplay<Property>, IStorable, ISwitchManaged {
 
         // --- VARIABLES ---
 
@@ -35,24 +37,45 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // --- CONSTRUCTORS ---
         #region CONSTRUCTORS
 
-        protected override void ForAllLoadedRowsAndNewItems(Property instance) {
-            instance.PropertyID.AssignInstance(instance);
-        }
-
-        protected override void SetClassDataList() {
+        protected override void SetClassDataList() { // only runs once
             // try to load data list
             AsIStorable.TryLoad(new PropertyList());
+        }
+
+        protected override void ExtraSetup() {
+            base.ExtraSetup();
 
             // set defaults
             ScrollBarWidth = 10;
             ShowScrollBar = System.Windows.Controls.ScrollBarVisibility.Auto;
             ItemBorderBrushSides = new SolidColorBrush(ColorResources.ItemBorderBrushSidesLighter);
             EmptyText = "No properties yet. Create one!";
-        }
 
+            // set player rebuilt -> rebuild this event subscription
+            MainResources.PlayersDisplay.Rebuilt += (_, _) => {
+                ClassDataList.ForEach(property => property.UpdatePropertyDisplay());
+                this.BuildGrid();
+            };
+        }
+        
         #endregion
 
         // --- METHODS ---
+
+        // - Name Already Used -
+
+        public bool NameAlreadyUsed(string name, ID playerID) {
+            IDPrimary playerPrimaryID = ID.FindParentOrSelfID(playerID);
+            foreach (Property property in ClassDataList) {
+                if (
+                    (property.OwnerID == playerPrimaryID)
+                    && (property.Name == name) 
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         // -- Operation Overrides --
         #region Operation Overrides

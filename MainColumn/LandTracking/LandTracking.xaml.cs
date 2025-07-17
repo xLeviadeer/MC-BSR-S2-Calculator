@@ -31,15 +31,20 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             // load the properties display singleton reference into the grid
             Loaded += (_, _) => {
                 // properties display settings
-                // WARNING: will need to be removed from whatever it was in
-                ModifyViewPropertyGrid.Children.Add(Singletons.PropertiesDisplay);
-                Grid.SetColumn(Singletons.PropertiesDisplay, 0);
-                Grid.SetRow(Singletons.PropertiesDisplay, 0);
+                MainResources.RemoveParent(MainResources.PropertiesDisplay);
+                ModifyViewPropertyGrid.Children.Add(MainResources.PropertiesDisplay);
+                Grid.SetColumn(MainResources.PropertiesDisplay, 0);
+                Grid.SetRow(MainResources.PropertiesDisplay, 0);
 
                 // only load once
                 if (HasBeenLoaded) { return; }
                 HasBeenLoaded = true;
             };
+        }
+
+        private void PropertyManager_CreateCompleted(object sender, EventArgs e) {
+            // tab to create/modify page
+            MainTabControl.SelectedItem = TabModifyViewProperty;
         }
     }
 }

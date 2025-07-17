@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows;
 using System.Runtime.CompilerServices;
 
-namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
     internal class DisplayClassExample : Displayable {
 
         // a bound display value which can be updated

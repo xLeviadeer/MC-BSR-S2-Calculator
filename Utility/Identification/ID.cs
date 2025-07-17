@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -74,7 +75,21 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
         // -- METHODS --
 
-        // - Startup -
+        // - Try Find Parent or Self ID -
+
+        /// <summary>
+        /// Intakes and ID and attempts to find
+        /// - if it's a trace: it's parent
+        /// - if it's a primary: itself
+        /// </summary>
+        /// <returns> An IDPrimary corresponding to the parent of this trace or itself </returns>
+        public static IDPrimary FindParentOrSelfID(ID id) 
+            => id switch {
+                IDPrimary idPrimary => idPrimary,
+                IDPrimaryMark idPrimaryMark => idPrimaryMark.AsReference(),
+                IDTraceBase idTrace => idTrace.GetPrimary(),
+                _ => throw new InvalidOperationException($"Value for {nameof(id)}, '{id}' is not a valid ID")
+            };
 
         // - Conversion Methods -
         #region Conversion Methods
@@ -120,9 +135,11 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// Compares two ID objects for equality
         /// </summary>
         /// <returns> A boolean, true if equal </returns>
-        public static bool Compare(ID idOne, ID idTwo) {
+        public static bool Compare(ID? idOne, ID? idTwo) {
+            if (idOne is null && idTwo is null) { return true; }
+            if (idOne is null || idTwo is null) { return false; }
             return (
-                (idOne.Type == idTwo.Type)
+                (idOne!._type == idTwo._type) // using _type means this will work with invalid IDs
                 && (idOne.Value == idTwo.Value)
             );
         }
@@ -238,7 +255,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         // - Operation Mirrors -
         #region Operation Mirrors
 
-        public bool Compare(ID id) => Compare(this, id);
+        public bool Compare(ID? id) => Compare(this, id);
         public bool GreaterThan(ID id) => GreaterThan(this, id);
         public bool GreaterThanOrEqual(ID id) => GreaterThanOrEqual(this, id);
         public bool LessThan(ID id) => LessThan(this, id);
@@ -255,11 +272,15 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         }
 
         public override bool Equals(object? obj) {
-            return obj is ID id && Compare((ID)obj);
+            return obj is ID id && Compare((ID?)obj);
         }
 
         public override int GetHashCode() {
-            return Identifier.GetHashCode();
+            try {
+                return Identifier.GetHashCode();
+            } catch (ArgumentNullException) { // tolerates deleted IDs
+                return "0000000000".GetHashCode();
+            }
         }
 
         public static bool operator >(ID idOne, ID idTwo) {

@@ -1,6 +1,6 @@
 ﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
 using MC_BSR_S2_Calculator.PlayerColumn;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Json;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
 using Newtonsoft.Json;
@@ -22,7 +22,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace MC_BSR_S2_Calculator.Utility.DisplayList {
+namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
     /// <summary>
     /// Contains data about grid composition and the list of data to display; 
@@ -159,6 +159,8 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         private bool HasBeenLoaded { get; set; } = false;
 
+        private bool ClassDataListLoaded { get; set; } = false;
+
         #endregion
 
         // --- CONSTRUCTOR ---
@@ -182,8 +184,13 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                 }
                 HasBeenLoaded = true;
 
-                // loads data list and builds grid
-                SetClassDataList();
+                // load class data if it hasn't been set yet
+                if (!ClassDataListLoaded) {
+                    SetClassDataList();
+                    ClassDataListLoaded = true;
+                }
+
+                // setup and build grid
                 ExtraSetup();
                 BuildGrid();
 
@@ -198,6 +205,15 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
                     OnShowScrollBarChanged(this, new DependencyPropertyChangedEventArgs(ShowScrollBarProperty, null, ShowScrollBar));
                 }
             };
+
+            // load the class data list
+            // - waits until the program idles to avoid json reading and recursing infinitely to create new classes
+            Dispatcher.BeginInvoke(() => {
+                if (!ClassDataListLoaded) {
+                    SetClassDataList();
+                    ClassDataListLoaded = true;
+                }
+            }, DispatcherPriority.ContextIdle);
 
             // event handling for ensuring content never overlaps the scrollbar
             MainGrid.SizeChanged += OnMainGridSizeChange;
@@ -228,7 +244,7 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
 
         // - row and new item helper overridable -
 
-        private void ExtraSetup() {
+        protected virtual void ExtraSetup() {
             // expose scroll wheel updates
             //MainScrollViewer.PreviewMouseWheel += (_, args) => {
             //    PreviewMouseWheel.Invoke(this, args);
@@ -517,8 +533,6 @@ namespace MC_BSR_S2_Calculator.Utility.DisplayList {
         /// Font Size is set to the listContentTotalHeight of it's associated grid
         /// </remarks>
         public void BuildGrid() {
-
-
             // prepare main grid
             PrepareGridForBuilding();
             SortClassData();

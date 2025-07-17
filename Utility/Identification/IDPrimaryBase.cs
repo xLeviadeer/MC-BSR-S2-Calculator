@@ -144,9 +144,9 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             if (id.HasBeenAssigned && !id.IsDeleted) { throw new ArgumentException("Provided ID is currently already assigned and cannot be re-assigned"); }
 
             // add to IDTypes
-            if (!IDTypes.ContainsValue(typeCharacter)) {
-                IDTypes[id.Type] = typeCharacter;
-            }
+            //if (!IDTypes.ContainsValue(typeCharacter)) {
+            //    IDTypes[id.Type] = typeCharacter;
+            //}
 
             // - ensure primary mark exists -
 
@@ -195,7 +195,9 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// </remarks>
         public static void Delete(IDPrimaryBase id) {
             // set up current ids
+            bool currentIDsChanged = (CurrentIDs.Count <= 0);
             SetUpCurrentIDs(id);
+            if (currentIDsChanged) { SaveCurrents(); } // save the changes if needed
 
             // prospective delete is in valid range
             if (
@@ -210,9 +212,6 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             // set values to invalid (this will throw errors if the IDPrimary is tried to be used)
             id.Value = -1;
             id._type = null;
-
-            // save the changes
-            SaveCurrents();
         }
 
         #endregion
@@ -275,7 +274,9 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// <param name="type"> The type of IDPrimary </param>
         public IDPrimaryBase(Type type, char typeCharacter) {
             Type = type;
-            IDTypes[Type] = typeCharacter;
+            //if (!IDTypes.ContainsValue(typeCharacter)) {
+            //    IDTypes[Type] = typeCharacter;
+            //}
             Char = typeCharacter;
         }
 

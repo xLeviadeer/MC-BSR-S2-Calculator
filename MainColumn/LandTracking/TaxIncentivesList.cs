@@ -1,5 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.PlayerColumn;
-using MC_BSR_S2_Calculator.Utility.DisplayList;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Json;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,6 @@
-﻿using MC_BSR_S2_Calculator.Utility;
+﻿using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.LabeledInputs;
 using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
@@ -26,6 +28,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static MC_BSR_S2_Calculator.MainColumn.LandTracking.IncentivesManager;
 using static MC_BSR_S2_Calculator.MainColumn.LandTracking.Property;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
@@ -42,6 +45,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         private ValidityHolder Validity = new(
             new() {
+                [nameof(OwningPlayerInput)] = new(),
                 [nameof(NameInput)] = new(),
                 [nameof(PropertyTypeInput)] = new(),
                 [nameof(Sections)] = new(),
@@ -65,6 +69,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public bool RequiresReset { get; set; } = true;
 
+        // - Create Charged -
+
+        public event EventHandler<EventArgs>? CreateCompleted;
+
+        // - Owning Player Options -
+
+        private Dictionary<string, IDPrimary> OwningPlayerOptions { get; set; } = new();
+
         // - Has Been Loaded -
 
         private bool HasBeenLoaded { get; set; } = false;
@@ -80,6 +92,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             // setup content changed
             ContentChanges = new Dictionary<string, Func<bool>>() {
+                [nameof(OwningPlayerInput)] = () => OwningPlayerInput.Element.TabContentsChanged,
                 [nameof(NameInput)] = () => NameInput.Element.TabContentsChanged,
                 [nameof(PropertyTypeInput)] = () => PropertyTypeInput.Element.TabContentsChanged,
                 [nameof(ResidentsCountInput)] = () => NameInput.Element.TabContentsChanged,
@@ -93,8 +106,19 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 [nameof(ApprovedCheck)] = () => ApprovedCheck.Element.TabContentsChanged
             };
 
+            // on rebuilt player list, update names list (only if visible rn)
+            MainResources.PlayersDisplay.Rebuilt += (_, _) => {
+                // doesn't update if it's not visible
+                if (this.IsVisible) {
+                    UpdateOwningPlayerInputItems();
+                }
+            };
+
             // assign Sections and deletion events
             Loaded += (_, __) => {
+                // set the owning player items
+                UpdateOwningPlayerInputItems();
+
                 if (!HasBeenLoaded) {
                     ResetSections();
                     HasBeenLoaded = true;
@@ -109,6 +133,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 // set y input max to the surface land max
                 ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YInput.MaxInputFromTextLabel = LandDefinitions.SurfaceLandareaYLevelMax;
             };
+
+            // name input validation type
+            NameInput.LayoutLoaded += (_, _) => {
+                ((StringTextBox)NameInput.Element).ValidationType = StringTextBox.ValidationTypes.Manual;
+            };
         }
 
         #endregion
@@ -119,6 +148,26 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public bool CheckValidity() => Validity.CheckValidity();
 
+        // - Get Subsections -
+
+        public static PropertySubsection[] GetSubsections(PropertySection[] sections) {
+            return sections
+            .Select(section => section.Subsection)
+            .ToArray();
+        }
+
+        public PropertySubsection[] GetSubsections()
+            => GetSubsections(this.Sections.ToArray());
+
+        // - Owning Player -
+
+        public IDPrimary GetOwningPlayerID() {
+            if (OwningPlayerInput.SelectedItem is not string playerName) {
+                throw new InvalidOperationException($"OwningPlayerInput's SelectedItem could not be casted to a string: {OwningPlayerInput.SelectedItem?.ToString()}");
+            }
+            return OwningPlayerOptions[playerName];
+        }
+
         // -- Completion Buttons --
         #region Completion Buttons
 
@@ -127,6 +176,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         public void Reset() {
             // temporarily dont update buttons (so we dont waste time validating on every change)
             DoUpdateButtons = false;
+
+            OwningPlayerInput.SelectedIndex = -1;
 
             NameInput.Text = "";
             NameInput.IsValid = null;
@@ -150,22 +201,40 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 ResetFinalResults();
             }), DispatcherPriority.Background);
 
-
             // allow updates again and manually update buttons
             DoUpdateButtons = true;
             UpdateCreateButtonEnabledStatus();
         }
 
         private void OnCreateCharged(object? sender, EventArgs args) {
+            // find associated player ID
+            IDPrimary associatedPlayerID = GetOwningPlayerID();
+
             // create a new property and add it to the property list
-            Singletons.PropertiesDisplay.Add(new Property(
-                NameInput.Text
+            MainResources.PropertiesDisplay.Add(new Property(
+                associatedPlayerID.CreateTrace(associatedPlayerID.Instance), // owner player id trace
+                NameInput.Text.Trim(), // property name
+                (string)(PropertyTypeInput.SelectedItem ?? ""), // property type
+                Math.Max(1, (int)ResidentsCountInput.TryGetValue<double>()), // residents count
+                this.GetSubsections(), // subsections
+                TaxIncentives.GetActiveIncentives(), // tax incentives
+                PurchaseIncentives.GetActiveIncentives(), // purchase incentives
+                ViolationIncentives.GetActiveIncentives() // violation incentives
+                    .Cast<ActiveViolationIncentive>()
+                    .ToArray(),
+                (SubsurfaceLandProvisionCheck.IsChecked ?? false) // subsurface land provision
+                    ? ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YCoordinate
+                    : null,
+                HasMailboxCheck.IsChecked ?? false, // has mailbox
+                HasEdgeSpacingCheck.IsChecked ?? false, // follows guidelines
+                ApprovedCheck.IsChecked ?? false // is approved
             ));
 
             // clear values
             Reset();
 
-            // tab the user to the view/modify page
+            // run create completed event
+            CreateCompleted?.Invoke(this, args);
         }
 
         #endregion
@@ -288,10 +357,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             }
 
             // calculate metric
-            int propertyMetric = Property.GetPropertyMetric(Sections
-                .Select(section => section.Subsection)
-                .ToArray()
-            );
+            int propertyMetric = Property.GetPropertyMetric(this.GetSubsections());
 
             // - purchase results -
 
@@ -348,9 +414,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                     ViolationIncentives.GetActiveIncentives()
                         .Cast<ActiveViolationIncentive>()
                         .ToArray(),
-                    #pragma warning disable CS8604 // Possible null reference argument.
-                    PropertyTypeInput.SelectedItem.ToString(),
-                    #pragma warning restore CS8604 // Possible null reference argument.
+                    PropertyTypeInput?.SelectedItem?.ToString()!,
                     (int)((IntegerTextBox)ResidentsCountInput.Element).Value,
                     out double taxValue,
                     out double addedByPropertyType,
@@ -400,8 +464,59 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         // - per item -
 
-        private void NameInput_ValidityChanged(object sender, BoolEventArgs args) {
-            Validity[nameof(NameInput)].IsValid = args.Value ?? false;
+        private void OwningPlayerInput_SelectionChanged(object sender, SelectionChangedEventArgs args) {
+            Validity[nameof(OwningPlayerInput)].IsValid = (OwningPlayerInput.SelectedIndex != -1);
+            NameInput_TextChanged(new(), EventArgs.Empty); // trigger name input check
+                                                           // automatically updates createbutton enabled
+        }
+
+        public void UpdateOwningPlayerInputItems() {
+            // hold cursor item
+            object? oldItem = OwningPlayerInput.SelectedItem;
+
+            // sets the items to the players displays list of players where the name is displayed and a copy of the primary ID is held alongside it
+            OwningPlayerOptions = MainResources.PlayersDisplay.ClassDataList.Select(
+                player => new KeyValuePair<string, IDPrimary>(player.Name.Value, player.DisplayableID)
+            ).ToDictionary();
+            OwningPlayerInput.ItemsSource = OwningPlayerOptions.Select(player => player.Key);
+
+            // set cursor by item
+            int position = -1;
+            if (oldItem != null) {
+                position = OwningPlayerInput.Items.IndexOf(oldItem); // returns -1 if not found
+            } 
+            OwningPlayerInput.SelectedIndex = position;
+        }
+
+        private void NameInput_TextChanged(object sender, EventArgs args) {
+            // checks to see if the name has been used before and sets validity based on that
+
+            // get textbox
+            ColorValidatedTextBox nameInputTextBox = ((ColorValidatedTextBox)NameInput.Element);
+
+            // checks basic validity
+            nameInputTextBox.Validate(nameInputTextBox, EventArgs.Empty); // manually checks validity
+            bool isValid = nameInputTextBox.IsValid ?? false; // gets validity
+
+            // only checks duplicate names when already valid
+            if (
+                (isValid)
+                && (OwningPlayerInput.SelectedIndex != -1)
+            ) {
+                // true if name not used
+                isValid = !MainResources.PropertiesDisplay.NameAlreadyUsed(
+                    NameInput.Text.Trim(),
+                    GetOwningPlayerID()
+                );
+                Debug.WriteLine("");
+                Debug.WriteLine(NameInput.Text);
+                Debug.WriteLine(GetOwningPlayerID());
+                Debug.WriteLine(isValid);
+                nameInputTextBox.IsValid = isValid; // set text box validity
+            }
+
+            // set Validity based on isValid state
+            Validity[nameof(NameInput)].IsValid = isValid;
             UpdateCreateButtonEnabledStatus();
         }
 
