@@ -290,8 +290,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         #pragma warning restore CS9264 // Non-nullable property
 
         [OnDeserialized]
-        public void OnDeserialized(StreamingContext context)
-            => UpdatePropertyDisplay();
+        public void OnDeserialized(StreamingContext context) {
+            UpdatePropertyDisplay(); 
+        }
 
         #endregion
 
@@ -300,7 +301,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Update PropertyList -
 
         public void UpdatePropertyDisplay() {
-            OwnerName.Value = OwnerID?.GetParent<Player>().Name.Value ?? "Unknown";
+            // try to get parent
+            const string UnknownName = "Unknown";
+            try {
+                OwnerName.Value = OwnerID?.GetParent<Player>().Name.Value ?? UnknownName;
+            } catch (ArgumentNullException) {
+                OwnerName.Value = UnknownName;
+            }
         }
 
         // -- Property Metric and Results --

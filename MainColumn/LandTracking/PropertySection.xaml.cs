@@ -196,10 +196,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // - update title from name -
 
         private void SectionName_TextChanged(object sender, EventArgs args) {
-            TitleText.Text = XamlConverter.CapitalizeWords(SectionName.Text);
+            const string blankName = "Section";
+            string capitalizedText = XamlConverter.CapitalizeWords(SectionName.Text);
+            TitleText.Text = string.IsNullOrEmpty(capitalizedText)
+                ? blankName
+                : capitalizedText;
             Subsection.Name = (string.IsNullOrWhiteSpace(TitleText.Text)) // update subsection name
-                ? null 
-                : TitleText.Text;
+                ? blankName
+                : capitalizedText;
         }
 
         private void SectionName_ValidityChanged(object sender, BoolEventArgs args) {

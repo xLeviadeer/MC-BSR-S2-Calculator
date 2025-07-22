@@ -59,6 +59,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                         var value = propertyInfo.GetValue(this);
                         if (value is DisplayValueBase displayValue) {
                             DisplayValues[attribute.DisplayName] = displayValue;
+                            PropertyNames[attribute.DisplayName] = propertyInfo.Name;
                             DisplayOrders[attribute.DisplayName] = attribute.DisplayOrder;
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
@@ -69,6 +70,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                         var value = fieldInfo.GetValue(this);
                         if (value is DisplayValueBase displayValue) {
                             DisplayValues[attribute.DisplayName] = displayValue;
+                            PropertyNames[attribute.DisplayName] = fieldInfo.Name;
                             DisplayOrders[attribute.DisplayName] = attribute.DisplayOrder;
                             ColumnWidths[attribute.DisplayName] = attribute.ColumnWidth;
                             ColumnContentAlignments[attribute.DisplayName] = attribute.ColumnContentAlignment;
@@ -95,6 +97,23 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 return _displayValues;
             }
             set => _displayValues = value;
+        }
+
+        // - Property Names -
+
+        private Dictionary<string, string> _propertyNames = new();
+
+        /// <summary>
+        /// holds a list of property/field names as they are found by display name
+        /// </summary>
+        public Dictionary<string, string> PropertyNames {
+            get {
+                if (!AttributeValuesHaveBeenBuilt) {
+                    BuildAttributeValues();
+                }
+                return _propertyNames;
+            }
+            set => _propertyNames = value;
         }
 
         // - Display Orders -

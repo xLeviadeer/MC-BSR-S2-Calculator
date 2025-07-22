@@ -539,9 +539,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         private static void OnDisplayLayerChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
             if (sender is ListDisplay<T> control) {
+                control.DisplayLayerChanged?.Invoke(control, EventArgs.Empty);
                 control.BuildGrid(); // rebuilds the grid if the display layer was changed
             }
         }
+
+        public event EventHandler<EventArgs>? DisplayLayerChanged;
 
         // - Empty Text - 
 

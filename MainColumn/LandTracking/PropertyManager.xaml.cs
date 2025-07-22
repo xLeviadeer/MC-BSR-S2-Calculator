@@ -508,10 +508,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                     NameInput.Text.Trim(),
                     GetOwningPlayerID()
                 );
-                Debug.WriteLine("");
-                Debug.WriteLine(NameInput.Text);
-                Debug.WriteLine(GetOwningPlayerID());
-                Debug.WriteLine(isValid);
                 nameInputTextBox.IsValid = isValid; // set text box validity
             }
 

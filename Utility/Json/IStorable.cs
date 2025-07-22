@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
+using MC_BSR_S2_Calculator.MainColumn.LandTracking;
 
 namespace MC_BSR_S2_Calculator.Utility.Json {
 

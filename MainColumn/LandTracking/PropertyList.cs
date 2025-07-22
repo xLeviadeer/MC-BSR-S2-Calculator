@@ -16,11 +16,14 @@ using System.Windows.Media;
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class PropertyList : IDListDisplay<Property>, IStorable, ISwitchManaged {
+    public class PropertyList : SearchableListDisplay<Property>, IStorable, ISwitchManaged {
 
         // --- VARIABLES ---
 
-        // -- Switch Management --
+        // -- Management --
+        #region Management
+
+        // - Switch Management -
 
         public bool TabContentsChanged { get; } // not used
 
@@ -28,11 +31,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         public void Reset() { } // not used
 
-        // -- Storable --
+        // - Storable -
 
         public List<string> SaveLocation { get => ["properties.json"]; }
 
         public IStorable AsIStorable { get => ((IStorable)this); }
+
+        #endregion
 
         // --- CONSTRUCTORS ---
         #region CONSTRUCTORS
@@ -42,22 +47,29 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             AsIStorable.TryLoad(new PropertyList());
         }
 
-        protected override void ExtraSetup() {
-            base.ExtraSetup();
+        protected override void ExtraSetupOnDataSet() {
+            base.ExtraSetupOnDataSet();
 
             // set defaults
             ScrollBarWidth = 10;
             ShowScrollBar = System.Windows.Controls.ScrollBarVisibility.Auto;
             ItemBorderBrushSides = new SolidColorBrush(ColorResources.ItemBorderBrushSidesLighter);
-            EmptyText = "No properties yet. Create one!";
+            EmptyText = "No properties found.";
 
             // set player rebuilt -> rebuild this event subscription
             MainResources.PlayersDisplay.Rebuilt += (_, _) => {
                 ClassDataList.ForEach(property => property.UpdatePropertyDisplay());
                 this.BuildGrid();
             };
+
+            // search bar settings
+            SearchBarTextMaxLength = 50;
         }
-        
+
+        protected override void ForAllLoadedRowsAndNewItems(Property instance) {
+            instance.AssignInstanceID(instance);
+        }
+
         #endregion
 
         // --- METHODS ---
@@ -90,11 +102,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             AsIStorable.Save();
         }
 
-        public override void RemoveAt(int index) {
-            base.RemoveAt(index);
-            AsIStorable.Save();
-        }
-
         public override void Clear() {
             base.Clear();
             AsIStorable.Save();
@@ -103,14 +110,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         #endregion
 
         // -- Storable --
+        #region Storable
 
         public void MirrorValues<U>(U cls)
             where U : class, IStorable {
             if (cls is PropertyList clsCasted) {
-                ClassDataList = clsCasted.ClassDataList;
+                this.SearchableClassDataList = clsCasted.SearchableClassDataList;
             }
         }
 
         public void LoadAs() => AsIStorable.Load<PropertyList>();
+
+        #endregion
     }
 }

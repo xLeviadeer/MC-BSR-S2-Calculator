@@ -127,13 +127,13 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         // - expose highlight upon tab -
 
-        public bool HightlightUponTabFromTextLabel {
-            get => (bool)GetValue(HightlightUponTabFromTextLabelProperty);
-            set => SetValue(HightlightUponTabFromTextLabelProperty, value);
+        public bool HighlightUponTabFromTextLabel {
+            get => (bool)GetValue(HighlightUponTabFromTextLabelProperty);
+            set => SetValue(HighlightUponTabFromTextLabelProperty, value);
         }
 
-        public static readonly DependencyProperty HightlightUponTabFromTextLabelProperty = DependencyProperty.Register(
-            nameof(HightlightUponTabFromTextLabel),
+        public static readonly DependencyProperty HighlightUponTabFromTextLabelProperty = DependencyProperty.Register(
+            nameof(HighlightUponTabFromTextLabel),
             typeof(bool),
             typeof(TextLabel),
             new PropertyMetadata(false)
@@ -227,7 +227,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             Element.KeyDownEnter += (object? sender, KeyEventArgs args) => { this.KeyDownEnterInvoke(this, args); };
             Element.KeyUpEnter += (object? sender, KeyEventArgs args) => { this.KeyUpEnterInvoke(this, args); };
             // highlight settings
-            Element.HighlightUponTab = HightlightUponTabFromTextLabel;
+            Element.HighlightUponTab = HighlightUponTabFromTextLabel;
             Element.HighlightUponClick = HighlightUponClickFromTextLabel;
 
             // if it's a number text box

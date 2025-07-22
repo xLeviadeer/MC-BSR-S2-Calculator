@@ -26,7 +26,7 @@
             <Setter Property="LayoutMode" Value="Left"/>
             <Setter Property="TextBoxType" Value="IntegerTextBox"/>
             <Setter Property="TextBoxMaxLength" Value="50"/>
-            <Setter Property="HightlightUponTabFromTextLabel" Value="True"/>
+            <Setter Property="HighlightUponTabFromTextLabel" Value="True"/>
         </Style>
     </UserControl.Resources>
 

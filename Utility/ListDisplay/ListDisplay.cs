@@ -47,6 +47,8 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         [JsonProperty("data")]
         public virtual NotifyingList<T> ClassDataList { get; set; } = new();
 
+        public T SomeClassData => ClassDataList[0];
+
         // - Data List by Rows -
 
         /// <summary>
@@ -85,7 +87,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         /// </summary>
         public Dictionary<string, List<DisplayValueBase>> DataListByColumns {
             get {
-                return ClassDataList[0].DisplayHeaders.ToDictionary(
+                return SomeClassData.DisplayHeaders.ToDictionary(
                     key => key, // key
                     key => ClassDataList.Select( // value
                         cls => cls.DisplayValues[key]
@@ -121,9 +123,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                if (ClassDataList.Count > 0) {
                     // gets the display headers in the order of their display order 
                     // this means that the display will be built in the order the headers are in
-                    return ClassDataList[0].DisplayHeaders
+                    return SomeClassData.DisplayHeaders
                         .Zip(
-                            ClassDataList[0].DisplayOrders, (header, order) => {
+                            SomeClassData.DisplayOrders, (header, order) => {
                                 return new HeaderOrderPair(header, order.Value);
                             }
                         )
@@ -136,13 +138,23 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             }
         }
 
+        /// <summary>
+        /// Gets the headers which are currently visible by the current display layer
+        /// </summary>
+        public ImmutableList<string> VisibleHeaders {
+            get => Headers.Where(
+                header => IsValidCurrentDisplayLayer(header)
+            ).ToImmutableList();
+        }
+
+
         // - Column Widths -
 
         private ImmutableDictionary<string, GridLength> ColumnWidths {
             get {
-                return ClassDataList[0].DisplayHeaders.ToImmutableDictionary(
+                return SomeClassData.DisplayHeaders.ToImmutableDictionary(
                     key => key, // key
-                    key => ClassDataList[0].ColumnWidths[key]
+                    key => SomeClassData.ColumnWidths[key]
                 );
             }
         }
@@ -159,7 +171,8 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         private bool HasBeenLoaded { get; set; } = false;
 
-        private bool ClassDataListLoaded { get; set; } = false;
+        // this can be static because it's generic, meaning it will happen for every generic extension
+        private static bool ClassDataListLoaded { get; set; } = false;
 
         #endregion
 
@@ -187,11 +200,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 // load class data if it hasn't been set yet
                 if (!ClassDataListLoaded) {
                     SetClassDataList();
+                    ExtraSetupOnDataSet();
                     ClassDataListLoaded = true;
                 }
 
                 // setup and build grid
-                ExtraSetup();
+                ExtraSetupOnLoad();
                 BuildGrid();
 
                 // sets the original scroll bar visibility
@@ -211,6 +225,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             Dispatcher.BeginInvoke(() => {
                 if (!ClassDataListLoaded) {
                     SetClassDataList();
+                    ExtraSetupOnDataSet();
                     ClassDataListLoaded = true;
                 }
             }, DispatcherPriority.ContextIdle);
@@ -244,24 +259,25 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         // - row and new item helper overridable -
 
-        protected virtual void ExtraSetup() {
-            // expose scroll wheel updates
-            //MainScrollViewer.PreviewMouseWheel += (_, args) => {
-            //    PreviewMouseWheel.Invoke(this, args);
-            //};
+        protected void OnItemAdded(object? sender, EventArgs args) {
+            if (args is ListChangedEventArgs argsCasted) {
+                if (sender is NotifyingList<T> dataList) {
+                    ForAllLoadedRowsAndNewItems(dataList[argsCasted.NewIndex]);
+                } else { throw new ArgumentException("sender wasn't a NotifyingList of type T"); }
+            } else { throw new ArgumentException("the arguments send by the ItemsAdded event weren't of the correct type"); }
+        }
 
+        protected virtual void ExtraSetupOnDataSet() {
             // on item added
-            ClassDataList.ItemAdded += (sender, args) => {
-                if (args is ListChangedEventArgs argsCasted) {
-                    ForAllLoadedRowsAndNewItems(ClassDataList[argsCasted.NewIndex]);
-                } else { throw new ArgumentException($"the arguments send by the ItemsAdded event weren't of the correct type"); }
-            };
+            ClassDataList.ItemAdded += OnItemAdded;
 
             // for every instance on load
             foreach (var instance in ClassDataList) {
                 ForAllLoadedRowsAndNewItems(instance);
             }
         }
+
+        protected virtual void ExtraSetupOnLoad() { }
 
         /// <summary>
         /// runs extra setup for items which are either newly added to the list or pre-loaded via JSON
@@ -292,7 +308,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             BuildGrid();
         }
 
-        public virtual void RemoveAt(int index) {
+        public void RemoveAt(int index) {
             // range check
             if (
                 (index >= ClassDataList.Count)
@@ -301,8 +317,8 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 throw new ArgumentOutOfRangeException(nameof(index), index, "The provided index was out of range of the ClassDataList");
             }
 
-            // remove at
-            ClassDataList.RemoveAt(index);
+            // remove
+            Remove(ClassDataList[index]);
         }
 
         // - Clear -
@@ -514,7 +530,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             if (DisplayLayer == -1) { return true; }
 
             // check if the display layer being called for exists
-            if (!ClassDataList[0].DisplayLayers
+            if (!SomeClassData.DisplayLayers
                 .Select(displayLayers => displayLayers.Value)
                 .Any(displayLayers => displayLayers.Contains(DisplayLayer))
             ) {
@@ -522,7 +538,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             }
 
             // check if display layer doesn't match
-            if (!ClassDataList[0].DisplayLayers[header].Contains(DisplayLayer)) { return false; }
+            if (!SomeClassData.DisplayLayers[header].Contains(DisplayLayer)) { return false; }
             return true;
         }
 
@@ -563,8 +579,8 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 // - setup -
 
                 // get alignments
-                var headerHorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
-                var headerVerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
+                var headerHorizontalAlignment = SomeClassData.ColumnContentAlignments[header].HorizontalAlignment;
+                var headerVerticalAlignment = SomeClassData.ColumnContentAlignments[header].VerticalAlignment;
 
                 // display layer checking
                 if (!IsValidCurrentDisplayLayer(header)) { continue; }
@@ -913,9 +929,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                         ItemBorderThickness.Right + ItemMargin,
                         ItemBorderThickness.Bottom + ItemMargin
                     );
-                    displayObject.HorizontalAlignment = ClassDataList[0].ColumnContentAlignments[header].HorizontalAlignment;
-                    displayObject.VerticalAlignment = ClassDataList[0].ColumnContentAlignments[header].VerticalAlignment;
-                    displayObject.IsHitTestVisible = ClassDataList[0].HitTestVisibilities[header];
+                    displayObject.HorizontalAlignment = SomeClassData.ColumnContentAlignments[header].HorizontalAlignment;
+                    displayObject.VerticalAlignment = SomeClassData.ColumnContentAlignments[header].VerticalAlignment;
+                    displayObject.IsHitTestVisible = SomeClassData.HitTestVisibilities[header];
                     if (displayObject.Parent != null) { ((Panel)displayObject.Parent).Children.Remove(displayObject); } // detach it from the current parent if it has one for some reason
                     AddToCurrentItem(displayObject, YcurrItemRow);
                 }

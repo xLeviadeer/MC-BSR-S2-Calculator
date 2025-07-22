@@ -34,7 +34,7 @@
 
             <!-- Title -->
             <TextBlock x:Name="TitleText" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource MiniTitle}" HorizontalAlignment="Stretch"
-                       TextWrapping="Wrap"/>
+                       Text="Section" TextWrapping="Wrap"/>
             <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                           Height="2" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>

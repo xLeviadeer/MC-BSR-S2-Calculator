@@ -19,7 +19,7 @@ using System.Diagnostics;
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public partial class PlayerList : IDListDisplay<Player>, IStorable {
+    public partial class PlayerList : ListDisplay<Player>, IStorable {
 
         // --- VARIABLES ---
 
@@ -38,6 +38,11 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         protected override void ForAllLoadedRowsAndNewItems(Player instance) {
             base.ForAllLoadedRowsAndNewItems(instance);
+
+            // id 
+            instance.AssignInstanceID(instance);
+
+            // event subscription
             instance.IsElectableChanged += (s, e) => AsIStorable.Save();
             instance.IsElectableChanged += (s, e) => BuildGrid();
             instance.IsElectedOfficialChanged += (s, e) => AsIStorable.Save();
