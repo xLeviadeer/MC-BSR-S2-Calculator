@@ -187,9 +187,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             UpdateSearchCombo();
         }
 
-        public SearchableListDisplay()
-            : base() { // runs normal setup
-
+        private void SetDefaultValues() {
             // change the content from being the maingrid to the search container grid
             this.Content = SearchContainerGrid;
 
@@ -248,6 +246,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             SearchBarHighlightUponTab = true;
             SearchCombo.SelectionChanged += SearchCombo_SelectionChanged;
         }
+
+        public SearchableListDisplay()
+            : base() => SetDefaultValues();
+
+        public SearchableListDisplay(SearchableListDisplay<T> cls)
+            : base(cls) => SetDefaultValues();
 
         #endregion
 
@@ -506,11 +510,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 SearchCombo.SelectedIndex = 0;
             }
         }
-        
+
         // - Build Grid -
 
-        public new void BuildGrid() 
-            => UpdateForSearchSettings(); // automatically builds grid when complete
+        public new void BuildGrid() {
+            UpdateForSearchSettings(); // automatically builds grid when complete
+        }
 
         #endregion
 

@@ -286,6 +286,24 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             );
         }
 
+        // copy constructor
+        public Property(Property property) {
+            SetDefaultValues(
+                property.OwnerID,
+                property.Name,
+                property.PropertyType,
+                property.ResidentsCount,
+                property.Subsections.ToArray(),
+                property.TaxIncentives.ToArray(),
+                property.PurchaseIncentives.ToArray(),
+                property.ViolationIncentives.ToArray(),
+                property.SubsurfaceLandProvisionLevel,
+                property.HasMailbox,
+                property.FollowsPropertyMetricGuidelines,
+                property.IsApproved
+            );
+        }
+
         #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         #pragma warning restore CS9264 // Non-nullable property
 

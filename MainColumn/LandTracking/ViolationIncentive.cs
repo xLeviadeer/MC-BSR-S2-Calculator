@@ -35,6 +35,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         public event EventHandler<EventArgs>? ViolationCountChanged;
 
+        public int ViolationCountFromDisplay {
+            get => (int)((IntegerTextBox)ViolationCount.DisplayObject).Value;
+            set => ((IntegerTextBox)ViolationCount.DisplayObject).Value = value;
+        }
+
         // - Remove Request -
 
         public override event EventHandler<EventArgs>? RemoveRequested;
@@ -109,7 +114,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             InfoTarget = IncentiveInfo.Violation.Instance,
             Name = Name,
             ViolationType = ViolationType,
-            ViolationCount = (int)((IntegerTextBox)ViolationCount.DisplayObject).Value
+            ViolationCount = ViolationCountFromDisplay
         };
     }
 }

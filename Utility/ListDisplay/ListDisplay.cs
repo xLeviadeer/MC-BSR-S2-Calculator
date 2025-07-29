@@ -167,22 +167,21 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         private bool FoundScrollbar { get; set; } = false;
 
-        protected bool RebuildOnEveryLoad { get; set; } = false;
+        public bool RebuildOnEveryLoad { get; set; } = false;
 
         private bool HasBeenLoaded { get; set; } = false;
+        public event EventHandler<EventArgs>? CompletedLoading;
 
         // this can be static because it's generic, meaning it will happen for every generic extension
-        private static bool ClassDataListLoaded { get; set; } = false;
+        private static bool IsClassDataListLoaded { get; set; } = false;
+        public event EventHandler<EventArgs>? ClassDataListLoaded;
 
         #endregion
 
         // --- CONSTRUCTOR ---
         #region CONSTRUCTOR
 
-        /// <remarks>
-        /// Extensions of this class MUST define which exact data to display (parameterless constructor)
-        /// </remarks
-        public ListDisplay() {
+        private void SetUpDefaults(ListDisplay<T>? cls) {
             Loaded += (object sender, RoutedEventArgs args) => {
                 // has been loaded
                 if (HasBeenLoaded) {
@@ -193,16 +192,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                     if (RebuildOnEveryLoad) { BuildGrid(); }
 
                     // don't continue
-                    return; 
+                    return;
                 }
                 HasBeenLoaded = true;
 
                 // load class data if it hasn't been set yet
-                if (!ClassDataListLoaded) {
-                    SetClassDataList();
-                    ExtraSetupOnDataSet();
-                    ClassDataListLoaded = true;
-                }
+                SetCopyClassDataList(cls);
 
                 // setup and build grid
                 ExtraSetupOnLoad();
@@ -218,16 +213,20 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                     // update the scroll bar state when starting up
                     OnShowScrollBarChanged(this, new DependencyPropertyChangedEventArgs(ShowScrollBarProperty, null, ShowScrollBar));
                 }
+
+                // completed loading
+                CompletedLoading?.Invoke(this, EventArgs.Empty);
             };
+
+            // duplicate settings if copying
+            if (cls is not null) {
+                CopyInterfaceSettings(cls);
+            }
 
             // load the class data list
             // - waits until the program idles to avoid json reading and recursing infinitely to create new classes
             Dispatcher.BeginInvoke(() => {
-                if (!ClassDataListLoaded) {
-                    SetClassDataList();
-                    ExtraSetupOnDataSet();
-                    ClassDataListLoaded = true;
-                }
+                SetCopyClassDataList(cls);
             }, DispatcherPriority.ContextIdle);
 
             // event handling for ensuring content never overlaps the scrollbar
@@ -246,11 +245,87 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             }
         }
 
+        /// <remarks>
+        /// Extensions of this class MUST define which exact data to display (parameterless constructor)
+        /// </remarks
+        public ListDisplay()
+            => SetUpDefaults(null);
+
+        // copy constructor
+        public ListDisplay(ListDisplay<T> cls)
+            => SetUpDefaults(cls);
+
+        // - Conversion -
+
+        /// <summary>
+        /// Converts a list display to a list display of a different type
+        /// </summary>
+        /// <typeparam name="U"> The type of Displayable this list display holds </typeparam>
+        /// <returns> A list display </returns>
+        public ListDisplay<U> ConvertTo<U>()
+            where U : Displayable, IFromConverter<U> {
+
+            // - create copy class and cast -
+            var copy = new GenericListDisplay<U>();
+            copy.CopyInterfaceSettings(this);
+
+            // set class data list
+            copy.ClassDataList = NotifyingList<U>.From(
+                ClassDataList.CopyShallow().Select(
+                    cls => U.From(cls)
+                )
+            );
+
+            // return
+            return copy;
+        }
+
+        /// <summary>
+        /// Converts a list display to a list display of a different type
+        /// </summary>
+        /// <typeparam name="U"> The type of Displayable this list display holds </typeparam>
+        /// <typeparam name="V"> The type of ListDisplay to become </typeparam>
+        /// <returns> A list display of type V </returns>
+        public ListDisplay<U> ConvertTo<U, V>()
+            where U : Displayable, IFromConverter<U>
+            where V : ListDisplay<U>, new() {
+
+            // - create copy class and cast -
+            var copy = new V(); // V will be a list display of type U
+            copy.CopyInterfaceSettings(this);
+
+            // set class data list
+            copy.ClassDataList = NotifyingList<U>.From(
+                ClassDataList.CopyShallow().Select(
+                    cls => U.From(cls)
+                )
+            );
+
+            // return
+            return copy;
+        }
+
         // - minimizes IStorable requirements in extended classes -
 
         public void AddInstanceToInstances() => IStorable.Instances.Add((IStorable)this);
 
         // - class data setter -
+
+        private void SetCopyClassDataList(ListDisplay<T>? cls) {
+            // load or copy
+            if (cls is null) { // load
+                if (!IsClassDataListLoaded) {
+                    SetClassDataList();
+                }
+                IsClassDataListLoaded = true;
+            } else { // copy
+                ClassDataList = cls.ClassDataList.CopyShallow();
+            }
+
+            // extra setup
+            ExtraSetupOnDataSet();
+            ClassDataListLoaded?.Invoke(this, EventArgs.Empty);
+        } 
 
         /// <remarks>
         /// this method MUST set ClassDataList
@@ -760,7 +835,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                     T cls = ClassDataList[YcurrBuildPosition];
 
                     // button adder helper
-                    Button AddButton(OptionalMouseClickEventHolder holder ) {
+                    Button AddButton(OptionalMouseClickEventHolder holder) {
                         // create button and add event
                         var button = CreateClickableButton();
                         button.Click += holder.HeldLeftClickListener;
@@ -818,7 +893,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                         else if (
                             (IsClickable == ListDisplayClickable.ByRow)
                             && (isLastPass)
-                            && (cls.IsHoldingRightClick)
+                            && (cls.IsHoldingLeftClick)
                         ) {
                             AddButton(cls);
                         }
@@ -831,7 +906,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                         // if by cell
                         if (
                             (ContextClickable == ListDisplayClickable.ByCell)
-                            && (displayValue.IsHoldingLeftClick)
+                            && (displayValue.IsHoldingRightClick)
                         ) {
                             AddContextWrapper(displayValue.RightClickMenu);
 

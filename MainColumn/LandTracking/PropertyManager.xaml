@@ -82,7 +82,7 @@
 
             <!-- Title -->
             <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Style="{StaticResource SubTitle}"
-                   Text="Add New Property"/>
+                   Text="{Binding TitleText}"/>
             <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" 
                       Height="3" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
                 <GridSplitter.Background>
@@ -253,6 +253,7 @@
                              FullyCharged="OnCreateCharged"/>
             <util:ChargingButton x:Name="ClearButton" Grid.Row="{StaticResource LastRow}" Grid.Column="2" Style="{StaticResource InputButton}"
                              Content="Clear Form" ChargeTime="0.75" ColorPalette="Red" IsTabStop="False"
+                             Visibility="{Binding ShowResetButtonVisibilty}"
                              FullyCharged="OnClearCharged"/>
         </Grid>
     </ScrollViewer>

@@ -596,5 +596,33 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         #endregion
 
+        // --- METHODS ---
+
+        private void CopyInterfaceSettings<U>(ListDisplay<U> copy)
+            where U : Displayable {
+            ShowScrollBar = copy.ShowScrollBar;
+            ScrollBarWidth = copy.ScrollBarWidth;
+            MainBorderThickness = copy.MainBorderThickness;
+            MainBorderBrush = copy.MainBorderBrush;
+            MainBorderBackground = copy.MainBorderBackground;
+            HeaderHeight = copy.HeaderHeight;
+            HeaderFontColor = copy.HeaderFontColor;
+            HeaderBorderThickness = copy.HeaderBorderThickness;
+            HeaderBorderBrush = copy.HeaderBorderBrush;
+            HeaderPrimaryFillBrush = copy.HeaderPrimaryFillBrush;
+            HeaderSecondaryFillBrush = copy.HeaderSecondaryFillBrush;
+            ItemHeight = copy.ItemHeight;
+            ItemBorderThickness = copy.ItemBorderThickness;
+            ItemBorderBrushSides = copy.ItemBorderBrushSides;
+            ItemBorderBrushEnds = copy.ItemBorderBrushEnds;
+            ItemPrimaryFillBrush = copy.ItemPrimaryFillBrush;
+            ItemSecondaryFillBrush = copy.ItemSecondaryFillBrush;
+            ItemsHoverColor = copy.ItemsHoverColor;
+            ItemsClickColor = copy.ItemsClickColor;
+            DisplayLayer = copy.DisplayLayer;
+            EmptyText = copy.EmptyText;
+            EmptyHeaderText = copy.EmptyHeaderText;
+            MaxDisplayHeight = copy.MaxDisplayHeight;
+        }
     }
 }

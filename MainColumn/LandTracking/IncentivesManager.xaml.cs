@@ -121,6 +121,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Has Been Loaded -
 
         private bool HasBeenLoaded { get; set; } = false;
+        public event EventHandler<EventArgs>? CompletedLoading;
 
         #endregion
 
@@ -190,6 +191,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
                 // set selected index to none
                 SelectionComboLabel.SelectedIndex = 0;
+
+                // completed
+                CompletedLoading?.Invoke(this, EventArgs.Empty);
             };
         }
 
@@ -230,10 +234,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             }
         }
 
-        private void AddIncentiveButton_Click(object sender, RoutedEventArgs e) {
-            // find incentive info
-            IncentiveInfo info = TryGetInfo();
-
+        private void _add(IncentiveInfo info) {
             // add incentive to displaylist
             object? instance = Activator.CreateInstance(CastingType, info.Name, info.Value);
             if (instance is null) { throw new NullReferenceException("the instance of an Incentive extension was null"); }
@@ -249,6 +250,15 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             UpdateOptions();
             SelectionComboLabel.SelectedIndex = 0; // none
         }
+
+        public void Add(string name)
+            => _add(InfoTarget.FindByName(name));   
+
+        private void Add()
+            => _add(TryGetInfo());
+
+        private void AddIncentiveButton_Click(object sender, RoutedEventArgs args)
+            => Add();
 
         private void SelectionComboLabel_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             // get selection info

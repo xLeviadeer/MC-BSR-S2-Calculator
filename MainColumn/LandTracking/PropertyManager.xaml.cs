@@ -9,12 +9,14 @@ using MC_BSR_S2_Calculator.Utility.XamlConverters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Printing;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,22 +30,31 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using static MC_BSR_S2_Calculator.MainColumn.LandTracking.IncentivesManager;
-using static MC_BSR_S2_Calculator.MainColumn.LandTracking.Property;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 {
     /// <summary>
     /// Interaction logic for PropertyManager.xaml
     /// </summary>
-    public partial class PropertyManager : UserControl, IValidityHolder, ISwitchManaged
-    {
+    public partial class PropertyManager : UserControl, 
+        IValidityHolder, 
+        ISwitchManaged, 
+        INotifyPropertyChanged,
+        IDisposable {
         // --- VARIABLES ---
-        #region VARIABLES
+
+        // -- Verirfications --
+        #region Verifications
+
+        // - Property Changed Notification -
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string name) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         // - Validity Holder -
 
-        private ValidityHolder Validity = new(
+        public ValidityHolder Validity { get; private set; } = new(
             new() {
                 [nameof(OwningPlayerInput)] = new(),
                 [nameof(NameInput)] = new(),
@@ -69,13 +80,70 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public bool RequiresReset { get; set; } = true;
 
+        #endregion
+
+        // -- Events --
+        #region Events
+
         // - Create Charged -
 
-        public event EventHandler<EventArgs>? CreateCompleted;
+        public event EventHandler<EventArgs>? CompleteRequested;
+
+        // - Loading Completed -
+
+        public event EventHandler<EventArgs>? LoadingCompleted;
+
+        #endregion
+
+        // -- Interface --
+        #region Interface
 
         // - Owning Player Options -
 
-        private Dictionary<string, IDPrimary> OwningPlayerOptions { get; set; } = new();
+        public Dictionary<string, IDPrimary> OwningPlayerOptions { get; private set; } = new();
+
+        public event EventHandler<EventArgs>? OwningPlayerInputUpdated;
+
+        // - Title -
+
+        public string TitleText {
+            get => (string)GetValue(TitleTextProperty);
+            set => SetValue(TitleTextProperty, value);
+        }
+
+        public static readonly DependencyProperty TitleTextProperty = DependencyProperty.Register(
+            nameof(TitleText),
+            typeof(string),
+            typeof(PropertyManager),
+            new PropertyMetadata("Property Manager")
+        );
+
+        // - Show Reset Button -
+
+        public bool ShowResetButton {
+            get => (bool)GetValue(ShowResetButtonProperty);
+            set => SetValue(ShowResetButtonProperty, value);
+        }
+
+        public static readonly DependencyProperty ShowResetButtonProperty = DependencyProperty.Register(
+            nameof(ShowResetButton),
+            typeof(bool),
+            typeof(PropertyManager),
+            new PropertyMetadata(true, OnShowResetButtonChanged)
+        );
+
+        private static void OnShowResetButtonChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
+            if (sender is PropertyManager control) {
+                control.OnPropertyChanged(nameof(ShowResetButtonVisibilty));
+            }
+        }
+
+        public Visibility ShowResetButtonVisibilty => XamlConverter.BoolToVisibility(ShowResetButton);
+
+        #endregion
+
+        // -- Utility --
+        #region Utility
 
         // - Has Been Loaded -
 
@@ -107,12 +175,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             };
 
             // on rebuilt player list, update names list (only if visible rn)
-            MainResources.PlayersDisplay.Rebuilt += (_, _) => {
-                // doesn't update if it's not visible
-                if (this.IsVisible) {
-                    UpdateOwningPlayerInputItems();
-                }
-            };
+            MainResources.PlayersDisplay.Rebuilt += OnPlayersListRebuilt;
 
             // assign Sections and deletion events
             Loaded += (_, __) => {
@@ -132,12 +195,22 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
                 // set y input max to the surface land max
                 ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YInput.MaxInputFromTextLabel = LandDefinitions.SurfaceLandareaYLevelMax;
+
+                // loading completed
+                LoadingCompleted?.Invoke(this, EventArgs.Empty);
             };
 
             // name input validation type
             NameInput.LayoutLoaded += (_, _) => {
                 ((StringTextBox)NameInput.Element).ValidationType = StringTextBox.ValidationTypes.Manual;
             };
+        }
+
+        private void OnPlayersListRebuilt(object? sender, EventArgs args) {
+            // doesn't update if it's not visible
+            if (this.IsVisible) {
+                UpdateOwningPlayerInputItems();
+            }
         }
 
         #endregion
@@ -166,6 +239,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 throw new InvalidOperationException($"OwningPlayerInput's SelectedItem could not be casted to a string: {OwningPlayerInput.SelectedItem?.ToString()}");
             }
             return OwningPlayerOptions[playerName];
+        }
+
+        // - Dispose -
+
+        public void Dispose() {
+            MainResources.PlayersDisplay.Rebuilt -= OnPlayersListRebuilt;
         }
 
         // -- Completion Buttons --
@@ -207,34 +286,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         }
 
         private void OnCreateCharged(object? sender, EventArgs args) {
-            // find associated player ID
-            IDPrimary associatedPlayerID = GetOwningPlayerID();
-
-            // create a new property and add it to the property list
-            MainResources.PropertiesDisplay.Add(new Property(
-                associatedPlayerID.CreateTrace(associatedPlayerID.Instance), // owner player id trace
-                NameInput.Text.Trim(), // property name
-                (string)(PropertyTypeInput.SelectedItem ?? ""), // property type
-                Math.Max(1, (int)ResidentsCountInput.TryGetValue<double>()), // residents count
-                this.GetSubsections(), // subsections
-                TaxIncentives.GetActiveIncentives(), // tax incentives
-                PurchaseIncentives.GetActiveIncentives(), // purchase incentives
-                ViolationIncentives.GetActiveIncentives() // violation incentives
-                    .Cast<ActiveViolationIncentive>()
-                    .ToArray(),
-                (SubsurfaceLandProvisionCheck.IsChecked ?? false) // subsurface land provision
-                    ? ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YCoordinate
-                    : null,
-                HasMailboxCheck.IsChecked ?? false, // has mailbox
-                HasEdgeSpacingCheck.IsChecked ?? false, // follows guidelines
-                ApprovedCheck.IsChecked ?? false // is approved
-            ));
-
-            // clear values
-            Reset();
-
             // run create completed event
-            CreateCompleted?.Invoke(this, args);
+            CompleteRequested?.Invoke(this, args);
         }
 
         #endregion
@@ -486,6 +539,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 position = OwningPlayerInput.Items.IndexOf(oldItem); // returns -1 if not found
             } 
             OwningPlayerInput.SelectedIndex = position;
+
+            // updated
+            OwningPlayerInputUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         private void NameInput_TextChanged(object sender, EventArgs args) {

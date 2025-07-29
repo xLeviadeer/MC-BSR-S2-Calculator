@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.Utility {
-    public class NotifyingList<T> : List<T> {
+    public class NotifyingList<T> : List<T>, IFromConverter<NotifyingList<T>> {
         
         // --- VARIABLES ---
 
         public event EventHandler<EventArgs>? ItemsChanged;
         public event EventHandler<EventArgs>? ItemAdded;
         public event EventHandler<EventArgs>? ItemRemoved;
+        public event EventHandler<EventArgs>? ItemsReset; 
 
         // --- CONSTRUCTOR ---
 
@@ -32,13 +34,33 @@ namespace MC_BSR_S2_Calculator.Utility {
             ItemAdded?.Invoke(this, args);
         }
 
+        public new void Remove(T item) {
+            var args = new ListChangedEventArgs(ListChangedType.ItemDeleted, IndexOf(item));
+            base.Remove(item);
+            ItemsChanged?.Invoke(this, args);
+            ItemRemoved?.Invoke(this, args);
+        }
+
+        public new void RemoveAt(int index) {
+            this.Remove(this[index]);
+        }
+
+        public new void Clear() {
+            while (this.Count > 0) {
+                RemoveAt(0);
+            }
+            var args = new ListChangedEventArgs(ListChangedType.Reset, -1);
+            ItemsChanged?.Invoke(this, args);
+            ItemsReset?.Invoke(this, args);
+        }
+
         // ... more methods can be added as needed    
         // adding AddRange would screw up the sorting method for many ClassDataList sort overrides
 
         public NotifyingList<T> CopyShallow()
             => new NotifyingList<T>(this);
 
-        public static NotifyingList<T> From(IEnumerable<T> source)
-            => new NotifyingList<T>(source);
+        public static NotifyingList<T> From(object source)
+            => new NotifyingList<T>((IEnumerable<T>)source);
     }
 }

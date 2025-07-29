@@ -1,5 +1,6 @@
 ﻿using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.Coordinates;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using MC_BSR_S2_Calculator.Utility.Validations;
 using System;
 using System.Collections.Generic;
@@ -486,9 +487,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - add section -
 
-        private void AddPropertySectionButton_Click(object sender, RoutedEventArgs args) {
+        private void AddSection(PropertySection section) {
             // add new section
-            Sections.Add(new());
+            Sections.Add(section);
             UpdateRemainingSectionsDisplay();
             Dispatcher.BeginInvoke(() => { // adding is special,
                                            // because you need to wait until element has been set to continue (aka it's been loaded)
@@ -514,6 +515,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 AddPropertySectionButton.IsEnabled = false;
             }
         }
+
+        private void AddPropertySectionButton_Click(object sender, RoutedEventArgs args)
+            => AddSection(new());
 
         // - sections reset -
 
@@ -556,6 +560,38 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // no changes
             return false;
+        }
+
+        // - set sections from subsections -
+
+        public void SetSections(PropertySubsection[] subsections) {
+            // clear sections
+            Sections.Clear();
+
+            // set to default if invalid
+            if (
+                (subsections is null)
+                || (subsections.Length == 0)
+            ) {
+                ResetSections();
+                return;
+            }
+
+            // for each subsection
+            foreach (PropertySubsection subsection in subsections) {
+                // add a new section from the subsection
+                PropertySection section = new PropertySection();
+                AddSection(section); // add before applying updates
+                                     // this ensures loaded is triggered before updates are applied
+                Dispatcher.BeginInvoke(() => {
+                    section.SectionName.Text = subsection.Name ?? "";
+                    ((IntegerTextBox)section.CoordinateInputCornerA.XInput.Element).Value = subsection.A.X;
+                    ((IntegerTextBox)section.CoordinateInputCornerA.ZInput.Element).Value = subsection.A.Z;
+                    ((IntegerTextBox)section.CoordinateInputCornerB.XInput.Element).Value = subsection.B.X;
+                    ((IntegerTextBox)section.CoordinateInputCornerB.ZInput.Element).Value = subsection.B.Z;
+                    section.CalculateAndDisplayMetric();
+                }, DispatcherPriority.Loaded);
+            }
         }
 
         #endregion

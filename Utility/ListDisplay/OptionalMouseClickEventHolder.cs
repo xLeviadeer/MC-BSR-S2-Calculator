@@ -30,7 +30,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         public ContextMenu? RightClickMenu { get; set; } = new();
 
         // - Left Click Event -
-        protected bool? IsHoldingLeftClickOverride { get; init; } = null;
+        public bool? IsHoldingLeftClickOverride { get; set; } = null;
 
         public bool IsHoldingLeftClick {
             get {

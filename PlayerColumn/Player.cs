@@ -108,6 +108,12 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
             // separator
             RightClickMenu.Items.Add(new Separator());
 
+            // copy name
+            var copyOption = new MenuItem();
+            copyOption.Header = "Copy Name";
+            copyOption.Click += (_, _) => Clipboard.SetText(Name.Value);
+            RightClickMenu.Items.Add(copyOption);
+
             // rename item
             var renameOption = new MenuItem();
             renameOption.Header = "Rename";

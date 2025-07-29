@@ -70,6 +70,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             instance.AssignInstanceID(instance);
         }
 
+        public PropertyList() : base() { }
+
+        public PropertyList(SearchableListDisplay<Property> propertyList) : base(propertyList) { }
+
         #endregion
 
         // --- METHODS ---
@@ -88,6 +92,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             }
             return false;
         }
+
+        // - Find By Name -
+
+        public Property FindByName(string name)
+            => ClassDataList.First(property => property.Name == name);
 
         // -- Operation Overrides --
         #region Operation Overrides

@@ -149,7 +149,22 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
         /// <summary>
         /// The value parsed from the text
         /// </summary>
-        public T? Value { get; private set; }
+        private T? _value { get; set; }
+        public T? Value {
+            get => _value;
+            set {
+                // set last values
+                LastValue = _value;
+                LastText = Text;
+                
+                // set new values
+                _value = value;
+                Text = value?.ToString() ?? "";
+
+                // trigger finalization event
+                ValidateAndFinalize();
+            }
+        }
 
         /// <summary>
         /// The last value that was successfully validated
@@ -215,7 +230,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
 
         protected void RevertText(TypedTextBox<T> textBox) {
             // value
-            Value = LastValue;
+            _value = LastValue;
 
             // text box
             int cursorPosition = textBox.CaretIndex - 1; // hold cursor position
@@ -229,13 +244,16 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
             }
         }
 
+        public void ValidateAndFinalize()
+            => ValidateAndFinalize(this, EventArgs.Empty);
+
         private void ValidateAndFinalize(object? sender, EventArgs args) {
             Validate(sender, args);
 
             // invoke finalize
             InputFinalized?.Invoke(this, new InputFinalizedEventArgs<T>() {
                 OldValue = LastStableValue,
-                NewValue = Value
+                NewValue = _value
             });
         }
 
@@ -252,7 +270,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
 
             // method to set last values
             void setLastvalues() {
-                LastValue = Value;
+                LastValue = _value;
                 LastText = textBox.Text;
             }
 
@@ -264,7 +282,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                     if (DefaultValue == null) { // revert
                         RevertText(textBox);
                     } else { // set to default
-                        Value = LastValue;
+                        _value = LastValue;
                         textBox.Text = DefaultValue.ToString() ?? "";
                     }
 
@@ -274,7 +292,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
                     return;
                 } //else {
                 //    // set last values as defaults
-                //    Value = default; // null
+                //    _value = default; // null
                 //    setLastvalues();
                 //    IsValid = true;
                 //    return;
@@ -283,7 +301,7 @@ namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
 
             // validate type via parsing
             try {
-                Value = T.Parse(textBox.Text, CultureInfo.InvariantCulture);
+                _value = T.Parse(textBox.Text, CultureInfo.InvariantCulture);
             } catch (Exception err) when (
                 err is FormatException 
                 || err is ArgumentNullException 

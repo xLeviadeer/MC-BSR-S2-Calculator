@@ -73,7 +73,12 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         public bool? IsChecked {
             get => CheckBoxLabelObject.IsChecked;
-            set => CheckBoxLabelObject.IsChecked = value;
+            set {
+                if (value != CheckBoxLabelObject.IsChecked) {
+                    CheckBoxLabelObject.IsChecked = value;
+                    UpdateContentVisibility();
+                }
+            }
         }
 
         // - Checked -
@@ -87,6 +92,10 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         // -- Other ---
         #region Other
+
+        // - Completed Loading -
+
+        public event EventHandler<EventArgs>? CompletedLoading;
 
         #endregion
 
@@ -113,6 +122,9 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             CheckBoxLabelObject.LabelText = CheckBoxLabelProperties.GetLabelText(this);
             CheckBoxLabelObject.LayoutMode = CheckBoxLabelProperties.GetLayoutMode(this);
             CheckBoxLabelObject.FluidProportionsSplitIndex = CheckBoxLabelProperties.GetFluidProportionsSplitIndex(this);
+
+            // completed
+            CompletedLoading?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion
@@ -120,8 +132,8 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
         // --- METHODS ---
         #region METHODS
 
-        private void CheckBoxLabelObject_CheckChanged(object sender, BoolEventArgs args) {
-            if ((args.Value ?? false) == MatchStatusAsBool) {
+        private void UpdateContentVisibility() {
+            if ((CheckBoxLabelObject.IsChecked ?? false) == MatchStatusAsBool) {
                 ContentBorder.Visibility = Visibility.Visible;
                 MainBackground.Visibility = Visibility.Visible;
             } else {
@@ -129,6 +141,9 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 MainBackground.Visibility = Visibility.Collapsed;
             }
         }
+
+        private void CheckBoxLabelObject_CheckChanged(object sender, BoolEventArgs args)
+            => UpdateContentVisibility();
 
         #endregion
     }
