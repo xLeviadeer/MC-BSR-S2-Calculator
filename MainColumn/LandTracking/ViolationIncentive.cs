@@ -1,4 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.Utility.ListDisplay;
+using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
 using System.CodeDom;
@@ -14,9 +15,17 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
-    public class ViolationIncentive : Incentive {
+    public class ViolationIncentive : Incentive, ISwitchManagedDefault {
 
         // --- VARIABLES ---
+
+        // - Management -
+
+        public object? DefaultValue { get; set; } = 1;
+
+        public bool TabContentsChanged => ((IntegerTextBox)ViolationCount.DisplayObject).Value != (int?)DefaultValue;
+
+        public bool RequiresReset { get; set; } = true;
 
         // - Violation Type -
 
@@ -104,7 +113,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             string name,
             double value
         ) => SetDefaultValues(name, value);
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         #endregion
 
@@ -116,5 +125,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             ViolationType = ViolationType,
             ViolationCount = ViolationCountFromDisplay
         };
+
+        public void Reset() 
+            => ViolationCount.Value = (int?)DefaultValue 
+                ?? throw new NullReferenceException("DefaultValue was set to null (it must be an integer)");
     }
 }

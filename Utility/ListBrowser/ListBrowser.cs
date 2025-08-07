@@ -21,14 +21,93 @@ using System.Windows.Shapes;
 
 namespace MC_BSR_S2_Calculator.Utility.ListBrowser {
 
-    public class ListBrowser<T, DC> : UserControl
+    public class ListBrowser<T, DC> : UserControl, ISwitchManaged
         where T : Displayable, IBrowserDisplayable<T, DC>
-        where DC : FrameworkElement {
+        where DC : FrameworkElement, ISwitchManaged {
 
         // --- VARIABLES ---
 
+        // -- Management --
+        #region Management
+
+        // fowards tab content changes by checking the content for changes
+        public bool TabContentsChanged 
+            => ISwitchManaged.CheckBoolPropertyOn(DisplayContent, ISwitchManaged.TargetableProperties.TabContentsChanged);
+
+        public bool RequiresReset { get; set; } = true;
+
+        #endregion
+
         // -- Values --
-        #region MainGrid
+        #region Values
+
+        private int? _selectedIndex {
+            get => field;
+            set {
+                if (value >= ListReference.Count) {
+                    throw new IndexOutOfRangeException($"index {value} is out of range of the ListReference");
+                }
+                field = value;
+
+                // update if null
+                if (value is null) {
+                    _displayContent = null;
+                }
+            }
+        } = null;
+
+        public int? SelectedIndex {
+            get => _selectedIndex;
+            set {
+                _selectedIndex = value;
+                OnSelectedIndexChanged();
+            }
+        }
+
+        private T? _selectedItem {
+            get {
+                if (_selectedIndex is not null) {
+                    return ListReference[(int)_selectedIndex];
+                } else { return null; }
+            }
+            set {
+                // value check
+                if (value is null) {
+                    _selectedIndex = null;
+                    return;
+                }
+
+                // try to get displayable
+                T? displayable = ListReference.FirstOrDefault(cls => cls == value);
+
+                // set selected index based on found status/position of displayable
+                if (displayable is null) {
+                    _selectedIndex = null;
+                    return;
+                }
+                _selectedIndex = ListReference.IndexOf(displayable);
+            }
+        }
+
+        public T? SelectedItem {
+            get => _selectedItem;
+            set {
+                _selectedItem = value;
+                OnSelectedIndexChanged();
+            }
+        }
+
+        private void OnSelectedIndexChanged() {
+            if (SelectedItem is not null) {
+                // trigger a switch
+                SelectedItem.HeldLeftClickListener(this, EventArgs.Empty);
+            } else { Reset(); }
+        }
+
+        #endregion
+
+        // -- Interface Values --
+        #region Interface Values
 
         public Grid MainGrid { get; private set; } = new();
 
@@ -36,44 +115,59 @@ namespace MC_BSR_S2_Calculator.Utility.ListBrowser {
 
         public Border NoContentBorder { get; private set; } = new();
 
-        public DC? DisplayContent {
+        private DC? _displayContent {
             get => field;
             set {
-                if (field != value) {
-                    OnDisplayContentChanged(this, value, field);
+                if (_displayContent != value) {
+                    // name clarity
+                    DC? newValue = value;
+                    DC? oldValue = _displayContent;
+
+                    // set to blank
+                    if (newValue is null) {
+                        NoContentBorder.Visibility = Visibility.Visible;
+                        ContentGrid.Margin = new Thickness(0);
+
+                    // add new content
+                    } else {
+                        NoContentBorder.Visibility = Visibility.Collapsed;
+                        ContentGrid.Margin = new Thickness(5, 0, 0, 0);
+                        ContentGrid.Children.Add(newValue);
+                    }
+
+                    // remove old content
+                    if (oldValue is not null) {
+                        ContentGrid.Children.Remove(oldValue);
+                        if (oldValue is IDisposable disposable) {
+                            disposable.Dispose();
+                        }
+                    }
+
+                    // set value and update
                     field = value;
                     DisplayContentChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
 
-        public event EventHandler<EventArgs>? DisplayContentChanged;
+        public DC? DisplayContent {
+            get => _displayContent;
+            set {
+                if (_displayContent != value) {
+                    // set to blank
+                    if (value is null) { // new value is null
+                        _selectedIndex = null;
+                    } else {
+                        _selectedItem = T.LastSelectedDisplayable;
+                    }
 
-        /// <summary>
-        /// hides/shows the NoContentBorder depending on if the display content is null
-        /// sets content to the content grid
-        /// </summary>
-        private void OnDisplayContentChanged(ListBrowser<T, DC> sender, DC? newValue, DC? oldValue) {
-            // set to blank
-            if (newValue is null) {
-                NoContentBorder.Visibility = Visibility.Visible;
-                ContentGrid.Margin = new Thickness(0);
-            
-            // add new content
-            } else {
-                NoContentBorder.Visibility = Visibility.Collapsed;
-                ContentGrid.Margin = new Thickness(5,0,0,0);
-                ContentGrid.Children.Add(newValue);
-            }
-
-            // remove old content
-            if (oldValue is not null) {
-                ContentGrid.Children.Remove(oldValue);
-                if (oldValue is IDisposable disposable) {
-                    disposable.Dispose();
+                    // set value
+                    _displayContent = value;
                 }
             }
         }
+
+        public event EventHandler<EventArgs>? DisplayContentChanged;
 
         #endregion
 
@@ -108,6 +202,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListBrowser {
                 MainResources.RemoveParent(control.ListReference); // remove new parent
                 control.MainGrid.Children.Add(control.ListReference); // add new
                 Grid.SetColumn(control.ListReference, 0);
+
+                // set up list reference
+                control.SetupListReference();
             }
         }
 
@@ -198,6 +295,64 @@ namespace MC_BSR_S2_Calculator.Utility.ListBrowser {
                 this.Content = MainGrid;
             };
         }
+
+        public void TabSwitchingCheck(object? sender, MouseButtonEventArgs args) {
+            // reminder: selected item hasn't been updated yet
+            
+            // check tab contents
+            if (TabContentsChanged) {
+                // get confirmation
+                Button targettedButton = (Button)(sender ?? throw new NullReferenceException("sender was null when attempting to intercept ListBrowser content changing"));
+
+                // check if already selecting this object
+                if (
+                    (SelectedItem is not null)
+                    && (targettedButton != SelectedItem.HeldButton)
+                ) {
+                    // get confirmation
+                    if (ISwitchManaged.AskConfirmation()) {
+                        // confirmed, continue
+                        targettedButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); // simulate click on targeted button
+                    } // not confirmed, don't continue
+                }
+
+                // handled
+                args.Handled = true;
+            }
+        }
+
+        private void SetupListReference() {
+            // add event (and triggers) for tab switching behavior on selection changes
+            ListReference.ClassDataListLoaded += (_, _) => {
+                // existing items
+                foreach (T instance in ListReference) {
+                    Button? button = instance.HeldButton;
+                    if (button is not null) {
+                        button.PreviewMouseLeftButtonDown += TabSwitchingCheck;
+                    }
+                }
+
+                // item added
+                ListReference.ClassDataList.ItemAdded += (_, args) => {
+                    if (args is ListChangedEventArgs castedArgs) {
+                        Button? button = ListReference[castedArgs.NewIndex].HeldButton;
+                        if (button is not null) {
+                            button.PreviewMouseLeftButtonDown += TabSwitchingCheck;
+                        }
+                    }
+                };
+            };
+        }
+
+        #endregion
+
+        // --- METHODS ---
+        #region METHODS
+
+        // - Reset -
+
+        public void Reset()
+            => _selectedItem = null;
 
         #endregion
     }

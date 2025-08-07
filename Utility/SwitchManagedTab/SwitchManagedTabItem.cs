@@ -41,92 +41,13 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
 
         // -- CONTENTS --
 
-        public event EventHandler<BoolEventArgs>? ValidityChanged;
-
-        public enum SwitchManagedProperties {
-            Validity,
-            TabContentsChanged,
-            Reset
-        }
-
-        private bool CheckBoolPropertyOn(object? element, SwitchManagedProperties checkFor) {
-            // determine boolean position of return value
-            bool correctReturnValue;
-            switch (checkFor) {
-                case SwitchManagedProperties.Validity:
-                    correctReturnValue = true;
-                    break;
-                case SwitchManagedProperties.TabContentsChanged:
-                    correctReturnValue = false;
-                    break;
-                default:
-                    correctReturnValue = false;
-                    break;
-            }
-            
-            // check immediate truths
-            // - null
-            // - primary values
-            // - is switch managaged
-            if (
-                (element is null) // null primary
-                || (element is not FrameworkElement frameworkElement) // primary type
-            ) {
-                return correctReturnValue;
-            }
-
-            // type specific checks
-            if (frameworkElement is ISwitchManaged switchManagedElement) {
-                switch (checkFor) {
-                    case SwitchManagedProperties.Validity:
-                        return correctReturnValue;
-                    case SwitchManagedProperties.TabContentsChanged:
-                        if (switchManagedElement.RequiresReset) {
-                            return switchManagedElement.TabContentsChanged;
-                        }
-                        return correctReturnValue;
-                }
-            }
-
-            // if it's not already correct, then check if this element has contents
-            // if it has contents, recurse
-            if (frameworkElement is ContentControl contentControl) {
-                return CheckBoolPropertyOn(contentControl.Content, checkFor);
-            } else if (frameworkElement is ItemsControl itemsControl) {
-                if (itemsControl.Items.Count <= 0) {
-                    return correctReturnValue;
-                }
-
-                foreach (object? item in itemsControl.Items) {
-                    if (CheckBoolPropertyOn(item, checkFor) == !correctReturnValue) {
-                        return !correctReturnValue;
-                    }
-                }
-                return correctReturnValue;
-            } else if (frameworkElement is Panel panel) {
-                if (panel.Children.Count <= 0) {
-                    return correctReturnValue;
-                }
-
-                foreach (object? child in panel.Children) {
-                    if (CheckBoolPropertyOn(child, checkFor) == !correctReturnValue) {
-                        return !correctReturnValue;
-                    }
-                }
-                return correctReturnValue;
-            } else if (frameworkElement is Decorator decorator) {
-                return CheckBoolPropertyOn(decorator.Child, checkFor);
-            }
-
-            // if it has no contents, fail
-            return !correctReturnValue;
-        }
+        public event EventHandler<BoolEventArgs>? ValidityChanged;        
 
         public bool CheckValidity()
-            => CheckBoolPropertyOn(this.Content, SwitchManagedProperties.Validity);
+            => ISwitchManaged.CheckBoolPropertyOn(this.Content, ISwitchManaged.TargetableProperties.Validity);
 
-        public bool CheckForProperty(SwitchManagedProperties checkFor)
-            => CheckBoolPropertyOn(this.Content, checkFor);
+        public bool CheckForProperty(ISwitchManaged.TargetableProperties checkFor)
+            => ISwitchManaged.CheckBoolPropertyOn(this.Content, checkFor);
 
         /// <summary>
         /// Resets all ISwitchManaged content

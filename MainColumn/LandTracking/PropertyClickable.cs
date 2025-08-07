@@ -6,6 +6,7 @@ using MC_BSR_S2_Calculator.Utility.Validations;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +17,9 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
-    public class PropertyClickable : Property, IBrowserDisplayable<PropertyClickable, PropertyManager>, IFromConverter<PropertyClickable> {
+    public class PropertyClickable : Property, 
+        IBrowserDisplayable<PropertyClickable, PropertyManager>, 
+        IFromConverter<PropertyClickable> {
 
         // --- VARIABLES ---
 
@@ -27,6 +30,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         public IBrowserDisplayable<PropertyClickable, PropertyManager> AsBrowserDisplayable => this;
 
+        // - Displayed Content -
+
         public static PropertyManager? DisplayedContent { get; private set; } = null;
 
         public static void ClearDisplayContent() {
@@ -35,6 +40,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         }
 
         public static event EventHandler<EventArgs>? DisplayedContentChanged;
+
+        public static PropertyClickable? LastSelectedDisplayable { get; private set; } = null;
 
         #endregion
 
@@ -56,8 +63,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         }
 
         // copy constructor
-        public PropertyClickable(Property propertyClickable)
-            : base(propertyClickable) {
+        public PropertyClickable(Property property)
+            : base(property) {
             AsBrowserDisplayable.CheckBrowserValidity();
         }
 
@@ -76,7 +83,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             // create property manager
             DisplayedContent = new PropertyManager() {
                 TitleText = $"Modify '{this.Name.Value}'",
-                ShowResetButton = false
+                ResetText = "Delete",
+                CreateText = "Modify Property"
             };
 
             // owning player
@@ -99,6 +107,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                     }
                     DisplayedContent.OwningPlayerInput.SelectedIndex = selectedIndex;
 
+                    // default value
+                    DisplayedContent.OwningPlayerInput.TrySetDefaultValue(selectedIndex);
+
                     // validity
                     DisplayedContent.Validity["OwningPlayerInput"].IsValid = (this.OwnerID is not null);
 
@@ -110,50 +121,64 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             // property name
             DisplayedContent.NameInput.LayoutLoaded += (_, _) => {
                 DisplayedContent.NameInput.Text = this.Name.Value;
+                DisplayedContent.NameInput.TrySetDefaultValue(this.Name.Value);
                 DisplayedContent.Validity["NameInput"].IsValid = true;
             };
 
             // property type
             DisplayedContent.PropertyTypeInput.LayoutLoaded += (_, _) => {
-                DisplayedContent.PropertyTypeInput.SelectedItem = XamlConverter.CapitalizeWords(this.PropertyType);
+                string capitalizedPropertyType = XamlConverter.CapitalizeWords(this.PropertyType);
+                DisplayedContent.PropertyTypeInput.SelectedItem = capitalizedPropertyType;
+                DisplayedContent.PropertyTypeInput.TrySetDefaultValue(DisplayedContent.PropertyTypeInput.SelectedIndex);
                 DisplayedContent.Validity["PropertyTypeInput"].IsValid = true;
             };
 
             // residents count
             DisplayedContent.ResidentsCountInput.LayoutLoaded += (_, _) => {
                 DisplayedContent.ResidentsCountInput.Text = this.ResidentsCount.ToString();
+                DisplayedContent.ResidentsCountInput.TrySetDefaultValue(this.ResidentsCount.ToString());
             };
 
             // subsections
             DisplayedContent.LoadingCompleted += (_, _) => {
                 DisplayedContent.SetSections(this.Subsections.ToArray());
+                DisplayedContent.SetDefaultSections(DisplayedContent.Sections.ToList());
                 DisplayedContent.Validity["Sections"].IsValid = true;
             };
 
             // tax incentives
             DisplayedContent.TaxIncentives.CompletedLoading += (_, _) => {
+                IncentivesManager manager = DisplayedContent.TaxIncentives;
                 foreach (ActiveIncentive incentive in this.TaxIncentives) {
-                    DisplayedContent.TaxIncentives.Add(incentive.Name);
+                    manager.Add(incentive.Name);
                 }
+                IncentivesList display = manager.IncentivesDisplay;
+                display.DefaultCount = display.Count;
             };
 
             // purchase incentives
             DisplayedContent.PurchaseIncentives.CompletedLoading += (_, _) => {
+                IncentivesManager manager = DisplayedContent.PurchaseIncentives;
                 foreach (ActiveIncentive incentive in this.PurchaseIncentives) {
-                    DisplayedContent.PurchaseIncentives.Add(incentive.Name);
+                    manager.Add(incentive.Name);
                 }
+                IncentivesList display = manager.IncentivesDisplay;
+                display.DefaultCount = display.Count;
             };
 
             // violation incentives
             DisplayedContent.ViolationIncentives.CompletedLoading += (_, _) => {
+                IncentivesManager manager = DisplayedContent.ViolationIncentives;
+                IncentivesList display = manager.IncentivesDisplay;
                 foreach (ActiveViolationIncentive incentive in this.ViolationIncentives) {
-                    IncentivesManager violationIncentivesManager = DisplayedContent.ViolationIncentives;
-                    violationIncentivesManager.Add(incentive.Name);
+                    manager.Add(incentive.Name);
 
                     // set violation count
-                    ViolationIncentive addedIncentive = (ViolationIncentive)violationIncentivesManager.IncentivesDisplay[^1];
+                    ViolationIncentive addedIncentive = (ViolationIncentive)display[^1];
                     addedIncentive.ViolationCountFromDisplay = incentive.ViolationCount;
+                    addedIncentive.DefaultValue = incentive.ViolationCount;
                 }
+                display.DefaultCount = display.Count;
             };
 
             // subsurface land provision
@@ -163,16 +188,20 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 if (hasValue) {
                     CoordinateInput coordinateInput = ((CoordinateInput)DisplayedContent.SubsurfaceLandProvisionCheck.Content);
                     coordinateInput.YInput.LayoutLoaded += (_, _) => {
-                        ((IntegerTextBox)coordinateInput.YInput.Element).Value
-                            = (int)(this.SubsurfaceLandProvisionLevel
+                        var coordinateTextBox = ((IntegerTextBox)coordinateInput.YInput.Element);
+                        var setValue = (int)(this.SubsurfaceLandProvisionLevel
                             ?? (coordinateInput.YInput.Element.DefaultValue ?? 0));
+                        coordinateTextBox.Value = setValue;
+                        coordinateTextBox.DefaultValue = setValue;
                     };
                 }
+                DisplayedContent.SubsurfaceLandProvisionCheck.CheckBoxLabelObject.Element.DefaultValue = hasValue;
             };
 
             // has mailbox
             void checkMailbox(object? sender, EventArgs args) {
                 DisplayedContent!.HasMailboxCheck.IsChecked = this.HasMailbox;
+                DisplayedContent!.HasMailboxCheck.Element.DefaultValue = this.HasMailbox;
                 DisplayedContent!.Validity["HasMailboxCheck"].IsValid = this.HasMailbox;
                 DisplayedContent!.HasMailboxCheck.LayoutLoaded -= checkMailbox;
             }
@@ -181,6 +210,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             // follows guidelines
             void checkGuidelines(object? sender, EventArgs args) {
                 DisplayedContent!.HasEdgeSpacingCheck.IsChecked = this.FollowsPropertyMetricGuidelines;
+                DisplayedContent!.HasEdgeSpacingCheck.Element.DefaultValue = this.FollowsPropertyMetricGuidelines;
                 DisplayedContent!.Validity["HasEdgeSpacingCheck"].IsValid = this.FollowsPropertyMetricGuidelines;
                 DisplayedContent!.HasEdgeSpacingCheck.LayoutLoaded -= checkGuidelines;
             }
@@ -189,19 +219,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             // is approved
             void checkApproved(object? sender, EventArgs args) {
                 DisplayedContent!.ApprovedCheck.IsChecked = this.IsApproved;
+                DisplayedContent!.ApprovedCheck.Element.DefaultValue = this.IsApproved;
                 DisplayedContent!.Validity["ApprovedCheck"].IsValid = this.IsApproved;
                 DisplayedContent!.ApprovedCheck.LayoutLoaded -= checkApproved;
             }
             DisplayedContent.ApprovedCheck.LayoutLoaded += checkApproved;
 
-            DisplayedContent.CompleteRequested += (_, _) => {
-                // delete this property
-                MainResources.PropertiesDisplay.Remove(
-                    MainResources.PropertiesDisplay.FindByName(this.Name)
-                );
-            };
-
             // dipslayed content update
+            LastSelectedDisplayable = this;
             DisplayedContentChanged?.Invoke(this, EventArgs.Empty);
         }
 

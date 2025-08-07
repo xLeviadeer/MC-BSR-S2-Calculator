@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -24,7 +25,7 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 {
-    public partial class PropertySection : UserControl, INotifyPropertyChanged, IValidityHolder
+    public partial class PropertySection : UserControl, INotifyPropertyChanged, IValidityHolder, ICloneable
     {
         // --- VARIABLES ---
 
@@ -134,8 +135,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // --- CONSTRUCTOR ---
         #region CONSTRUCTOR
 
-        public PropertySection()
-        {
+        private void SetDefaultValues() {
             InitializeComponent();
 
             // initial validity
@@ -150,6 +150,22 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             void InvokeCoordinatesChanged() => CoordinatesChanged?.Invoke(this, EventArgs.Empty);
             CoordinateInputCornerA.CoordinatesChanged += (_, __) => InvokeCoordinatesChanged();
             CoordinateInputCornerB.CoordinatesChanged += (_, __) => InvokeCoordinatesChanged();
+        }
+
+        public PropertySection()
+            => SetDefaultValues();
+
+        public PropertySection(PropertySection section) {
+            SetDefaultValues();
+
+            SectionName.Text = section.SectionName.Text; // hard
+
+            ShowDeleteButton = section.ShowDeleteButton; // hard
+            Validity = section.Validity; // soft (todo: hard)
+            IsValid = section.IsValid; // hard 
+            Subsection = section.Subsection.HardCopy(); // hard
+            _isValidByConstraints = section._isValidByConstraints; // hard 
+            IsInvalidByIntersection = section.IsInvalidByIntersection; // hard 
         }
 
         #endregion
@@ -187,6 +203,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 ValidityChanged?.Invoke(this, new(isValid));
             }
         }
+
+        // - Copy -
+
+        public static PropertySection HardCopy(PropertySection section) 
+            => new PropertySection(section);
+
+        public PropertySection HardCopy()
+            => HardCopy(this);
+
+        public object Clone()
+            => HardCopy();
 
         #endregion
 

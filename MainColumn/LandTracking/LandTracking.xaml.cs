@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public partial class LandTracking : UserControl {
 
         // --- VARIABLES ---
+        #region VARIABLES
 
         // - Property Browser -
 
@@ -33,7 +35,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         private static bool PropertiesDisplayHasBeenLoaded { get; set; } = false;
 
+        #endregion
+
         // --- CONSTRUCTOR ---
+        #region CONSTRUCTOR
 
         public LandTracking() {
             InitializeComponent();
@@ -44,6 +49,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             PropertyBrowser.DisplayContentChanged += (_, _) => {
                 if (PropertyBrowser.DisplayContent is not null) {
                     PropertyBrowser.DisplayContent.CompleteRequested += ViewModifyPropertyManager_CompleteRequested;
+                    PropertyBrowser.DisplayContent.ResetRequested += ViewModifyPropertyManager_ResetRequested;
                 }
             };
 
@@ -55,13 +61,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 // set display as a clickable conversion of the property list
                 PropertyBrowser.ListReference = MainResources.PropertiesDisplay.ConvertTo<
                     PropertyClickable, 
-                    GenericSearchableListDisplay<PropertyClickable>
+                    PropertyClickableList
                 >();
 
                 // mirror changes from the properties display class list to the converted list
                 MainResources.PropertiesDisplay.SearchableClassDataList.ItemsChanged += (sender, args) => {
                     if (args is ListChangedEventArgs listArgs) {
-                        var convertedListDisplay = ((GenericSearchableListDisplay<PropertyClickable>)PropertyBrowser.ListReference);
+                        var convertedListDisplay = ((PropertyClickableList)PropertyBrowser.ListReference);
 
                         switch (listArgs.ListChangedType) {
                             case ListChangedType.ItemAdded:
@@ -89,13 +95,27 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             TabModifyViewProperty.Content = PropertyBrowser;
         }
 
-        private void CreateNewPropertyFrom(PropertyManager propertyManager) {
+        #endregion
+
+        // --- METHODS ---
+
+        // -- General --
+        #region General
+
+        private void CreateNewPropertyFrom(PropertyManager propertyManager, IDTrace? fromExistingOwnerID=null, IDPrimary? fromExistingID=null) {
             // find associated player ID
-            IDPrimary associatedPlayerID = propertyManager.GetOwningPlayerID();
+            IDTrace playerTrace;
+            if (fromExistingOwnerID is null) {
+                IDPrimary associatedPlayerID = propertyManager.GetOwningPlayerID();
+                playerTrace = associatedPlayerID.CreateTrace(this); // dummy pass of this, could be literally anything
+            } else {
+                // set 
+                playerTrace = fromExistingOwnerID;
+            }
 
             // create a new property and add it to the property list
-            MainResources.PropertiesDisplay.Add(new Property(
-                associatedPlayerID.CreateTrace(associatedPlayerID.Instance), // owner player id trace
+            var newProperty = new Property(
+                playerTrace, // owner player id trace
                 propertyManager.NameInput.Text.Trim(), // property name
                 (string)(propertyManager.PropertyTypeInput.SelectedItem ?? ""), // property type
                 Math.Max(1, (int)propertyManager.ResidentsCountInput.TryGetValue<double>()), // residents count
@@ -110,12 +130,24 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                     : null,
                 propertyManager.HasMailboxCheck.IsChecked ?? false, // has mailbox
                 propertyManager.HasEdgeSpacingCheck.IsChecked ?? false, // follows guidelines
-                propertyManager.ApprovedCheck.IsChecked ?? false // is approved
-            ));
+                propertyManager.ApprovedCheck.IsChecked ?? false, // is approved
+                fromExistingID // create from existing ID
+            );
+
+            // assign player trace to the property just created
+            playerTrace.AssignInstance(newProperty);
+
+            // add to main
+            MainResources.PropertiesDisplay.Add(newProperty);
 
             // clear values
             propertyManager.Reset();
         }
+
+        #endregion
+
+        // -- Per-Item --
+        #region Per-Item
 
         private void CreatePropertyManager_CompleteRequested(object? sender, EventArgs args) {
             // create property
@@ -125,12 +157,39 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             MainTabControl.SelectedItem = TabModifyViewProperty;
         }
 
+        private void CreatePropertyManager_ResetRequested(object? sender, EventArgs args) {
+            PropertyBrowser.DisplayContent!.Reset();
+        }
+
         private void ViewModifyPropertyManager_CompleteRequested(object? sender, EventArgs args) {
+            // get current property clickable object
+            PropertyClickable currPropertyClickable = PropertyBrowser.SelectedItem!;
+
+            // delete this property
+            MainResources.PropertiesDisplay.Remove(
+                MainResources.PropertiesDisplay.FindByName(currPropertyClickable.Name.Value)
+            );
+
             // create property
-            CreateNewPropertyFrom(PropertyBrowser.DisplayContent!);
+            CreateNewPropertyFrom(PropertyBrowser.DisplayContent!, currPropertyClickable.OwnerID, currPropertyClickable.DisplayableID);
 
             // set view to blank
             PropertyClickable.ClearDisplayContent();
         }
+
+        private void ViewModifyPropertyManager_ResetRequested(object? sender, EventArgs args) {
+            // get current property clickable object
+            PropertyClickable currPropertyClickable = PropertyBrowser.SelectedItem!;
+
+            // delete this property
+            MainResources.PropertiesDisplay.Remove(
+                MainResources.PropertiesDisplay.FindByName(currPropertyClickable.Name)
+            );
+
+            // clear display
+            PropertyClickable.ClearDisplayContent();
+        }
+
+        #endregion
     }
 }

@@ -186,6 +186,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         #region CONSTRUCTOR
 
+        
+
         private void SetDefaultValues(
             IDTrace? ownerID,
             string name,
@@ -267,9 +269,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             int? subsurfaceLandProvisionLevel,
             bool hasMailbox,
             bool followsPropertyMetricGuidelines,
-            bool isApproved
+            bool isApproved,
+            IDPrimary? fromExistingID=null
         ) {
-            AssignNewID();
+            // ID assignment
+            if (fromExistingID is null) {
+                AssignNewID();
+            } else {
+                DisplayableID = fromExistingID;
+            }
+
+            // defaults
             SetDefaultValues(
                 ownerID,
                 name,
@@ -288,6 +298,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // copy constructor
         public Property(Property property) {
+            DisplayableID = property.DisplayableID;
             SetDefaultValues(
                 property.OwnerID,
                 property.Name,

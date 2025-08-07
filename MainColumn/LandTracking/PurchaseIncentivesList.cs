@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public class PurchaseIncentivesList : IncentivesList {
+
         public override event EventHandler<EventArgs>? Updated;
 
         public PurchaseIncentivesList() =>

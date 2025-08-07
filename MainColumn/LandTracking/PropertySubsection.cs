@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     /// Holds 2 sets of coordinates to create a square property subsection
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class PropertySubsection {
+    public class PropertySubsection : ICloneable {
 
         // --- VARIABLES ---
         #region VARIABLES
@@ -91,7 +92,42 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             Name = name;
         }
 
+        [SetsRequiredMembers]
+        public PropertySubsection(PropertySubsection subsection) {
+            A = subsection.A; B = subsection.B;
+            Name = subsection.Name;
+        }
+
         #endregion
+
+        // --- METHODS ---
+
+        // - Equality Checking -
+
+        public static bool IsEqualValue(PropertySubsection subsectionA, PropertySubsection subsectionB) {
+            return ((subsectionA.A == subsectionB.A)
+                && (subsectionA.B == subsectionB.B));
+        }
+
+        public bool IsEqualValue(PropertySubsection otherSubsection)
+            => IsEqualValue(this, otherSubsection);
+
+        // - To String -
+
+        public override string ToString() {
+            return $"PropertySubsection {{ Name = {Name}, A = {A.ToString()}, B = {B.ToString()}}}";
+        }
+
+        // - Copy -
+
+        public static PropertySubsection HardCopy(PropertySubsection subsection) 
+            => new PropertySubsection(subsection);
+
+        public PropertySubsection HardCopy()
+            => HardCopy(this);
+
+        public object Clone()
+            => HardCopy();
 
         // --- CASTING ---
 

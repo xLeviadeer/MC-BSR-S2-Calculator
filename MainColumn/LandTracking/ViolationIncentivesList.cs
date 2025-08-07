@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,6 +8,14 @@ using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     class ViolationIncentivesList : IncentivesList {
+
+        public override bool TabContentsChanged => (
+            base.TabContentsChanged
+            || (ClassDataList
+                .Cast<ViolationIncentive>()
+                .Any(violationIncentive => violationIncentive.TabContentsChanged)
+            )
+        );
 
         public override event EventHandler<EventArgs>? Updated;
 

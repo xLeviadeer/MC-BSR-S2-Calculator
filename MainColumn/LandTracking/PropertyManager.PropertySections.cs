@@ -2,6 +2,7 @@
 using MC_BSR_S2_Calculator.Utility.Coordinates;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using MC_BSR_S2_Calculator.Utility.Validations;
+using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,6 +29,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         private const int MinSectionsCount = 1;
         private const int MaxSectionsCount = 30;
+
+        public List<PropertySection> DefaultSections { get; private set; } = new() {
+            new() // default list with 1 element
+        };
 
         #endregion
 
@@ -549,13 +554,23 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         private bool CheckIfSectionsChanged() {
             // changed checks
-            if (
-                (Sections.Count != 1) // check for section count
-                || (Sections[0].SectionName.Element.TabContentsChanged) // check for name
-                || (Sections[0].Subsection.TopLeft != new FlatCoordinate(0, 0)) // check if section isn't at 0,0
-                || (Sections[0].Subsection.BottomRight != new FlatCoordinate(0, 0)) // check if section isn't at 0,0
-            ) {
+            if (Sections.Count != DefaultSections.Count) { // check for section count 
                 return true;
+            }
+
+            // check sections
+            for (int i = 0; i < Sections.Count; i++) {
+                // variables
+                PropertySection section = Sections[i];
+                PropertySection defaultSection = DefaultSections[i];
+
+                // check
+                if (
+                    (section.SectionName.Element.TabContentsChanged) // check for name
+                    || (!section.Subsection.IsEqualValue(defaultSection.Subsection)) // check if section isn't at 0,0
+                ) {
+                    return true;
+                }
             }
 
             // no changes
@@ -584,14 +599,35 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 AddSection(section); // add before applying updates
                                      // this ensures loaded is triggered before updates are applied
                 Dispatcher.BeginInvoke(() => {
+                    // regular values
                     section.SectionName.Text = subsection.Name ?? "";
                     ((IntegerTextBox)section.CoordinateInputCornerA.XInput.Element).Value = subsection.A.X;
                     ((IntegerTextBox)section.CoordinateInputCornerA.ZInput.Element).Value = subsection.A.Z;
                     ((IntegerTextBox)section.CoordinateInputCornerB.XInput.Element).Value = subsection.B.X;
                     ((IntegerTextBox)section.CoordinateInputCornerB.ZInput.Element).Value = subsection.B.Z;
                     section.CalculateAndDisplayMetric();
+
+                    // update default
+                    ((StringTextBox)section.SectionName.Element).DefaultValue = section.SectionName.Text;
                 }, DispatcherPriority.Loaded);
+
+                // set delete button visibility
+                if (Sections.Count > MinSectionsCount) {
+                    ShowSectionDeleteButtons();
+                } else {
+                    HideSectionDeleteButtons();
+                }
             }
+        }
+
+        // - set default sections from sections -
+
+        public void SetDefaultSections(List<PropertySection> lst) {
+            // set default sections
+            Dispatcher.BeginInvoke(() => {
+                // set default names
+                DefaultSections = lst.Select(item => item.HardCopy()).ToList();
+            }, DispatcherPriority.Loaded);
         }
 
         #endregion

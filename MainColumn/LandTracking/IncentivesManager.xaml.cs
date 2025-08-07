@@ -29,10 +29,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     /// <summary>
     /// Interaction logic for IncentivesManager.xaml
     /// </summary>
-    public partial class IncentivesManager : UserControl, INotifyPropertyChanged {
+    public partial class IncentivesManager : UserControl, 
+        INotifyPropertyChanged, ISwitchManaged {
 
         // --- VARIABLES ---
         #region VARIABLES
+
+        // - Management -
+
+        public bool TabContentsChanged => IncentivesDisplay.TabContentsChanged;
+
+        public bool RequiresReset { get; set; } = true;
 
         // - Info Target and Casting Type -
 
@@ -260,6 +267,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         private void AddIncentiveButton_Click(object sender, RoutedEventArgs args)
             => Add();
 
+        private void UpdateTotalIncentiveResult() 
+            => TotalIncentiveResult.Result = Property.GetTotalIncentivesValue(
+                IncentivesDisplay.ClassDataList
+                .Select(incentive => incentive.GetActiveIncentive())
+                .ToArray()
+            ).ToString();
+
+        public void Reset()
+            => Clear();
+
         private void SelectionComboLabel_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             // get selection info
             IncentiveInfo info = TryGetInfo();
@@ -277,13 +294,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 AddIncentiveButton.IsEnabled = true;
             }
         }
-
-        private void UpdateTotalIncentiveResult() 
-            => TotalIncentiveResult.Result = Property.GetTotalIncentivesValue(
-                IncentivesDisplay.ClassDataList
-                .Select(incentive => incentive.GetActiveIncentive())
-                .ToArray()
-            ).ToString();
 
         #endregion
     }

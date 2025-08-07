@@ -1,4 +1,5 @@
 ﻿using MC_BSR_S2_Calculator.Utility.ListDisplay;
+using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ using System.Windows;
 namespace MC_BSR_S2_Calculator.Utility.ListBrowser {
     public interface IBrowserDisplayable<Self, DisplayContent>
         where Self : Displayable, IBrowserDisplayable<Self, DisplayContent>
-        where DisplayContent : FrameworkElement {
+        where DisplayContent : FrameworkElement, ISwitchManaged {
 
         // --- ENSURANCES ---
 
@@ -24,6 +25,8 @@ namespace MC_BSR_S2_Calculator.Utility.ListBrowser {
         public abstract static DisplayContent? DisplayedContent { get; }
 
         public abstract static event EventHandler<EventArgs>? DisplayedContentChanged;
+
+        public abstract static Self? LastSelectedDisplayable { get; }
 
         // -- Methods --
 

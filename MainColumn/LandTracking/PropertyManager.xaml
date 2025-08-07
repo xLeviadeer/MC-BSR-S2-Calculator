@@ -249,11 +249,10 @@
 
             <!-- Completion Buttons -->
             <util:ChargingButton x:Name="CreateButton" Grid.Row="{StaticResource LastRow}" Grid.Column="3" Style="{StaticResource InputButton}"
-                             Content="Create Property"
+                             Content="{Binding CreateText}"
                              FullyCharged="OnCreateCharged"/>
             <util:ChargingButton x:Name="ClearButton" Grid.Row="{StaticResource LastRow}" Grid.Column="2" Style="{StaticResource InputButton}"
-                             Content="Clear Form" ChargeTime="0.75" ColorPalette="Red" IsTabStop="False"
-                             Visibility="{Binding ShowResetButtonVisibilty}"
+                             Content="{Binding ResetText}" ChargeTime="0.75" ColorPalette="Red" IsTabStop="False"
                              FullyCharged="OnClearCharged"/>
         </Grid>
     </ScrollViewer>

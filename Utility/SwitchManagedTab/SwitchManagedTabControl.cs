@@ -51,11 +51,7 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                             SwitchManagedTabItem.SwitchManagedProperties.TabContentsChanged
                         ) == true) { // if any contents have changed
                             // confirm switch with dialog
-                            if (new ConfirmationWindow(
-                                "Tab contents will not be saved",
-                                "exit without saving",
-                                "stay here"
-                            ).ShowDialog() == true) {
+                            if (ISwitchManaged.AskConfirmation()) {
                                 // find the containing tabcontrol (assumes 3 up)
                                 source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
                                 source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
@@ -68,7 +64,7 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                             }
                             args.Handled = true;
 
-                            // edn loop
+                            // end loop
                             return;
                         }
                     }

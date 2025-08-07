@@ -1,10 +1,11 @@
 ﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
 using MC_BSR_S2_Calculator.PlayerColumn;
-using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -31,7 +32,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
     /// </summary>
     /// <typeparam name="T"> The class type of which data to display from </typeparam>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public abstract partial class ListDisplay<T> : UserControl
+    public abstract partial class ListDisplay<T> : UserControl, IEnumerable<T>
         where T : Displayable {
 
         // --- VARIABLES ---
@@ -47,7 +48,10 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         [JsonProperty("data")]
         public virtual NotifyingList<T> ClassDataList { get; set; } = new();
 
-        public T SomeClassData => ClassDataList[0];
+        public virtual T SomeClassData => ClassDataList[0];
+
+        public virtual IEnumerator<T> GetEnumerator() => ClassDataList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         // - Data List by Rows -
 
@@ -76,9 +80,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         // - Count -
 
-        public int Count {
-            get => ClassDataList.Count;
-        }
+        public virtual int Count => RawCount;
+
+        public int RawCount => ClassDataList.Count;
 
         // - Data List by Columns -
 
@@ -110,7 +114,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         // - List Headers -
 
-        private record HeaderOrderPair(
+        protected record HeaderOrderPair(
             string header,
             int order
         );
@@ -118,7 +122,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         /// <summary>
         /// Gets the headers for this list
         /// </summary>
-        public ImmutableList<string> Headers {
+        public virtual ImmutableList<string> Headers {
             get {
                if (ClassDataList.Count > 0) {
                     // gets the display headers in the order of their display order 
@@ -271,7 +275,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
             // set class data list
             copy.ClassDataList = NotifyingList<U>.From(
-                ClassDataList.CopyShallow().Select(
+                ClassDataList.Select(
                     cls => U.From(cls)
                 )
             );
@@ -296,7 +300,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
             // set class data list
             copy.ClassDataList = NotifyingList<U>.From(
-                ClassDataList.CopyShallow().Select(
+                ClassDataList.Select(
                     cls => U.From(cls)
                 )
             );
@@ -402,6 +406,11 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             ClassDataList.Clear();
             BuildGrid();
         }
+
+        // - Index Of -
+
+        public int IndexOf(T displayable)
+            => ClassDataList.IndexOf(displayable);
 
         #endregion
 
@@ -529,7 +538,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             MainScrollViewer.Margin = MainBorder.BorderThickness;
         }
 
-        private void PrepareGridForBuilding() {
+        private bool PrepareGridForBuilding() {
             // clear current grid contents
             MainGrid.Children.Clear();
             ListDisplayGrid.Children.Clear();
@@ -554,11 +563,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 // create empty and add
                 var emptyTextBlock = CreateEmptyTextBlock(false, HorizontalAlignment.Stretch);
                 ListDisplayGrid.Children.Add(emptyTextBlock);
-                return; // dont add anything else
+                return false; // dont add anything else (failed)
             }
 
             // headers row
             ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
+            return true; // (success)
         }
 
         private TextBlock CreateEmptyTextBlock(bool isPerHeader, HorizontalAlignment headerHorizontalAlignment) {
@@ -600,7 +610,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             }
         }
 
-        private bool IsValidCurrentDisplayLayer(string header) {
+        protected virtual bool IsValidCurrentDisplayLayer(string header) {
             // display layer checking
             if (DisplayLayer == -1) { return true; }
 
@@ -625,7 +635,8 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         /// </remarks>
         public void BuildGrid() {
             // prepare main grid
-            PrepareGridForBuilding();
+            bool wasSuccessful = PrepareGridForBuilding();
+            if (!wasSuccessful) { return; } // stop building 
             SortClassData();
 
             // add headers
@@ -836,20 +847,22 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
                     // button adder helper
                     Button AddButton(OptionalMouseClickEventHolder holder) {
-                        // create button and add event
-                        var button = CreateClickableButton();
-                        button.Click += holder.HeldLeftClickListener;
+                        // add event
+                        if (cls.HeldButton is null) { // create button if one doesn't yet exist
+                            cls.HeldButton = CreateClickableButton();
+                        }
+                        cls.HeldButton.Click += holder.HeldLeftClickListener;
 
                         // if it's the last pass and row
                         if (IsClickable == ListDisplayClickable.ByRow) {
-                            AddToCurrentItem(button, YcurrItemRow, 0);
-                            Grid.SetColumnSpan(button, Headers.Count); // change span
+                            AddToCurrentItem(cls.HeldButton, YcurrItemRow, 0);
+                            Grid.SetColumnSpan(cls.HeldButton, Headers.Count); // change span
                         } else {
-                            AddToCurrentItem(button, YcurrItemRow);
+                            AddToCurrentItem(cls.HeldButton, YcurrItemRow);
                         }
 
                         // return button reference
-                        return button;
+                        return cls.HeldButton;
                     }
 
                     // context wrapper helper
@@ -898,7 +911,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                             AddButton(cls);
                         }
 
-                        // if only contexts clickable
+                    // if only contexts clickable
                     } else if (
                         (IsClickable == ListDisplayClickable.NotClickable)
                         && (ContextClickable != ListDisplayClickable.NotClickable)
@@ -908,7 +921,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                             (ContextClickable == ListDisplayClickable.ByCell)
                             && (displayValue.IsHoldingRightClick)
                         ) {
-                            AddContextWrapper(displayValue.RightClickMenu);
+                            AddContextWrapper(displayValue.RightClickMenu!);
 
                         // if by row
                         } else if (
@@ -916,7 +929,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                             && (isLastPass)
                             && (cls.IsHoldingRightClick)
                         ) {
-                            AddContextWrapper(cls.RightClickMenu);
+                            AddContextWrapper(cls.RightClickMenu!);
                         }
                     }
 
@@ -954,8 +967,14 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
                         // if only context exists for this one
                         else if (holder.IsHoldingRightClick) {
-                            AddContextWrapper(holder.RightClickMenu);
+                            AddContextWrapper(holder.RightClickMenu!);
                         }
+                    }
+
+                    // if neither are clickable
+                    else {
+                        // reset held button
+                        cls.HeldButton = null;
                     }
                 }
             }

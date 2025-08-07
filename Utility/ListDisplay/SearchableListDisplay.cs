@@ -1,7 +1,10 @@
-﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
+using MC_BSR_S2_Calculator.Utility.LabeledInputs;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -17,7 +20,7 @@ using System.Windows.Controls;
 namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public abstract class SearchableListDisplay<T> : ListDisplay<T>
+    public abstract class SearchableListDisplay<T> : ListDisplay<T>, IEnumerable<T>
         where T : Displayable {
 
         // --- VARIABLES ---
@@ -51,6 +54,83 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         [JsonProperty("searchable_data")]
         public NotifyingList<T> SearchableClassDataList { get; set; } = new();
+
+        public override T SomeClassData => SearchableClassDataList[0];
+
+        public override IEnumerator<T> GetEnumerator() => SearchableClassDataList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // - Data List by Rows -
+
+        /// <summary>
+        /// A list of IDisplayValues organized by row
+        /// </summary>
+        public new List<Dictionary<string, DisplayValueBase>> DataListByRows {
+            get {
+                return SearchableClassDataList.Select(
+                    cls => cls.DisplayValues
+                ).ToList();
+            }
+        }
+
+        // - Index by Index -
+
+        /// <summary>
+        /// Accesses the data list by index
+        /// </summary>
+        /// <param name="index"> The element to retrieve </param>
+        /// <returns> A dictionary element with a header name and it's associated DisplayValueBase </returns>
+        public new T this[int index] {
+            get => SearchableClassDataList[index];
+            set => SearchableClassDataList[index] = value;
+        }
+
+        // - Count -
+
+        public override int Count => SearchableCount;
+
+        public int SearchableCount => SearchableClassDataList.Count;
+
+        // - Data List by Columns -
+
+        /// <summary>
+        /// A list of IDisaplayValues organized by columns
+        /// </summary>
+        public new Dictionary<string, List<DisplayValueBase>> DataListByColumns {
+            get {
+                return SomeClassData.DisplayHeaders.ToDictionary(
+                    key => key, // key
+                    key => SearchableClassDataList.Select( // value
+                        cls => cls.DisplayValues[key]
+                    ).ToList()
+                );
+            }
+        }
+
+        // - Index by Headers -
+
+        /// <summary>
+        /// Gets the headers for this list
+        /// </summary>
+        public override ImmutableList<string> Headers {
+            get {
+                if (SearchableClassDataList.Count > 0) {
+                    // gets the display headers in the order of their display order 
+                    // this means that the display will be built in the order the headers are in
+                    return SomeClassData.DisplayHeaders
+                        .Zip(
+                            SomeClassData.DisplayOrders, (header, order) => {
+                                return new HeaderOrderPair(header, order.Value);
+                            }
+                        )
+                        .OrderBy(pair => pair.order)
+                        .Select(pair => pair.header)
+                        .ToImmutableList();
+                } else {
+                    return ImmutableList<string>.Empty;
+                }
+            }
+        }
 
         // - Search Container Grid -
 
@@ -174,6 +254,11 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             // resubscribe new item added method
             SearchableClassDataList.ItemAdded += OnItemAdded;
 
+            // run for every instance on the searchable list contents
+            foreach (var instance in SearchableClassDataList) {
+                ForAllLoadedRowsAndNewItems(instance);
+            }
+
             // update data list based on search after data has been set
             // updating should automatically mirror searchable data to class data for the first time
             UpdateForSearchSettings();
@@ -274,6 +359,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             SearchableClassDataList.Clear();
             BuildGrid();
         }
+
+        public new int IndexOf(T displayable)
+            => SearchableClassDataList.IndexOf(displayable);
 
         #endregion
 
@@ -515,6 +603,25 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         public new void BuildGrid() {
             UpdateForSearchSettings(); // automatically builds grid when complete
+        }
+
+        // - Is Valid Current Display Layer Override -
+
+        protected override bool IsValidCurrentDisplayLayer(string header) {
+            // display layer checking
+            if (DisplayLayer == -1) { return true; }
+
+            // check if the display layer being called for exists
+            if (!SomeClassData.DisplayLayers
+                .Select(displayLayers => displayLayers.Value)
+                .Any(displayLayers => displayLayers.Contains(DisplayLayer))
+            ) {
+                throw new ArgumentException($"DisplayLayer is associated with no headers: {DisplayLayer}");
+            }
+
+            // check if display layer doesn't match
+            if (!SomeClassData.DisplayLayers[header].Contains(DisplayLayer)) { return false; }
+            return true;
         }
 
         #endregion

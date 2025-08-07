@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
-    public class SwitchManagedCheckBox : CheckBox {
+    public class SwitchManagedCheckBox : CheckBox, ISwitchManagedDefault {
 
         // --- VARIABLES ---
 

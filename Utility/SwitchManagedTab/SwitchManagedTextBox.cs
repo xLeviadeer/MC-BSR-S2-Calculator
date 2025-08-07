@@ -13,6 +13,8 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
 
         public virtual object? DefaultValue { get; set; } = null;
 
+        //public virtual object? DefaultValue { get; set; } = null;
+
         public bool TabContentsChanged {
             get {
                 // check for empty or actual value

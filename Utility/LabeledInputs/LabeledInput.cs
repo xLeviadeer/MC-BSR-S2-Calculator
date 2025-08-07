@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -381,6 +382,40 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
             // - no parent grid -
             generateStandardly();
             LayoutLoaded?.Invoke(this, EventArgs.Empty);
+        }
+
+        #endregion
+
+        // --- METHODS ---
+        #region METHODS 
+
+        // - Default Value -
+
+        // - get -
+
+        public object? TryGetDefaultValue<CastToType>() {
+            object? value = TryGetDefaultValue();
+            if (value is CastToType castedValue) {
+                return castedValue;
+            }
+            return null;
+        }
+
+        public object? TryGetDefaultValue() {
+            if (Element is ISwitchManagedDefault switchManagedElement) {
+                return switchManagedElement.DefaultValue;
+            }
+            return null;
+        }
+
+        // - set -
+
+        public bool TrySetDefaultValue(object? value) {
+            if (Element is ISwitchManagedDefault switchManagedElement) {
+                switchManagedElement.DefaultValue = value;
+                return true;
+            }
+            return false;
         }
 
         #endregion

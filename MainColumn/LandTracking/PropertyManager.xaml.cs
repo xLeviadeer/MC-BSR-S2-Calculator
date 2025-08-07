@@ -76,7 +76,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         private Dictionary<string, Func<bool>> ContentChanges; // set in constructor
 
-        public bool TabContentsChanged => ContentChanges.Any(item => item.Value() == true);
+        public bool TabContentsChanged {
+            get {
+                return ContentChanges.Any(item => item.Value() == true);
+            }
+        }
 
         public bool RequiresReset { get; set; } = true;
 
@@ -88,6 +92,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // - Create Charged -
 
         public event EventHandler<EventArgs>? CompleteRequested;
+
+        // - Reset Charged -
+
+        public event EventHandler<EventArgs>? ResetRequested;
 
         // - Loading Completed -
 
@@ -118,27 +126,33 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             new PropertyMetadata("Property Manager")
         );
 
-        // - Show Reset Button -
+        // - Reset Text -
 
-        public bool ShowResetButton {
-            get => (bool)GetValue(ShowResetButtonProperty);
-            set => SetValue(ShowResetButtonProperty, value);
+        public string ResetText {
+            get => (string)GetValue(ResetTextProperty);
+            set => SetValue(ResetTextProperty, value);
         }
 
-        public static readonly DependencyProperty ShowResetButtonProperty = DependencyProperty.Register(
-            nameof(ShowResetButton),
-            typeof(bool),
+        public static readonly DependencyProperty ResetTextProperty = DependencyProperty.Register(
+            nameof(ResetText),
+            typeof(string),
             typeof(PropertyManager),
-            new PropertyMetadata(true, OnShowResetButtonChanged)
+            new PropertyMetadata("Cancel")
         );
 
-        private static void OnShowResetButtonChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) {
-            if (sender is PropertyManager control) {
-                control.OnPropertyChanged(nameof(ShowResetButtonVisibilty));
-            }
+        // - Create Text -
+
+        public string CreateText {
+            get => (string)GetValue(CreateTextProperty);
+            set => SetValue(CreateTextProperty, value);
         }
 
-        public Visibility ShowResetButtonVisibilty => XamlConverter.BoolToVisibility(ShowResetButton);
+        public static readonly DependencyProperty CreateTextProperty = DependencyProperty.Register(
+            nameof(CreateText),
+            typeof(string),
+            typeof(PropertyManager),
+            new PropertyMetadata("Confirm")
+        );
 
         #endregion
 
@@ -165,9 +179,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 [nameof(PropertyTypeInput)] = () => PropertyTypeInput.Element.TabContentsChanged,
                 [nameof(ResidentsCountInput)] = () => NameInput.Element.TabContentsChanged,
                 [nameof(Sections)] = CheckIfSectionsChanged,
-                [nameof(TaxIncentives)] = () => (TaxIncentives.IncentivesDisplay.Count > 0),
-                [nameof(ViolationIncentives)] = () => (ViolationIncentives.IncentivesDisplay.Count > 0),
-                [nameof(PurchaseIncentives)] = () => (PurchaseIncentives.IncentivesDisplay.Count > 0),
+                [nameof(TaxIncentives)] = () => TaxIncentives.TabContentsChanged,
+                [nameof(ViolationIncentives)] = () => ViolationIncentives.TabContentsChanged,
+                [nameof(PurchaseIncentives)] = () => PurchaseIncentives.TabContentsChanged,
                 [nameof(SubsurfaceLandProvisionCheck)] = () => SubsurfaceLandProvisionCheck.CheckBoxLabelObject.Element.TabContentsChanged,
                 [nameof(HasMailboxCheck)] = () => HasMailboxCheck.Element.TabContentsChanged,
                 [nameof(HasEdgeSpacingCheck)] = () => HasEdgeSpacingCheck.Element.TabContentsChanged,
@@ -250,7 +264,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
         // -- Completion Buttons --
         #region Completion Buttons
 
-        private void OnClearCharged(object? sender, EventArgs args) => Reset();
+        private void OnClearCharged(object? sender, EventArgs args) {
+            ResetRequested?.Invoke(this, EventArgs.Empty);
+        }
 
         public void Reset() {
             // temporarily dont update buttons (so we dont waste time validating on every change)
@@ -268,9 +284,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             ResetSections();
 
-            TaxIncentives.Clear();
-            ViolationIncentives.Clear();
-            PurchaseIncentives.Clear();
+            TaxIncentives.Reset();
+            ViolationIncentives.Reset();
+            PurchaseIncentives.Reset();
 
             SubsurfaceLandProvisionCheck.IsChecked = false;
             HasMailboxCheck.IsChecked = false;

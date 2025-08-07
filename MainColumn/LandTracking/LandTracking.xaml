@@ -18,8 +18,8 @@
         <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabAddProperty" Style="{StaticResource SubTabStyle}"
                      Header="Add New Property">
             <local:PropertyManager x:Name="CreatePropertyManager" Grid.Column="0" Grid.ColumnSpan="2"
-                                   TitleText="Add New Property"
-                                   CompleteRequested="CreatePropertyManager_CompleteRequested"/>
+                                   TitleText="Add New Property" ResetText="Clear Form" CreateText="Create Property"
+                                   CompleteRequested="CreatePropertyManager_CompleteRequested" ResetRequested="CreatePropertyManager_ResetRequested"/>
         </util_switchmanagedtab:SwitchManagedTabItem>
 
         <!-- Modify/View Properties -->
