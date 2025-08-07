@@ -20,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.ComponentModel;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
     /// <summary>
@@ -47,6 +48,8 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
                 PlayersList.Margin = new Thickness(5, 3, 5, 10);
                 PlayersList.EmptyText = "No Players found";
                 PlayersList.ItemBorderBrushSides = new SolidColorBrush(ColorResources.ItemBorderBrushSidesLighter);
+                PlayersList.AnyWasActiveChanged += PlayersList_AnyWasActiveChanged;
+                PlayersList.CompletedLoading += (_, _) => UpdateMarkAllAsInactiveButtonIsEnabled();
             };
         }
 
@@ -68,6 +71,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
                 // save and rebuild grid
                 PlayersList.AsIStorable.Save();
                 PlayersList.BuildGrid();
+                UpdateMarkAllAsInactiveButtonIsEnabled();
             } else {
                 PlayersList.ShowPlayerNameTaken(nameTrimmed);
             }
@@ -119,6 +123,13 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
             foreach (var player in PlayersList.ClassDataList) {
                 player.WasActive.Value = false;
             }
+            MarkAllAsInactiveButton.IsEnabled = false;
         }
+
+        private void UpdateMarkAllAsInactiveButtonIsEnabled() 
+            => MarkAllAsInactiveButton.IsEnabled = PlayersList.AnyWasActiveTrue;
+
+        private void PlayersList_AnyWasActiveChanged(object? sender, BoolEventArgs args)
+            => UpdateMarkAllAsInactiveButtonIsEnabled();
     }
 }

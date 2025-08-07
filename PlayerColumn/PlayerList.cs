@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using System.Security.Cryptography.Xml;
 using MC_BSR_S2_Calculator.Utility.Identification;
 using System.Diagnostics;
+using MC_BSR_S2_Calculator.Utility;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 
@@ -22,6 +23,12 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
     public partial class PlayerList : ListDisplay<Player>, IStorable {
 
         // --- VARIABLES ---
+
+        // -- Events --
+
+        public event EventHandler<BoolEventArgs>? AnyWasActiveChanged;
+
+        public bool AnyWasActiveTrue => ClassDataList.Any(player => player.WasActive);
 
         // -- Storable --
 
@@ -37,8 +44,6 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
         }
 
         protected override void ForAllLoadedRowsAndNewItems(Player instance) {
-            base.ForAllLoadedRowsAndNewItems(instance);
-
             // id 
             instance.AssignInstanceID(instance);
 
@@ -48,6 +53,7 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
             instance.IsElectedOfficialChanged += (s, e) => AsIStorable.Save();
             instance.IsElectedOfficialChanged += (s, e) => BuildGrid();
             instance.WasActiveChanged += (s, e) => AsIStorable.Save();
+            instance.WasActiveChanged += (s, e) => AnyWasActiveChanged?.Invoke(this, new BoolEventArgs(instance.WasActive));
             instance.DeleteContextClicked += (s, e) => DeletePlayer(instance);
             instance.RenameContextClicked += (s, e) => RenamePlayer(instance);
         }
@@ -67,6 +73,9 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
                 AsIStorable.Save();
                 BuildGrid();
             }
+
+            // event 
+            AnyWasActiveChanged?.Invoke(this, new BoolEventArgs(player.WasActive));
         }
 
         private void RenamePlayer(Player player) {

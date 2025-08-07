@@ -316,12 +316,12 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         // - class data setter -
 
         private void SetCopyClassDataList(ListDisplay<T>? cls) {
+            if (IsClassDataListLoaded) { return; }
+            IsClassDataListLoaded = true;
+
             // load or copy
             if (cls is null) { // load
-                if (!IsClassDataListLoaded) {
-                    SetClassDataList();
-                }
-                IsClassDataListLoaded = true;
+                SetClassDataList();
             } else { // copy
                 ClassDataList = cls.ClassDataList.CopyShallow();
             }
@@ -351,7 +351,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             ClassDataList.ItemAdded += OnItemAdded;
 
             // for every instance on load
+            Debug.WriteLineIf(this is PlayerList, "ran");
             foreach (var instance in ClassDataList) {
+                Debug.WriteLineIf(this is PlayerList, "assigned");
                 ForAllLoadedRowsAndNewItems(instance);
             }
         }
