@@ -1,9 +1,11 @@
 ﻿using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
 using MC_BSR_S2_Calculator.Utility.Validations;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -23,7 +25,7 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
             base.OnInitialized(args);
             Validate();
             if (CheckValidity() == false) {
-                throw new InvalidOperationException($"All lowest contents of a SwitchManagedTabItem must extend ISwitchManaged");
+                throw new InvalidOperationException($"All lowest contents of a SwitchManagedTabItem must extend ISwitchManaged (or have the BlocksSwitchManagement Attribute)");
             }
         }
 
@@ -59,6 +61,12 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                 || (element is not FrameworkElement frameworkElement) // primary type
             ) {
                 return;
+            }
+
+            // block attribute check
+            bool hasIgnoreAttribute = ISwitchManaged.CheckFrameworkElementForBlockAttribute(frameworkElement);
+            if (hasIgnoreAttribute) {
+                return; // don't reset deeper
             }
 
             // if its switch managed

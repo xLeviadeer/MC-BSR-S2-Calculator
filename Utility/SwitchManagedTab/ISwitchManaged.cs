@@ -3,12 +3,20 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
+
+    /// <summary>
+    /// Blocks Switch Management from running on this class
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    public class BlocksSwitchManagementAttribute : Attribute;
+
     public interface ISwitchManaged {
         // --- VARIABLES ---
 
@@ -26,6 +34,8 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                 "stay here"
             ).ShowDialog() == true);
 
+        public static Dictionary<Type, bool> BlocksSwitchManagementCache = new();
+
         // -- Enforcement --
 
         /// <summary>
@@ -41,6 +51,32 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
         // -- METHODS --
 
         // -- Resources --
+
+        public static bool CheckFrameworkElementForBlockAttribute(FrameworkElement frameworkElement) {
+            Type frameworkElementType = frameworkElement.GetType();
+            void logBlockAttribute()
+                => Logging.SwitchManagement.LogInformation($"- returned: true, object has block attribute");
+            if (
+                BlocksSwitchManagementCache.ContainsKey(frameworkElementType)
+                && (BlocksSwitchManagementCache[frameworkElementType] == true)
+            ) {
+                // return
+                logBlockAttribute();
+                return true;
+            } else {
+                bool hasAttribute = frameworkElementType
+                    .GetCustomAttribute<BlocksSwitchManagementAttribute>() != null;
+                if (hasAttribute) {
+                    // save to cache
+                    BlocksSwitchManagementCache[frameworkElementType] = hasAttribute;
+
+                    // return
+                    logBlockAttribute();
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public static bool CheckBoolPropertyOn(object? element, TargetableProperties checkFor) {
             // determine boolean position of return value
@@ -64,35 +100,38 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
             // - null
             // - primary values
             // - is switch managaged
-            Logging.SwitchManagement.LogInformation("- checking if element is a framework element");
             if (
                 (element is null) // null primary
                 || (element is not FrameworkElement frameworkElement) // primary type
             ) {
-                Logging.SwitchManagement.LogInformation("- returned: element wasn't a framework element");
+                Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}, element wasn't a framework element");
                 return correctReturnValue;
             }
-            Logging.SwitchManagement.LogInformation($"- element was a framework element, '{frameworkElement.Name}'");
+
+            // block attribute check
+            bool hasAttribute = CheckFrameworkElementForBlockAttribute(frameworkElement);
+            if (hasAttribute) {
+                return correctReturnValue;
+            }
 
             // type specific checks
-            Logging.SwitchManagement.LogInformation("- checking if framework element is switch managed");
             if (frameworkElement is ISwitchManaged switchManagedElement) {
                 Logging.SwitchManagement.LogInformation("- framework element was switch managed, returning checkFor result");
                 switch (checkFor) {
                     case TargetableProperties.Validity:
-                        Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}");
+                        Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}, validity");
                         return correctReturnValue;
                     case TargetableProperties.TabContentsChanged:
                         if (switchManagedElement.RequiresReset) {
+                            // return changes bool
                             bool returnBool = switchManagedElement.TabContentsChanged;
-                            Logging.SwitchManagement.LogInformation($"- returned: {returnBool}");
+                            Logging.SwitchManagement.LogInformation($"- returned: {returnBool}, changes");
                             return returnBool;
                         }
-                        Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}");
+                        Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}, object doesn't require reset");
                         return correctReturnValue;
                 }
             }
-            Logging.SwitchManagement.LogInformation("- framework element was not switch managed");
 
             // if it's not already correct, then check if this element has contents
             // if it has contents, recurse
@@ -102,18 +141,18 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
             } else if (frameworkElement is ItemsControl itemsControl) {
                 Logging.SwitchManagement.LogInformation("- framework element is an item control");
                 if (itemsControl.Items.Count <= 0) {
-                    Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}");
+                    Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}, pass");
                     return correctReturnValue;
                 }
 
                 foreach (object? item in itemsControl.Items) {
                     Logging.SwitchManagement.LogInformation("- recursing: on new item");
                     if (CheckBoolPropertyOn(item, checkFor) == !correctReturnValue) {
-                        Logging.SwitchManagement.LogInformation($"- returned: {!correctReturnValue}");
+                        Logging.SwitchManagement.LogInformation($"- returned: {!correctReturnValue}, pass");
                         return !correctReturnValue;
                     }
                 }
-                Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}");
+                Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}, none found");
                 return correctReturnValue;
             } else if (frameworkElement is Panel panel) {
                 Logging.SwitchManagement.LogInformation("- framework element is a panel");
@@ -125,21 +164,21 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                 foreach (object? child in panel.Children) {
                     Logging.SwitchManagement.LogInformation("- recursing: on new child");
                     if (CheckBoolPropertyOn(child, checkFor) == !correctReturnValue) {
-                        Logging.SwitchManagement.LogInformation($"- returned: {!correctReturnValue}");
+                        Logging.SwitchManagement.LogInformation($"- returned: {!correctReturnValue}, pass");
                         return !correctReturnValue;
                     }
                 }
-                Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}");
+                Logging.SwitchManagement.LogInformation($"- returned: {correctReturnValue}, none found");
                 return correctReturnValue;
             } else if (frameworkElement is Decorator decorator) {
                 Logging.SwitchManagement.LogInformation("- recursing: framework element is a decorator");
                 bool returnBool = CheckBoolPropertyOn(decorator.Child, checkFor);
-                Logging.SwitchManagement.LogInformation($"returned: {returnBool}");
+                Logging.SwitchManagement.LogInformation($"returned: {returnBool}, pass");
                 return returnBool;
             }
 
             // if it has no contents, fail
-            Logging.SwitchManagement.LogInformation($"returned: {!correctReturnValue}; there were no contents");
+            Logging.SwitchManagement.LogInformation($"returned: {!correctReturnValue}, there were no contents");
             return !correctReturnValue;
         }
 
