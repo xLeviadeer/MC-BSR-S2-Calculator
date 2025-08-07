@@ -1,5 +1,6 @@
 ﻿using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
 using MC_BSR_S2_Calculator.Utility.Validations;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Bson;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,8 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
         public SwitchManagedTabControl() {
             // subscribe tab changed event logic
             PreviewMouseDown += (_, args) => {
+                Logging.SwitchManagement.LogInformation("starting: attempting to switch tabs");
+
                 // find source
                 // assumes relevant parent is 3 upwards
                 DependencyObject source = (DependencyObject)args.OriginalSource;
@@ -41,17 +44,22 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                     (source is not SwitchManagedTabItem clickedTab) // not a tab header click
                     || (SelectedItem == clickedTab) // already selected tab
                 ) {
+                    Logging.SwitchManagement.LogInformation("returned: tab was not switch managed or new tab not selected");
                     return;
                 }
 
                 // only confirm when changes have been made
                 foreach (TabItem item in Items) {
                     if (item is SwitchManagedTabItem switchManagedTabItem) {
+                        Logging.SwitchManagement.LogInformation($"checking for tab content changes for {switchManagedTabItem.Name}");
                         if (switchManagedTabItem.CheckForProperty(
-                            SwitchManagedTabItem.SwitchManagedProperties.TabContentsChanged
+                            ISwitchManaged.TargetableProperties.TabContentsChanged
                         ) == true) { // if any contents have changed
+                            Logging.SwitchManagement.LogInformation("changes found, getting confirmation");
+
                             // confirm switch with dialog
                             if (ISwitchManaged.AskConfirmation()) {
+                                Logging.SwitchManagement.LogInformation("user confirmed");
                                 // find the containing tabcontrol (assumes 3 up)
                                 source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
                                 source = ((FrameworkElement)VisualTreeHelper.GetParent(source));
@@ -61,15 +69,19 @@ namespace MC_BSR_S2_Calculator.Utility.SwitchManagedTab {
                                 // switch tab
                                 ((SwitchManagedTabItem)containingTabControl.SelectedItem).ResetContent();
                                 containingTabControl.SelectedItem = clickedTab;
+                            } else {
+                                Logging.SwitchManagement.LogInformation("user denied");
                             }
                             args.Handled = true;
 
                             // end loop
+                            Logging.SwitchManagement.LogInformation("returned: completed");
                             return;
                         }
                     }
                 }
                 // do nothing
+                Logging.SwitchManagement.LogInformation("no switch managed tab items found");
             };
         }
 

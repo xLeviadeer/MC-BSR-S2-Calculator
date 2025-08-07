@@ -6,6 +6,7 @@ using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using MC_BSR_S2_Calculator.Utility.Validations;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -78,6 +79,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public bool TabContentsChanged {
             get {
+                if (!Logging.SwitchManagement.IsEnabled(LogLevel.None)) { // if it's not disabled
+                    foreach (var kvp in ContentChanges) {
+                        Logging.SwitchManagement.LogInformation($"-- found: {kvp.Key}: {kvp.Value()}");
+                    }
+                }
                 return ContentChanges.Any(item => item.Value() == true);
             }
         }
