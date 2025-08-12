@@ -23,8 +23,7 @@ using System.Windows.Shapes;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public partial class LandTracking : UserControl {
-
-        // --- VARIABLES ---
+        // --- VARIABLES --- 
         #region VARIABLES
 
         // - Property Browser -
