@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.Validations;
+using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,8 +11,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
-using MC_BSR_S2_Calculator.Utility.Validations;
-using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 

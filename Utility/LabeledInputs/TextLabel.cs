@@ -1,17 +1,17 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows;
-using System.Security.Cryptography;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System.Windows.Media;
-using System.Security.Policy;
-using System.Diagnostics;
 
 namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
     public class TextLabel : LabeledInput<EnterTextBox> {

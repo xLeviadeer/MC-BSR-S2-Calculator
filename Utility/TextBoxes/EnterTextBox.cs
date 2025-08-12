@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,8 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MC_BSR_S2_Calculator.Utility.LabeledInputs;
-using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 
 namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
     public class EnterTextBox : SwitchManagedTextBox {

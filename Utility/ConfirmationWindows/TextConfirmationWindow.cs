@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
 
 namespace MC_BSR_S2_Calculator.Utility.ConfirmationWindows
 {

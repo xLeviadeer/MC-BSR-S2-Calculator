@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.Json;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -9,8 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls.Primitives;
-using MC_BSR_S2_Calculator.Utility.Json;
-using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.Utility.Identification {
 

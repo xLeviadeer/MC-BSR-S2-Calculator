@@ -1,7 +1,7 @@
+using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
 using System.Windows;
-using Newtonsoft.Json;
 
 // JsonHandler class taken from the RMAS; RMAS was not updated with any code updates in this class
 

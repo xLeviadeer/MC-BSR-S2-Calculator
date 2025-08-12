@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.Json;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MC_BSR_S2_Calculator.Utility.Json;
-using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 

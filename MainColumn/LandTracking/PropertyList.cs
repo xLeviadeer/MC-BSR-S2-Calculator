@@ -1,8 +1,8 @@
 ﻿using MC_BSR_S2_Calculator.PlayerColumn;
 using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.SwitchManagedTab;
 using Newtonsoft.Json;
 using System;

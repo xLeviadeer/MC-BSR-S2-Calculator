@@ -1,4 +1,9 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
+using MC_BSR_S2_Calculator.Utility.Identification;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,11 +13,6 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
-using MC_BSR_S2_Calculator.Utility.ListDisplay;
-using MC_BSR_S2_Calculator.Utility.Identification;
-using Newtonsoft.Json;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Windows.Controls;
 using System.Windows;
-using System.Runtime.CompilerServices;
+using System.Windows.Controls;
 
 namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
     internal class DisplayClassExample : Displayable {

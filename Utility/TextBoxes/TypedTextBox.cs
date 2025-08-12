@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.Validations;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -12,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
-using MC_BSR_S2_Calculator.Utility.Validations;
 
 namespace MC_BSR_S2_Calculator.Utility.TextBoxes {
 

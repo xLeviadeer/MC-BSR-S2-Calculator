@@ -1,4 +1,8 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using MC_BSR_S2_Calculator.Utility.Validations;
+using MC_BSR_S2_Calculator.Utility.XamlConverters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,10 +19,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MC_BSR_S2_Calculator.Utility.LabeledInputs;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
-using MC_BSR_S2_Calculator.Utility.Validations;
-using MC_BSR_S2_Calculator.Utility.XamlConverters;
 
 namespace MC_BSR_S2_Calculator.Utility
 {

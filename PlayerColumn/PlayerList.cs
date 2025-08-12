@@ -1,21 +1,21 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
+using MC_BSR_S2_Calculator.Utility.Identification;
+using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
-using MC_BSR_S2_Calculator.Utility.ListDisplay;
-using MC_BSR_S2_Calculator.Utility.Json;
-using MC_BSR_S2_Calculator.Utility.ConfirmationWindows;
-using Newtonsoft.Json;
 using System.Windows;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System.Xml.Linq;
-using System.Security.Cryptography.Xml;
-using MC_BSR_S2_Calculator.Utility.Identification;
-using System.Diagnostics;
-using MC_BSR_S2_Calculator.Utility;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
 

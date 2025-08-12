@@ -1,11 +1,12 @@
 ﻿using MC_BSR_S2_Calculator.MainColumn;
 using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.Json;
+using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.ComponentModel;
 
 namespace MC_BSR_S2_Calculator.PlayerColumn {
     /// <summary>

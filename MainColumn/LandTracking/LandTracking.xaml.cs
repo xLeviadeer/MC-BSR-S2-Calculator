@@ -1,31 +1,14 @@
 ﻿using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.ListBrowser;
-using MC_BSR_S2_Calculator.Utility.ListDisplay;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Security.RightsManagement;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public partial class LandTracking : UserControl {
         // --- VARIABLES --- 
         #region VARIABLES
-
         // - Property Browser -
 
         public static ListBrowser<PropertyClickable, PropertyManager> PropertyBrowser { get; set; } = new();
@@ -40,15 +23,15 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         #region CONSTRUCTOR
 
         public LandTracking() {
-            InitializeComponent();
+            this.InitializeComponent();
 
             // property browser settings
             PropertyBrowser.Column1Width = new GridLength(8, GridUnitType.Star);
             PropertyBrowser.Column2Width = new GridLength(13, GridUnitType.Star);
             PropertyBrowser.DisplayContentChanged += (_, _) => {
                 if (PropertyBrowser.DisplayContent is not null) {
-                    PropertyBrowser.DisplayContent.CompleteRequested += ViewModifyPropertyManager_CompleteRequested;
-                    PropertyBrowser.DisplayContent.ResetRequested += ViewModifyPropertyManager_ResetRequested;
+                    PropertyBrowser.DisplayContent.CompleteRequested += this.ViewModifyPropertyManager_CompleteRequested;
+                    PropertyBrowser.DisplayContent.ResetRequested += this.ViewModifyPropertyManager_ResetRequested;
                 }
             };
 
@@ -59,7 +42,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
                 // set display as a clickable conversion of the property list
                 PropertyBrowser.ListReference = MainResources.PropertiesDisplay.ConvertTo<
-                    PropertyClickable, 
+                    PropertyClickable,
                     PropertyClickableList
                 >();
 
@@ -71,7 +54,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                         switch (listArgs.ListChangedType) {
                             case ListChangedType.ItemAdded:
                                 convertedListDisplay.SearchableClassDataList.Add(
-                                    PropertyClickable.From(((NotifyingList<Property>)sender!)[listArgs.NewIndex])
+                                    PropertyClickable.From(((NotifyingList<Property>)sender!) [listArgs.NewIndex])
                                 );
                                 break;
                             case ListChangedType.ItemDeleted:
@@ -91,7 +74,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             };
 
             // set content
-            TabModifyViewProperty.Content = PropertyBrowser;
+            this.TabModifyViewProperty.Content = PropertyBrowser;
         }
 
         #endregion
@@ -101,7 +84,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // -- General --
         #region General
 
-        private void CreateNewPropertyFrom(PropertyManager propertyManager, IDTrace? fromExistingOwnerID=null, IDPrimary? fromExistingID=null) {
+        private void CreateNewPropertyFrom(PropertyManager propertyManager, IDTrace? fromExistingOwnerID = null, IDPrimary? fromExistingID = null) {
             // find associated player ID
             IDTrace playerTrace;
             if (fromExistingOwnerID is null) {
@@ -150,10 +133,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         private void CreatePropertyManager_CompleteRequested(object? sender, EventArgs args) {
             // create property
-            CreateNewPropertyFrom(CreatePropertyManager);
+            this.CreateNewPropertyFrom(this.CreatePropertyManager);
 
             // tab to create/modify page
-            MainTabControl.SelectedItem = TabModifyViewProperty;
+            this.MainTabControl.SelectedItem = this.TabModifyViewProperty;
         }
 
         private void CreatePropertyManager_ResetRequested(object? sender, EventArgs args) {
@@ -170,7 +153,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             );
 
             // create property
-            CreateNewPropertyFrom(PropertyBrowser.DisplayContent!, currPropertyClickable.OwnerID, currPropertyClickable.DisplayableID);
+            this.CreateNewPropertyFrom(PropertyBrowser.DisplayContent!, currPropertyClickable.OwnerID, currPropertyClickable.DisplayableID);
 
             // set view to blank
             PropertyClickable.ClearDisplayContent();

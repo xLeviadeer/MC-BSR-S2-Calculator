@@ -1,4 +1,10 @@
-﻿using System;
+﻿using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.Coordinates;
+using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+using MC_BSR_S2_Calculator.Utility.TextBoxes;
+using MC_BSR_S2_Calculator.Utility.Validations;
+using MC_BSR_S2_Calculator.Utility.XamlConverters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -15,12 +21,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MC_BSR_S2_Calculator.Utility;
-using MC_BSR_S2_Calculator.Utility.Coordinates;
-using MC_BSR_S2_Calculator.Utility.LabeledInputs;
-using MC_BSR_S2_Calculator.Utility.TextBoxes;
-using MC_BSR_S2_Calculator.Utility.Validations;
-using MC_BSR_S2_Calculator.Utility.XamlConverters;
 using static System.Collections.Specialized.BitVector32;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
