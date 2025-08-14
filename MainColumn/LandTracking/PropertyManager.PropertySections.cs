@@ -96,7 +96,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
                 // check height and width
                 if (
-                    (section.Subsection.Height < minSize)
+                    (section.Subsection.Length < minSize)
                     || (section.Subsection.Width < minSize)
                 ) {
                     // set error

@@ -75,7 +75,7 @@ namespace MC_BSR_S2_Calculator {
                 // set filtering
                 foreach (var propertyInfo in loggerInfos) {
                     // find corresponding log level by name
-                    FieldInfo? logLevelInfo = loglevelInfos.FirstOrDefault(logLevel => logLevel.Name == $"_do{propertyInfo.Name}");
+                    FieldInfo? logLevelInfo = loglevelInfos.FirstOrDefault(logLevel => logLevel.Name == $"Do{propertyInfo.Name}");
                     if (logLevelInfo is null) { throw new NullReferenceException("log level info was not set"); }
 
                     // add filter

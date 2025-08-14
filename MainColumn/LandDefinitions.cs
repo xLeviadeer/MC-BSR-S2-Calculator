@@ -8,14 +8,15 @@ namespace MC_BSR_S2_Calculator.MainColumn {
     public static class LandDefinitions {
 
         // world height
-        public const int WorldHeight = 320;
-        public const int WorldDepth = -64;
+        public const int WORLD_HEIGHT = 320;
+        public const int WORLD_DEPTH = -64;
 
         // surface landarea
-        public const int SurfaceLandareaYLevel = 50;
-        public const int SurfaceLandareaYLevelUnderwater = 10;
-        public static int SurfaceLandareaYLevelMax { 
-            get => Math.Max(SurfaceLandareaYLevel, SurfaceLandareaYLevelUnderwater); 
-        }
+        public const int SURFACE_LANDAREA_Y_LEVEL = 50;
+        public const int SURFACE_LANDAREA_Y_LEVEL_UNDERWATER = 10;
+        public static int SurfaceLandareaYLevelMax
+            => Math.Max(SURFACE_LANDAREA_Y_LEVEL, SURFACE_LANDAREA_Y_LEVEL_UNDERWATER);
+        public static int SurfaceLandareaYLevelMin
+            => Math.Min(SURFACE_LANDAREA_Y_LEVEL, SURFACE_LANDAREA_Y_LEVEL_UNDERWATER);
     }
 }

@@ -10,22 +10,21 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
     /// <summary>
     /// Holds 2 integers representing a coordinate from top->down (no y)
     /// </summary>
-    public record struct FlatCoordinate : ICoordinate {
+    public record struct FlatCoordinatePoint : IFlatCoordinate {
+
         // --- VARIABLES ---
 
         public required int X { get; set; } = 0;
-
-        public int Y { get; } = 0;
 
         public required int Z { get; set; } = 0;
 
         // --- CONSTRUCTOR ---
 
         [SetsRequiredMembers]
-        public FlatCoordinate() { }
+        public FlatCoordinatePoint() { }
 
         [SetsRequiredMembers]
-        public FlatCoordinate(int x = 0, int z = 0) {
+        public FlatCoordinatePoint(int x = 0, int z = 0) {
             X = x; Z = z;
         }
 
@@ -33,9 +32,9 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
         // - ToCoordinate -
 
-        public static Coordinate ToCoordinate(FlatCoordinate flat) 
-            => new Coordinate(flat.X, flat.Z);
+        public static CoordinatePoint ToCoordinate(FlatCoordinatePoint flat) 
+            => new CoordinatePoint(flat.X, flat.Z);
 
-        public Coordinate ToCoordinate() => ToCoordinate(this);
+        public CoordinatePoint ToCoordinate() => ToCoordinate(this);
     }
 }

@@ -156,7 +156,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                     (value is not null)
                     && (
                         (value >= LandDefinitions.SurfaceLandareaYLevelMax)
-                        || (value < LandDefinitions.WorldDepth)
+                        || (value < LandDefinitions.WORLD_DEPTH)
                     )
                 ) {
                     throw new ArgumentException($"Value for {nameof(SubsurfaceLandProvisionLevel)}, '{value}', was not in the bounds of allowed subsurface land provision levels");
@@ -349,7 +349,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public static int GetPropertyMetric(PropertySubsection[] subsections) {
             int total = 0;
             foreach (PropertySubsection subsection in subsections) {
-                total += subsection.Metric;
+                total += subsection.Area;
             }
             return total;
         }

@@ -1,5 +1,6 @@
 ﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
 using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.Json;
 using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
@@ -11,6 +12,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -162,6 +164,18 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 );
             }
         }
+
+        // - ID Block List -
+
+        public List<IDPrimary> IDBlockList { get; } = new();
+
+        public List<T> VisibleClassDataList => ClassDataList.Where(cls => (
+            (cls is not IDDisplayable) // not ID Displayable
+            || ( // or 
+                (cls is IDDisplayable clsCasted) 
+                && (!IDBlockList.Contains(clsCasted.DisplayableID)) // not in the block list
+            )
+        )).ToList();
 
         // - Rebuilt Event -
 
@@ -351,9 +365,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             ClassDataList.ItemAdded += OnItemAdded;
 
             // for every instance on load
-            Debug.WriteLineIf(this is PlayerList, "ran");
             foreach (var instance in ClassDataList) {
-                Debug.WriteLineIf(this is PlayerList, "assigned");
                 ForAllLoadedRowsAndNewItems(instance);
             }
         }
@@ -413,6 +425,11 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
         public int IndexOf(T displayable)
             => ClassDataList.IndexOf(displayable);
+
+        // - Contains -
+
+        public bool Contains(T displayable)
+            => ClassDataList.Contains(displayable);
 
         #endregion
 
@@ -771,6 +788,14 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                         ListDisplayGrid.RowDefinitions.Add(new RowDefinition());
                     }
 
+                    // blocklist skips
+                    if (
+                        (ClassDataList[YcurrBuildPosition] is IDDisplayable idDisplayable)
+                        && (IDBlockList.Contains(idDisplayable.DisplayableID))
+                    ) {
+                        continue;
+                    }
+
                     // create border (background)
                     var bottomItemBorder = new Border();
                     bottomItemBorder.Background = (usePrimaryItemColor ? ItemPrimaryFillBrush : ItemSecondaryFillBrush);
@@ -846,6 +871,14 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
                 for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
                     DisplayValueBase displayValue = DataListByColumns[header][YcurrBuildPosition];
                     T cls = ClassDataList[YcurrBuildPosition];
+
+                    // blocklist skips
+                    if (
+                        (ClassDataList[YcurrBuildPosition] is IDDisplayable idDisplayable)
+                        && (IDBlockList.Contains(idDisplayable.DisplayableID))
+                    ) {
+                        continue;
+                    }
 
                     // button adder helper
                     Button AddButton(OptionalMouseClickEventHolder holder) {
@@ -993,6 +1026,14 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
 
                 // iterate over every class data for this header
                 for (YcurrBuildPosition = 0; YcurrBuildPosition < ClassDataList.Count; YcurrBuildPosition++) {
+                    // blocklist skips
+                    if (
+                        (ClassDataList[YcurrBuildPosition] is IDDisplayable idDisplayable)
+                        && (IDBlockList.Contains(idDisplayable.DisplayableID))
+                    ) {
+                        continue;
+                    }
+
                     // create border left/right (outline)
                     var topItemBorderSides = new Border();
                     topItemBorderSides.BorderThickness = new Thickness(

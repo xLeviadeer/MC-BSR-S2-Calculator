@@ -5,10 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.Utility.Coordinates {
-    public interface ICoordinate : IFlatCoordinate {
+    public interface IFlatCoordinate {
 
         // --- VARIABLES ---
 
-        public int Y { get; }
+        public int X { get; }
+
+        public int Z { get; }
     }
 }

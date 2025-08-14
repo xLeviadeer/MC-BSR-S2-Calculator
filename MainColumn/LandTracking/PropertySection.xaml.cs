@@ -179,17 +179,17 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
         public void CalculateAndDisplayMetric() {
             // find the x and y size of the square
-            Subsection.A = new FlatCoordinate() {
+            Subsection.A = new FlatCoordinatePoint() {
                 X = (int)((IntegerTextBox)CoordinateInputCornerA.XInput.Element).Value,
                 Z = (int)((IntegerTextBox)CoordinateInputCornerA.ZInput.Element).Value
             };
-            Subsection.B = new FlatCoordinate() {
+            Subsection.B = new FlatCoordinatePoint() {
                 X = (int)((IntegerTextBox)CoordinateInputCornerB.XInput.Element).Value,
                 Z = (int)((IntegerTextBox)CoordinateInputCornerB.ZInput.Element).Value
             };
 
             // set metric
-            MetricResult.Result = Subsection.Metric.ToString();
+            MetricResult.Result = Subsection.Area.ToString();
         }
 
         private void CalculateAndDisplayMetric(object sender, EventArgs e) {

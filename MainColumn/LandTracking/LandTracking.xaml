@@ -7,6 +7,7 @@
              xmlns:util_displaylist="clr-namespace:MC_BSR_S2_Calculator.Utility.ListDisplay"
              xmlns:util_switchmanagedtab="clr-namespace:MC_BSR_S2_Calculator.Utility.SwitchManagedTab"
              xmlns:util_listbrowser="clr-namespace:MC_BSR_S2_Calculator.Utility.ListBrowser"
+             xmlns:util="clr-namespace:MC_BSR_S2_Calculator.Utility"
              xmlns:maincolumn="clr-namespace:MC_BSR_S2_Calculator.MainColumn"
              mc:Ignorable="d" 
              Height="Auto"
@@ -17,7 +18,7 @@
         <!-- Add New Property -->
         <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabAddProperty" Style="{StaticResource SubTabStyle}"
                      Header="Add New Property">
-            <local:PropertyManager x:Name="CreatePropertyManager" Grid.Column="0" Grid.ColumnSpan="2"
+            <local:PropertyManager x:Name="CreatePropertyManager"
                                    TitleText="Add New Property" ResetText="Clear Form" CreateText="Create Property"
                                    CompleteRequested="CreatePropertyManager_CompleteRequested" ResetRequested="CreatePropertyManager_ResetRequested"/>
         </util_switchmanagedtab:SwitchManagedTabItem>
@@ -29,7 +30,7 @@
         <!-- Land Type Checking -->
         <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabLandTypeChecking" Style="{StaticResource SubTabStyle}"
                      Header="Land Type Checking">
-
+            <local:LandTypeChecking/>
         </util_switchmanagedtab:SwitchManagedTabItem>
     </util_switchmanagedtab:SwitchManagedTabControl>
 </UserControl>

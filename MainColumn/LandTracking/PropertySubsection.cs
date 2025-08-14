@@ -14,7 +14,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     /// Holds 2 sets of coordinates to create a square property subsection
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class PropertySubsection : ICloneable {
+    public class PropertySubsection : ICoordinateBound<FlatCoordinatePoint, FlatCoordinatePoint>, ICloneable {
 
         // --- VARIABLES ---
         #region VARIABLES
@@ -26,33 +26,43 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - A and B -
 
+        public IFlatCoordinate AmbigA { get; set; } = new FlatCoordinatePoint();
+
         [JsonProperty("set1")]
-        public required FlatCoordinate A { get; set; } = new();
+        public required FlatCoordinatePoint A {
+            get => (FlatCoordinatePoint)AmbigA;
+            set => AmbigA = value;
+        }
+
+        public IFlatCoordinate AmbigB { get; set; } = new FlatCoordinatePoint();
 
         [JsonProperty("set2")]
-        public required FlatCoordinate B { get; set; } = new();
+        public required FlatCoordinatePoint B {
+            get => (FlatCoordinatePoint)AmbigB;
+            set => AmbigB = value;
+        }
 
         // - Edges -
 
-        public int Left {
+        public int West {
             get {
                 return Math.Min(A.X, B.X);
             }
         }
 
-        public int Right {
+        public int East {
             get {
                 return Math.Max(A.X, B.X);
             }
         }
 
-        public int Bottom {
+        public int South {
             get {
                 return Math.Min(A.Z, B.Z);
             }
         }
 
-        public int Top {
+        public int North {
             get {
                 return Math.Max(A.Z, B.Z);
             }
@@ -60,23 +70,27 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Corners -
 
-        public FlatCoordinate TopLeft => new FlatCoordinate(Left, Top);
+        public IFlatCoordinate AmbigNW => new FlatCoordinatePoint(West, North);
+        public FlatCoordinatePoint NW => (FlatCoordinatePoint)AmbigNW;
 
-        public FlatCoordinate TopRight => new FlatCoordinate(Right, Top);
+        public IFlatCoordinate AmbigNE => new FlatCoordinatePoint(East, North);
+        public FlatCoordinatePoint NE => (FlatCoordinatePoint)AmbigNE;
 
-        public FlatCoordinate BottomLeft => new FlatCoordinate(Left, Bottom);
+        public IFlatCoordinate AmbigSW => new FlatCoordinatePoint(West, South);
+        public FlatCoordinatePoint SW => (FlatCoordinatePoint)AmbigSW;
 
-        public FlatCoordinate BottomRight => new FlatCoordinate(Right, Bottom);
+        public IFlatCoordinate AmbigSE => new FlatCoordinatePoint(East, South);
+        public FlatCoordinatePoint SE => (FlatCoordinatePoint)AmbigSE;
 
         // - Height and Width -
-        
+
         public int Width => (int)Math.Abs(A.X - B.X) + 1;
 
-        public int Height => (int)Math.Abs(A.Z - B.Z) + 1;
+        public int Length => (int)Math.Abs(A.Z - B.Z) + 1;
 
         // - Metric -
 
-        public int Metric => Width * Height;
+        public int Area => Width * Length;
 
         #endregion
 
@@ -87,7 +101,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public PropertySubsection() {}
 
         [SetsRequiredMembers]
-        public PropertySubsection(FlatCoordinate a, FlatCoordinate b, string? name=null) {
+        public PropertySubsection(FlatCoordinatePoint a, FlatCoordinatePoint b, string? name=null) {
             A = a; B = b;
             Name = name;
         }
@@ -101,6 +115,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         #endregion
 
         // --- METHODS ---
+        #region METHODS
 
         // - Equality Checking -
 
@@ -132,6 +147,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // --- CASTING ---
 
         public static implicit operator int(PropertySubsection section)
-            => section.Metric;
+            => section.Area;
+
+        #endregion
     }
 }

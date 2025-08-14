@@ -8,9 +8,7 @@
              xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
              xmlns:util_xamlconverters="clr-namespace:MC_BSR_S2_Calculator.Utility.XamlConverters"
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             mc:Ignorable="d" 
-             Height="Auto"
-             Width="Auto">
+             mc:Ignorable="d">
     
     <!-- Default border color -->
     <UserControl.BorderBrush>
