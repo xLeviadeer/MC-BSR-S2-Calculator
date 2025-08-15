@@ -1,4 +1,5 @@
-﻿using MC_BSR_S2_Calculator.Utility.LabeledInputs;
+﻿using MC_BSR_S2_Calculator.Utility.Coordinates;
+using MC_BSR_S2_Calculator.Utility.LabeledInputs;
 using MC_BSR_S2_Calculator.Utility.TextBoxes;
 using MC_BSR_S2_Calculator.Utility.Validations;
 using MC_BSR_S2_Calculator.Utility.XamlConverters;
@@ -275,6 +276,27 @@ namespace MC_BSR_S2_Calculator.Utility
 
         // --- METHODS ---
         #region METHODS
+
+        // - Get Coordinates -
+
+        public CoordinateStructure GetCoordinatesAs<CoordinateStructure>()
+            where CoordinateStructure : IModifyableFlatCoordinate, new() {
+            // return coord
+            var coord = new CoordinateStructure();
+            coord.X = XCoordinate;
+            coord.Z = ZCoordinate;
+
+            // based on type structure
+            switch (typeof(CoordinateStructure)) {
+                case IModifyableCoordinate:
+                    ((IModifyableCoordinate)coord).Y = YCoordinate;
+                    return coord;
+                case IModifyableFlatCoordinate:
+                    return coord;
+                default:
+                    throw new ArgumentException("GetCoordinatesAs's CoordinateStructure type was not a valid type");
+            }
+        }
 
         // - Expose IsValid -
 

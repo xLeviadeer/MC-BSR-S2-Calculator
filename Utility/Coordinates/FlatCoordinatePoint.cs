@@ -10,7 +10,7 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
     /// <summary>
     /// Holds 2 integers representing a coordinate from top->down (no y)
     /// </summary>
-    public record struct FlatCoordinatePoint : IFlatCoordinate {
+    public record struct FlatCoordinatePoint : IModifyableFlatCoordinate {
 
         // --- VARIABLES ---
 

@@ -10,7 +10,7 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
     /// <summary>
     /// Holds 3 integers representing a coordinate
     /// </summary>
-    public record struct CoordinatePoint : ICoordinate {
+    public record struct CoordinatePoint : IModifyableCoordinate {
 
         // --- VARIABLES ---
 

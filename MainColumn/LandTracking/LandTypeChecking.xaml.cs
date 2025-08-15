@@ -31,16 +31,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // --- METHODS ---
 
         private void _updateResults() {
-
+            // for every landarea
+                // get as cubes
+                // 
         }
 
-        private void _useYCoordinateCheckChanged(object sender, Utility.BoolEventArgs args) {
+        private void _useYCoordinateCheckChanged(object sender, Utility.BoolEventArgs args)
             // set Y coordinate
-            Coordinates.ShowYInput = args.Value ?? false;
-        }
+            => Coordinates.ShowYInput = args.Value ?? false;
 
-        private void _coordinatesCoordinatesChanged(object sender, EventArgs e) {
-
-        }
+        private void _coordinatesCoordinatesChanged(object sender, EventArgs e)
+            => _updateResults();
     }
 }

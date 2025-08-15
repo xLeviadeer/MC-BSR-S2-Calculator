@@ -13,4 +13,13 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
         public int Z { get; }
     }
+
+    public interface IModifyableFlatCoordinate : IFlatCoordinate {
+
+        // --- VARIABLES ---
+
+        public new int X { get; set; }
+
+        public new int Z { get; set; }
+    }
 }

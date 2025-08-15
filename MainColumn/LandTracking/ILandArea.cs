@@ -54,6 +54,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         #endregion
 
         // - Land Definitions
+        #region Land Definitons
 
         // world height
         public const int WORLD_HEIGHT = 320;
@@ -66,6 +67,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             => Math.Max(SURFACE_LANDAREA_Y_LEVEL, SURFACE_LANDAREA_Y_LEVEL_UNDERWATER);
         public static int SurfaceLandareaYLevelMin
             => Math.Min(SURFACE_LANDAREA_Y_LEVEL, SURFACE_LANDAREA_Y_LEVEL_UNDERWATER);
+
+        #endregion
 
         // -- Enforcement --
         #region Enforcement
