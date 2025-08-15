@@ -287,14 +287,15 @@ namespace MC_BSR_S2_Calculator.Utility
             coord.Z = ZCoordinate;
 
             // based on type structure
-            switch (typeof(CoordinateStructure)) {
-                case IModifyableCoordinate:
-                    ((IModifyableCoordinate)coord).Y = YCoordinate;
-                    return coord;
-                case IModifyableFlatCoordinate:
-                    return coord;
-                default:
-                    throw new ArgumentException("GetCoordinatesAs's CoordinateStructure type was not a valid type");
+            Type coordStructType = typeof(CoordinateStructure);
+            if (typeof(IModifyableCoordinate).IsAssignableFrom(coordStructType)) { // coord struct extends modify coord
+                var coordCasted = ((IModifyableCoordinate)coord);
+                coordCasted.Y = YCoordinate;
+                return (CoordinateStructure)coordCasted;
+            } else if (typeof(IModifyableFlatCoordinate).IsAssignableFrom(coordStructType)) { // coord struct extends modify flat coord
+                return coord;
+            } else {
+                throw new ArgumentException("GetCoordinatesAs's CoordinateStructure type was not a valid type");
             }
         }
 
