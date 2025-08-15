@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -6,14 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.Utility.Coordinates {
+
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public interface ICoordinateBoundAmbiguous {
 
         // --- VARIABLES ---
 
         // -- Stored Values --
 
+        [JsonProperty("a")]
         public IFlatCoordinate AmbigA { get; }
 
+        [JsonProperty("b")]
         public IFlatCoordinate AmbigB { get; }
 
         // -- Cardinal Edges --

@@ -214,7 +214,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 }
 
                 // set y input max to the surface land max
-                ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YInput.MaxInputFromTextLabel = LandDefinitions.SurfaceLandareaYLevelMax;
+                ((CoordinateInput)SubsurfaceLandProvisionCheck.Content).YInput.MaxInputFromTextLabel = ILandArea.SurfaceLandareaYLevelMax;
 
                 // loading completed
                 LoadingCompleted?.Invoke(this, EventArgs.Empty);
@@ -382,8 +382,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 // property size
                 string propertySize = Property.GetPropertySize(propertyMetric);
                 if (
-                    (propertySize == Property.PropertySize.Large)
-                    || (propertySize == Property.PropertySize.Massive)
+                    (propertySize == Property.PropertySize.LARGE)
+                    || (propertySize == Property.PropertySize.MASSIVE)
                 ) {
                     // show approved box
                     ApprovedCheck.Visibility = Visibility.Visible;
@@ -401,7 +401,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 Validity[nameof(ApprovedCheck)].IsEnabled = false;
 
                 UpdateCreateButtonEnabledStatus();
-                PropertySizeResult.Result = Property.PropertySize.Invalid;
+                PropertySizeResult.Result = Property.PropertySize.INVALID;
             }
         }
 
@@ -438,7 +438,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
 
             // if invalid
             if (Validity[nameof(Sections)].CheckValidity() == false) {
-                PropertySizeResult.Result = Property.PropertySize.Invalid;
+                PropertySizeResult.Result = Property.PropertySize.INVALID;
                 FinalPurchaseValueResult.Result = FinalPurchaseValueResult.DefaultResult;
                 setApprovedCheck(propertyMetric);
 
@@ -523,7 +523,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
             setApprovedCheck(0);
 
             // property size
-            PropertySizeResult.Result = Property.PropertySize.Invalid;
+            PropertySizeResult.Result = Property.PropertySize.INVALID;
 
             // tax
             TaxContributionResult.Visibility = Visibility.Collapsed;
@@ -610,7 +610,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking
                 MakeInvisible();
 
             // update the validity for the residents count if it's not collapsed
-            } else if (Property.PlayerPropertyTypes[propertyTypeInput.SelectedIndex] == Property.SharedPrivate) {
+            } else if (ILandArea.PlayerLandTypes[propertyTypeInput.SelectedIndex] == ILandArea.SHARED_PRIVATE) {
                 MakeVisible();
             } else {
                 MakeInvisible();

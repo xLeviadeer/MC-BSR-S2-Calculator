@@ -15,6 +15,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
         // the starting data set
         public override NotifyingList<DisplayClassExample> ClassDataList { get; set; } = new();
 
+        // storage json settings
+        public JsonSerializerSettings? StorageSettings => null;
+
         // save location for this class
         public List<string> SaveLocation { get => ["list_display_example_dataset.json"]; }
 
@@ -61,6 +64,9 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
     // example with no starting dataset
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     internal class ListDisplayExampleBlank : ListDisplay<DisplayClassExample>, IStorable {
+        // storage json settings
+        public JsonSerializerSettings? StorageSettings => null;
+
         // save location for this class
         public List<string> SaveLocation { get => ["list_display_example_dataset.json"]; }
 

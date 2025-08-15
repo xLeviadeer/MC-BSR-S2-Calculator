@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
-    internal record struct FluidCoordinatePoint : IFlatCoordinate {
+    public record struct FluidCoordinatePoint : IFlatCoordinate {
 
         // --- VARIABLES ---
 

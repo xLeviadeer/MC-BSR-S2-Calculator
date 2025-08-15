@@ -1,9 +1,13 @@
 ﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
 using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility;
+using MC_BSR_S2_Calculator.Utility.Coordinates;
 using MC_BSR_S2_Calculator.Utility.Identification;
+using MC_BSR_S2_Calculator.Utility.Json;
 using MC_BSR_S2_Calculator.Utility.ListDisplay;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +22,21 @@ namespace MC_BSR_S2_Calculator.MainColumn {
         // - Properties Display -
 
         public static PropertyList PropertiesDisplay { get; } = new();
+
+        // - Lands List -
+
+        public static LandList LandsList { get; private set; } = new();
+
+        // - Landarea -
+
+        public static List<ILandArea> LandAreasList {
+            get {
+                List<ILandArea> lst = new();
+                lst.AddRange(LandsList.All);
+                lst.AddRange(PropertiesDisplay.ClassDataList);
+                return lst;
+            }
+        }
 
         // - Players Display -
 

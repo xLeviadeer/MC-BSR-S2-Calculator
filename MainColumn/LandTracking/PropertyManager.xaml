@@ -102,7 +102,7 @@
 
             <!-- Property Type -->
             <util_labeledinputs:ComboLabel x:Name="PropertyTypeInput" Grid.Row="4" Style="{StaticResource ComboLabeledInput}"
-                                       LabelText="Property Type" ItemsSource="{util_stringhelper:CapitalizeWords List={x:Static local:Property.PlayerPropertyTypes}}"
+                                       LabelText="Property Type" ItemsSource="{util_stringhelper:CapitalizeWords List={x:Static local:ILandArea.PlayerLandTypes}}"
                                        SelectionChanged="PropertyTypeInput_SelectionChanged"/>
 
             <!-- Number of Residents -->
@@ -199,7 +199,7 @@
 
             <!-- Property Size -->
             <util_labeledinputs:ResultDisplay x:Name="PropertySizeResult" Grid.Row="26" Grid.Column="0" Grid.ColumnSpan="4"
-                                              LabelText="Property Size" DefaultResult="{x:Static local:Property+PropertySize.Invalid}" 
+                                              LabelText="Property Size" DefaultResult="{x:Static local:Property+PropertySize.INVALID}" 
                                               LayoutMode="Left" FluidProportionsSplitIndex="{StaticResource FinalResultFluidSplitIndex}"/>
 
             <!-- Approved Check -->

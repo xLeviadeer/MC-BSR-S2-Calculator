@@ -33,6 +33,8 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         // -- Storable --
 
+        public JsonSerializerSettings? StorageSettings => null;
+
         public List<string> SaveLocation { get => ["players.json"]; }
 
         public IStorable AsIStorable { get => ((IStorable)this); }

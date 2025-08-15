@@ -1,5 +1,7 @@
-﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
+﻿using MC_BSR_S2_Calculator.MainColumn;
+using MC_BSR_S2_Calculator.MainColumn.LandTracking;
 using MC_BSR_S2_Calculator.Utility.Coordinates;
+using MC_BSR_S2_Calculator.Utility.Identification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
@@ -17,13 +19,8 @@ namespace MC_BSR_S2_Calculator {
             // set up logging
             Logging.Initialize();
 
-            var test = new Land();
-            test.Bounds.Add(new CoordinateCube(new(0, 0, 0), new(10, 10, 10)));
-            if (test.Bounds[0] is CoordinateCube cube) {
-                Debug.WriteLine(cube);
-                Debug.WriteLine(cube.NW.AsTop());
-                Debug.WriteLine(cube.NW.AsBottom());
-            }
+            // ID setup
+            ID.InitializeIDTypes();
         }
     }
 }

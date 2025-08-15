@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MC_BSR_S2_Calculator.Utility.Coordinates {
-    internal record struct CoordinateCube : 
+    public record struct CoordinateCube : 
         ICoordinateBound<CoordinatePoint, FluidCoordinatePoint> {
 
         // --- VARIABLES ---

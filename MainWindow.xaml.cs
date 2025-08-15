@@ -19,7 +19,6 @@ namespace MC_BSR_S2_Calculator
     public partial class MainWindow : Window {
         public MainWindow() {
             InitializeComponent();
-            ID.InitializeIDTypes();
         }
     }
 }

@@ -578,7 +578,7 @@ namespace MC_BSR_S2_Calculator.Utility.ListDisplay {
             PrepareScrollBar();
 
             // if class data is null or empty
-            if ((ClassDataList == null) || (ClassDataList.Count == 0)) {
+            if ((ClassDataList == null) || (VisibleClassDataList.Count == 0)) {
                 // create empty and add
                 var emptyTextBlock = CreateEmptyTextBlock(false, HorizontalAlignment.Stretch);
                 ListDisplayGrid.Children.Add(emptyTextBlock);

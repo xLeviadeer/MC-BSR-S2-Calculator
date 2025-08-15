@@ -21,6 +21,10 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
 
         // --- VARIABLES ---
 
+        // - Unknown Name -
+
+        public const string UNKNOWN_NAME = "Unknown";
+
         // - IDPrimary -
 
         public static char TypeCharacter { get; } = 'p';

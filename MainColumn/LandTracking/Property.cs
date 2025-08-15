@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -23,54 +24,25 @@ using System.Windows.Documents;
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Property : IDDisplayable, IIDHolder {
+    public class Property : IDDisplayable, IIDHolder, ILandArea {
 
         // --- VARIABLES ---
 
         // -- STATIC --
 
-        // - Property Types - 
-        #region Property Types
-
-        public const string Public = "public";
-        public const string Provisioned = "provisioned";
-        public const string Unowned = "unowned";
-
-        public static ImmutableList<string> GovernmentalPropertyTypes { get; set; } = [
-            Public,
-            Provisioned,
-            Unowned
-        ];
-
-        public const string Private = "private";
-        public const string SharedPrivate = "shared private";
-        public const string Owned = "owned";
-
-        public static ImmutableList<string> PlayerPropertyTypes { get; set; } = [
-            Private,
-            SharedPrivate,
-            Owned
-        ];
-
-        public static ImmutableList<string> AllPropertyTypes = [
-            Public,
-            SharedPrivate,
-            Private,
-            Unowned,
-            Provisioned,
-            Owned
-        ];
-
-        #endregion
-
         // - Property Sizes -
         #region Property Sizes
 
         public static class PropertySize {
-            public static string Invalid { get; } = "-";
-            public static string Small { get; } = "Small";
-            public static string Large { get; } = "Large";
-            public static string Massive { get; } = "Massive";
+            // bounds
+            public const int SMALL_UPPER_BOUND = 400;
+            public const int LARGE_UPPER_BOUND = 20000;
+
+            // names
+            public const string INVALID = "-";
+            public const string SMALL = "Small";
+            public const string LARGE = "Large";
+            public const string MASSIVE = "Massive";
         }
 
         #endregion
@@ -78,13 +50,24 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // -- INSTANCE --
         #region INSTANCE
 
+        // - As ILandArea -
+
+        public ILandArea AsILandArea => (ILandArea)this;
+
+        // - Default Bottom/Top -
+
+        public int DefaultBottom { get; private set; } = ILandArea.WORLD_HEIGHT;
+
+        public int DefaultTop => (SubsurfaceLandProvisionLevel is null)
+            ? ILandArea.SurfaceLandareaYLevelMin
+            : (int)SubsurfaceLandProvisionLevel;
+
         // - ID -
 
         public static char TypeCharacter { get; } = 'o';
 
         // - Owner Player ID -
 
-        [JsonProperty("owner")]
         public IDTrace? OwnerID { get; private set; }
 
         [DisplayValue("Owner", 100, GridUnitType.Pixel, displayOrder:1)]
@@ -98,13 +81,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Property Type -
 
-        [JsonProperty("type")]
-        public string PropertyType {
+        public string LandType {
             get => field;
             set {
                 string valueLower = value.ToLower();
-                if (!AllPropertyTypes.Contains(valueLower)) {
-                    throw new ArgumentException($"Value for {nameof(PropertyType)}, '{valueLower}', is not a valid property type");
+                if (!ILandArea.PlayerLandTypes.Contains(valueLower)) {
+                    throw new ArgumentException($"Value for {nameof(LandType)}, '{valueLower}', is not a valid land type");
                 }
                 field = valueLower;
             }
@@ -129,7 +111,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         /// WARNING: this isn't validated unless it's placed into UI via PropertyManager
         /// </summary>
         [JsonProperty("subsections")]
-        public ImmutableList<PropertySubsection> Subsections { get; set; }
+        public List<ICoordinateBoundAmbiguous> Bounds { get; set; }
 
         // - Tax Incentives -
 
@@ -155,8 +137,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 if (
                     (value is not null)
                     && (
-                        (value >= LandDefinitions.SurfaceLandareaYLevelMax)
-                        || (value < LandDefinitions.WORLD_DEPTH)
+                        (value >= ILandArea.SurfaceLandareaYLevelMax)
+                        || (value < ILandArea.WORLD_DEPTH)
                     )
                 ) {
                     throw new ArgumentException($"Value for {nameof(SubsurfaceLandProvisionLevel)}, '{value}', was not in the bounds of allowed subsurface land provision levels");
@@ -185,8 +167,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // --- CONSTRUCTOR ---
 
         #region CONSTRUCTOR
-
-        
 
         private void SetDefaultValues(
             IDTrace? ownerID,
@@ -219,9 +199,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             );
 
             // data sets
-            PropertyType = propertyType;
+            LandType = propertyType;
             ResidentsCount = residentsCount;
-            Subsections = subsections.ToImmutableList();
+            Bounds = subsections.Cast<ICoordinateBoundAmbiguous>().ToList();
             TaxIncentives = taxIncentives.ToList();
             PurchaseIncentives = purchaseIncentives.ToList();
             ViolationIncentives = violationIncentives.ToList();
@@ -241,7 +221,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             SetDefaultValues(
                 null,
                 string.Empty,
-                Public,
+                ILandArea.PRIVATE,
                 1,
                 Array.Empty<PropertySubsection>(),
                 Array.Empty<ActiveIncentive>(),
@@ -302,9 +282,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             SetDefaultValues(
                 property.OwnerID,
                 property.Name,
-                property.PropertyType,
+                property.LandType,
                 property.ResidentsCount,
-                property.Subsections.ToArray(),
+                property.Bounds.Cast<PropertySubsection>().ToArray(),
                 property.TaxIncentives.ToArray(),
                 property.PurchaseIncentives.ToArray(),
                 property.ViolationIncentives.ToArray(),
@@ -331,11 +311,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         public void UpdatePropertyDisplay() {
             // try to get parent
-            const string UnknownName = "Unknown";
             try {
-                OwnerName.Value = OwnerID?.GetParent<Player>().Name.Value ?? UnknownName;
+                OwnerName.Value = OwnerID?.GetParent<Player>().Name.Value ?? Player.UNKNOWN_NAME;
             } catch (ArgumentNullException) {
-                OwnerName.Value = UnknownName;
+                OwnerName.Value = Player.UNKNOWN_NAME;
             }
         }
 
@@ -361,9 +340,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         public static string GetPropertySize(int propertyMetric)
             => propertyMetric switch {
-                (>= 0 and <= 400) => PropertySize.Small,
-                (> 400 and <= 20000) => PropertySize.Large,
-                (> 20000) => PropertySize.Massive,
+                (>= 0 and <= PropertySize.SMALL_UPPER_BOUND) => PropertySize.SMALL,
+                (> PropertySize.SMALL_UPPER_BOUND and <= PropertySize.LARGE_UPPER_BOUND) => PropertySize.LARGE,
+                (> PropertySize.LARGE_UPPER_BOUND) => PropertySize.MASSIVE,
                 _ => throw new ArgumentOutOfRangeException($"the property metric was out of range {propertyMetric}")
             };
 
@@ -467,9 +446,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // property type amount
             double valueAfterPropertyType = propertyType.ToLower() switch {
-                Private => taxValue,
-                SharedPrivate => (taxValue * (1 + (numberOfResidents / 10d))),
-                Owned => (taxValue * 1.3),
+                ILandArea.PRIVATE => taxValue,
+                ILandArea.SHARED_PRIVATE => (taxValue * (1 + (numberOfResidents / 10d))),
+                ILandArea.OWNED => (taxValue * 1.3),
                 _ => throw new ArgumentException($"Property type was not a valid string '{propertyType}'")
             };
             propertyTypesAmount = valueAfterPropertyType - taxValue;
@@ -499,12 +478,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Property Metric -
 
         public int GetPropertyMetric()
-            => GetPropertyMetric(Subsections.ToArray());
+            => GetPropertyMetric(Bounds.Cast<PropertySubsection>().ToArray());
 
         // - Property Size -
 
         public string GetPropertySize()
-            => GetPropertySize(Subsections.ToArray());
+            => GetPropertySize(Bounds.Cast<PropertySubsection>().ToArray());
 
         // - Incentives -
 
@@ -519,13 +498,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Purchasing Pricing -
 
         public int GetPurcahseValueBase()
-            => GetPurcahseValueBase(Subsections.ToArray());
+            => GetPurcahseValueBase(Bounds.Cast<PropertySubsection>().ToArray());
 
         public int GetPurchaseValueFinal(
             out int purchaseValue,
             out int incentivesAmount
         ) => GetPurchaseValueFinal(
-            Subsections.ToArray(),
+            Bounds.Cast<PropertySubsection>().ToArray(),
             ViolationIncentives.ToArray(),
             PurchaseIncentives.ToArray(),
             out purchaseValue,
@@ -535,22 +514,30 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Tax Contribution -
 
         public double GetTaxContributionBase()
-            => GetTaxContributionBase(Subsections.ToArray());
+            => GetTaxContributionBase(Bounds.Cast<PropertySubsection>().ToArray());
 
         public int GetTotalTaxContribution(
             out double taxValue,
             out double propertyTypesAmount,
             out double incentivesAmount
         ) => GetTotalTaxContribution(
-            Subsections.ToArray(),
+            Bounds.Cast<PropertySubsection>().ToArray(),
             TaxIncentives.ToArray(),
             ViolationIncentives.ToArray(),
-            PropertyType,
+            LandType,
             ResidentsCount,
             out taxValue,
             out propertyTypesAmount,
             out incentivesAmount
         );
+
+        // - Get Squares/Cubes -
+
+        public List<ICoordinateBoundAmbiguousReturn<FlatCoordinatePoint>> GetBoundsAsSquares()
+            => AsILandArea.GetBoundsAsSquaresHelper();
+
+        public List<ICoordinateBoundAmbiguousReturn<CoordinatePoint>> GetBoundsAsCubes()
+            => AsILandArea.GetBoundsAsCubesHelper();
 
         #endregion
     }

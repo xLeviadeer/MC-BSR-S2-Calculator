@@ -127,7 +127,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // property type
             DisplayedContent.PropertyTypeInput.LayoutLoaded += (_, _) => {
-                string capitalizedPropertyType = XamlConverter.CapitalizeWords(this.PropertyType);
+                string capitalizedPropertyType = XamlConverter.CapitalizeWords(this.LandType);
                 DisplayedContent.PropertyTypeInput.SelectedItem = capitalizedPropertyType;
                 DisplayedContent.PropertyTypeInput.TrySetDefaultValue(DisplayedContent.PropertyTypeInput.SelectedIndex);
                 DisplayedContent.Validity["PropertyTypeInput"].IsValid = true;
@@ -141,7 +141,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // subsections
             DisplayedContent.LoadingCompleted += (_, _) => {
-                DisplayedContent.SetSections(this.Subsections.ToArray());
+                DisplayedContent.SetSections(this.Bounds.Cast<PropertySubsection>().ToArray());
                 DisplayedContent.SetDefaultSections(DisplayedContent.Sections.ToList());
                 DisplayedContent.Validity["Sections"].IsValid = true;
             };

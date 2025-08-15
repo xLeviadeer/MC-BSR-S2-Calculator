@@ -47,6 +47,8 @@ namespace MC_BSR_S2_Calculator.Utility.Json {
 
         // --- SAVE MANAGEMNT ---
 
+        public JsonSerializerSettings? StorageSettings { get; }
+
         /// <summary>
         /// MUST add the instance to the Instances list or instances will NOT be saved;
         /// MUST be run in the constructor or instances will NOT be saved
@@ -89,7 +91,7 @@ namespace MC_BSR_S2_Calculator.Utility.Json {
         /// </summary>
         public void Save() {
             // write
-            JsonHandler.Write(ExtensionPath, this);
+            JsonHandler.Write(ExtensionPath, this, settings: StorageSettings);
         }
 
         // - Retrieving -
@@ -132,7 +134,7 @@ namespace MC_BSR_S2_Calculator.Utility.Json {
             where T : class, IStorable {
             T cls;
             try {
-                cls = JsonHandler.Read<T>(ExtensionPath);
+                cls = JsonHandler.Read<T>(ExtensionPath, StorageSettings);
             } catch (FileNotFoundException) {
                 throw;
             }

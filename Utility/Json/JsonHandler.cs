@@ -114,7 +114,7 @@ sealed class JsonHandler {
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="DirectoryNotFoundException"></exception>
     /// <exception cref="IOException"></exception>
-    public static void Write<T>(string path_string, T content, bool create_directories=true) where T : class {
+    public static void Write<T>(string path_string, T content, bool create_directories=true, JsonSerializerSettings? settings=null) where T : class {
         path_string = PathVerification(path_string);
 
         // check directory (and write)
@@ -128,8 +128,9 @@ sealed class JsonHandler {
         }
 
         // write file
-        var serializer_settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }; // ignores self referencing loops
-        string json_string = JsonConvert.SerializeObject(new List<T> { content }, serializer_settings);
+        if (settings is null) { settings = new(); }
+        settings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore; // ignores self referencing loops
+        string json_string = JsonConvert.SerializeObject(new List<T> { content }, settings);
         try
         {
             using (StreamWriter file = new StreamWriter(path_string))
@@ -149,9 +150,9 @@ sealed class JsonHandler {
     /// <param name="create_directories"> Whether or not non-existent directories can be written </param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="DirectoryNotFoundException"></exception>
-    public static void Write<T>(List<string> path, T content, bool create_directories=true) where T : class {
+    public static void Write<T>(List<string> path, T content, bool create_directories=true, JsonSerializerSettings? settings=null) where T : class {
         // run string version
-        Write(Path.Combine(path.ToArray()), content, create_directories);
+        Write(Path.Combine(path.ToArray()), content, create_directories, settings);
     }
 
     #endregion
@@ -165,7 +166,7 @@ sealed class JsonHandler {
     /// <param name="path_string"> Path to read JsonHandler data from. Path is automatically appended to the current working directory </param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="FileNotFoundException"></exception>
-    public static T Read<T>(string path_string) where T : class {
+    public static T Read<T>(string path_string, JsonSerializerSettings? settings=null) where T : class {
         path_string = PathVerification(path_string);
 
         // check if the file exists or not to read
@@ -176,7 +177,10 @@ sealed class JsonHandler {
         // read file
         using (StreamReader file = new StreamReader(path_string)) {
             string jsonString = file.ReadToEnd();
-            List<T>? contents = JsonConvert.DeserializeObject<List<T>>(jsonString); // can throw errors, but I let it because I want the program to stop if one of them occurs
+            List<T>? contents = (settings is null)
+                // can throw errors, but I let it because I want the program to stop if one of them occurs
+                ? JsonConvert.DeserializeObject<List<T>>(jsonString)
+                : JsonConvert.DeserializeObject<List<T>>(jsonString, settings); 
             if (contents == null) throw new FileEmptyException($"The following file read as null entirely: {path_string}"); // throw error for null here
             if (contents == null) throw new FileEmptyException($"The following file has no contents: {path_string}"); // throw error if file is empty
             if (contents.Count == 0) throw new FileEmptyException($"The following JSON file has no contents: {path_string}"); // throw error if list is empty
@@ -190,9 +194,9 @@ sealed class JsonHandler {
     /// <param name="path"> Path to read JsonHandler data from. Path is automatically appended to the current working directory </param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="FileNotFoundException"></exception>
-    public static T Read<T>(List<string> path) where T : class {
+    public static T Read<T>(List<string> path, JsonSerializerSettings? settings=null) where T : class {
         // run string version
-        return Read<T>(Path.Combine(path.ToArray()));
+        return Read<T>(Path.Combine(path.ToArray()), settings);
     }
 
     /// <summary>
@@ -202,8 +206,8 @@ sealed class JsonHandler {
     /// <param name="target"> The name of the variable (property/field) to target </param>
     /// <returns> Returns the value of either the field or property that was found </returns>
     /// <exception cref="ArgumentException"></exception>
-    public static object? ReadFor<T>(string path_string, string target) where T : class {
-        T json = Read<T>(path_string); // read the json object
+    public static object? ReadFor<T>(string path_string, string target, JsonSerializerSettings? settings=null) where T : class {
+        T json = Read<T>(path_string, settings); // read the json object
 
         // check for a property
         PropertyInfo? propertyInfo = typeof(T).GetProperty(target);
@@ -225,9 +229,9 @@ sealed class JsonHandler {
     /// <param name="target"> The name of the variable (property/field) to target </param>
     /// <returns> Returns the value of either the field or property that was found </returns>
     /// <exception cref="ArgumentException"></exception>
-    public static object? ReadFor<T>(List<string> path, string target) where T : class {
+    public static object? ReadFor<T>(List<string> path, string target, JsonSerializerSettings? settings=null) where T : class {
         // use string version
-        return ReadFor<T>(Path.Combine(path.ToArray()), target);
+        return ReadFor<T>(Path.Combine(path.ToArray()), target, settings);
     }
 
     #endregion

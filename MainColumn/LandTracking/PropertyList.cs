@@ -33,6 +33,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Storable -
 
+        public JsonSerializerSettings? StorageSettings { get; } = new() {
+            TypeNameHandling = TypeNameHandling.Auto, // needed for saving interfaces
+            SerializationBinder = new SimplisticTypeNameBinder()
+        };
+
         public List<string> SaveLocation { get => ["properties.json"]; }
 
         public IStorable AsIStorable { get => ((IStorable)this); }
