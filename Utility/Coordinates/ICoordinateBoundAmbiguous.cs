@@ -48,5 +48,18 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
         public int Width { get; }
 
         public int Area { get; }
+
+        // --- METHODS ---
+
+        // - Contains -
+
+        public bool Contains(IFlatCoordinate coord);
+
+        public bool Contains2DHelper(IFlatCoordinate coord) => (
+            (West <= coord.X)
+            && (coord.X <= East)
+            && (South <= coord.Z)
+            && (coord.Z <= North)
+        );
     }
 }

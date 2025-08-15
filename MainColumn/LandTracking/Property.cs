@@ -539,6 +539,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public List<ICoordinateBoundAmbiguousReturn<CoordinatePoint>> GetBoundsAsCubes()
             => AsILandArea.GetBoundsAsCubesHelper();
 
+        // - Contains -
+
+        public bool Contains(IFlatCoordinate coord)
+            => AsILandArea.ContainsHelper(coord);
+
         #endregion
     }
 }

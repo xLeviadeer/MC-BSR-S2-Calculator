@@ -15,9 +15,9 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public interface ILandArea {
 
-        // --- VARIABLES ---
+        // --- STATIC ---
 
-        // -- Static --
+        // -- Variables --
 
         // - Property Types - 
         #region Property Types
@@ -70,8 +70,10 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         #endregion
 
-        // -- Enforcement --
-        #region Enforcement
+        // --- ENFORCEMENT ---
+
+        // -- Variables --
+        #region Variables
 
         // - As Requirement -
 
@@ -157,5 +159,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public string LandType { get; }
 
         #endregion
+
+        // -- Methods --
+
+        // - Contains -
+
+        public bool Contains(IFlatCoordinate coord);
+
+        public bool ContainsHelper(IFlatCoordinate coord)
+            => Bounds.Any(bound => bound.Contains(coord));
     }
 }

@@ -144,6 +144,11 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public object Clone()
             => HardCopy();
 
+        // - Contains -
+
+        public bool Contains(IFlatCoordinate coord)
+            => ((ICoordinateBoundAmbiguous)this).Contains2DHelper(coord);
+
         // --- CASTING ---
 
         public static implicit operator int(PropertySubsection section)

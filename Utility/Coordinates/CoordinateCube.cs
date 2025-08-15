@@ -74,6 +74,24 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
             => (A, B) = (a, b);
         #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
+        // --- METHODS ---
+
+        public bool Contains(IFlatCoordinate coord) {
+            // check 2d status
+            bool containsTopDown = ((ICoordinateBoundAmbiguous)this).Contains2DHelper(coord);
+
+            // return based on if 3d coordinate or not
+            if (coord is ICoordinate coord3d) {
+                bool containsVertical = (
+                    (Bottom <= coord3d.Y)
+                    && (coord3d.Y <= Top)
+                );
+                return containsTopDown && containsVertical;
+            } else {
+                return containsTopDown;
+            }
+        }
+
         // --- CASTING ---
 
         public static CoordinateSquare ToCoordinateSquare(CoordinateCube cube)
