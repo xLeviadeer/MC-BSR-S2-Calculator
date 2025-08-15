@@ -48,6 +48,8 @@ namespace MC_BSR_S2_Calculator.MainColumn {
 
         public const string GOVERNMENT_IDENTIFIER = "10p0000000001";
 
+        public const string GOVERNMENT_PLAYER_NAME = "Government";
+
         // --- CONSTRUCTOR ---
 
         static MainResources() {
@@ -63,8 +65,20 @@ namespace MC_BSR_S2_Calculator.MainColumn {
                     }
                 }
 
-                // couldn't find existing government id
-                throw new InvalidOperationException("Government Player not found. Add Governemnt user with ID p,'0' to continue launch");
+                // check if government player exits but not at 0
+                void checkGovernmentPlayerID() {
+                    if (PlayersDisplay.Any(player => player.Name == GOVERNMENT_PLAYER_NAME)) {
+                        throw new InvalidOperationException("Government Player found with incorrect ID. Ensure Governemnt user ID is at p...1 to continue launch");
+                    }
+                }
+                checkGovernmentPlayerID();
+
+                // add government player
+                GovernmentPlayer = new Player(GOVERNMENT_PLAYER_NAME);
+                GovernmentPlayer.DisplayableID.AssignNewID(GovernmentPlayer);
+                PlayersDisplay.Add(GovernmentPlayer);
+                PlayersDisplay.AsIStorable.Save();
+                checkGovernmentPlayerID();
             };
         }
 
