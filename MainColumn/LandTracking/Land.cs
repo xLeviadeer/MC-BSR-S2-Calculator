@@ -1,4 +1,5 @@
-﻿using MC_BSR_S2_Calculator.Utility;
+﻿using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility;
 using MC_BSR_S2_Calculator.Utility.Coordinates;
 using MC_BSR_S2_Calculator.Utility.Identification;
 using MC_BSR_S2_Calculator.Utility.Json;
@@ -77,13 +78,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             AsILandArea.HasValidDefaults();
         }
 
-        public Land(string name, IDTrace ownerID, List<ICoordinateBoundAmbiguous>? bounds=null) {
+        public Land(string name, IDTrace ownerID, string landType, List<ICoordinateBoundAmbiguous>? bounds=null) {
             // check validity of defaults
             AsILandArea.HasValidDefaults();
 
             // parameter sets
             Name = name;
             OwnerID = ownerID;
+            LandType = landType;
             if (bounds is not null) { Bounds = bounds; }
         }
 
@@ -133,6 +135,23 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // save event subscriptions
             All.ItemsChanged += (_, _) => AsIStorable.Save();
+
+            // create generic if empty
+            var fakeTrace = new IDTrace() {
+                Value = 0,
+                Type = typeof(Player)
+            };
+            if (All.Count == 0) {
+                All.Add(new(
+                    "generic empty land",
+                    fakeTrace,
+                    ILandArea.PUBLIC,
+                    [new CoordinateCube(
+                        new CoordinatePoint(0, 0, 0),
+                        new CoordinatePoint(10, 10, 10)
+                    )]
+                ));
+            }
         }
 
         public void AddInstanceToInstances() => IStorable.Instances.Add((IStorable)this);
