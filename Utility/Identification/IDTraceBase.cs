@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -34,13 +35,14 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// </summary>
         /// <param name="id"> the trace id to match to </param>
         /// <returns> A primary id </returns>
-        public static IDPrimary GetPrimaryOf(IDTraceBase id) {
+        public static IDPrimary? GetPrimaryOf(IDTraceBase id) {
             foreach (var kvp in TraceList) {
                 IDPrimaryMark idPrimary = kvp.Key;
                 List<IDTraceMark> idTraces = kvp.Value;
 
                 foreach (var idTrace in idTraces) {
                     if (idTrace == id) {
+                        if (idPrimary.IsDeleted) { return null; }
                         return idPrimary.AsReference();
                     }
                 }
@@ -55,7 +57,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// </summary>
         /// <param name="id"> the trace id to match to </param>
         /// <returns> An instance </returns>
-        public static object GetParentOf(IDTraceBase id) => GetPrimaryOf(id).Instance;
+        public static object? GetParentOf(IDTraceBase id) => GetPrimaryOf(id).Instance;
 
         /// <summary>
         /// gets the instance associated with the associated primary id
@@ -63,8 +65,9 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// <typeparam name="T"> the type of Instance to select </typeparam>
         /// <param name="id"> the trace id to match to </param>
         /// <returns> An instance of type T </returns>
-        public static T GetParentOf<T>(IDTraceBase id) {
-            var instance = GetPrimaryOf(id).Instance;
+        public static T? GetParentOf<T>(IDTraceBase id) {
+            var instance = GetPrimaryOf(id)?.Instance;
+            if (instance is null) { return default; } // null
             if (instance is T castedInstance) { return castedInstance; }
             throw new ArgumentException($"could not get parent of type T because parent was not of type T: {instance.GetType()}");
         }
@@ -160,11 +163,11 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         // - Conversion Mirrors -
         #region Conversion Mirrors
 
-        public IDPrimary GetPrimary() => GetPrimaryOf(this);
+        public IDPrimary? GetPrimary() => GetPrimaryOf(this);
 
-        public object GetParent() => GetParentOf(this);
+        public object? GetParent() => GetParentOf(this);
 
-        public T GetParent<T>() => GetParentOf<T>(this);
+        public T? GetParent<T>() => GetParentOf<T>(this);
 
         #endregion
 

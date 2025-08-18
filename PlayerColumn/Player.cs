@@ -160,5 +160,21 @@ namespace MC_BSR_S2_Calculator.PlayerColumn {
             SetDefaultValues();
         }
         #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    
+        // --- METHODS ---
+
+        public static string GetPlayerNameFrom(IDTrace? idTrace) {
+            // unknown if null
+            if (idTrace is null) {
+                return UNKNOWN_NAME;
+            }
+
+            // try to get parent
+            try {
+                return idTrace.GetParent<Player>()?.Name.Value ?? UNKNOWN_NAME;
+            } catch (ArgumentNullException) {
+                return UNKNOWN_NAME;
+            }
+        }
     }
 }

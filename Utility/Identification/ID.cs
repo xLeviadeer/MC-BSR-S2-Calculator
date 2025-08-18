@@ -83,7 +83,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// - if it's a primary: itself
         /// </summary>
         /// <returns> An IDPrimary corresponding to the parent of this trace or itself </returns>
-        public static IDPrimary FindParentOrSelfID(ID id) 
+        public static IDPrimary? FindParentOrSelfID(ID id) 
             => id switch {
                 IDPrimary idPrimary => idPrimary,
                 IDPrimaryMark idPrimaryMark => idPrimaryMark.AsReference(),

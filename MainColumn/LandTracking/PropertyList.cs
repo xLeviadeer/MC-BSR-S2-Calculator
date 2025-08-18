@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -63,7 +64,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
             // set player rebuilt -> rebuild this event subscription
             MainResources.PlayersDisplay.Rebuilt += (_, _) => {
-                ClassDataList.ForEach(property => property.UpdatePropertyDisplay());
+                SearchableClassDataList.ForEach(property => property.UpdatePropertyDisplay());
                 this.BuildGrid();
             };
 
@@ -86,7 +87,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         // - Name Already Used -
 
         public bool NameAlreadyUsed(string name, ID playerID) {
-            IDPrimary playerPrimaryID = ID.FindParentOrSelfID(playerID);
+            IDPrimary? playerPrimaryID = ID.FindParentOrSelfID(playerID);
+            if (playerPrimaryID is null) { return false; }
             foreach (Property property in ClassDataList) {
                 if (
                     (property.OwnerID == playerPrimaryID)

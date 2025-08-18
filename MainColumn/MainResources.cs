@@ -76,6 +76,7 @@ namespace MC_BSR_S2_Calculator.MainColumn {
                 // add government player
                 GovernmentPlayer = new Player(GOVERNMENT_PLAYER_NAME);
                 GovernmentPlayer.DisplayableID.AssignNewID(GovernmentPlayer);
+                GovernmentPlayer.WasActive.Value = false;
                 PlayersDisplay.Add(GovernmentPlayer);
                 PlayersDisplay.AsIStorable.Save();
                 checkGovernmentPlayerID();

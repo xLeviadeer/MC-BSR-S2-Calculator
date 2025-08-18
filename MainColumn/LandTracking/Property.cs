@@ -309,14 +309,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Update PropertyList -
 
-        public void UpdatePropertyDisplay() {
-            // try to get parent
-            try {
-                OwnerName.Value = OwnerID?.GetParent<Player>().Name.Value ?? Player.UNKNOWN_NAME;
-            } catch (ArgumentNullException) {
-                OwnerName.Value = Player.UNKNOWN_NAME;
-            }
-        }
+        public void UpdatePropertyDisplay()
+            => OwnerName.Value = Player.GetPlayerNameFrom(OwnerID);
 
         // -- Property Metric and Results --
 
