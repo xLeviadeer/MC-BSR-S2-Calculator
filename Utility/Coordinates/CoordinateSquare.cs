@@ -29,13 +29,13 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
         // -- Cardinal Edges --
 
-        public int West => Math.Max(A.X, B.X);
+        public int West => Math.Min(A.X, B.X);
 
-        public int East => Math.Min(A.X, B.X);
+        public int East => Math.Max(A.X, B.X);
+
+        public int South => Math.Min(A.Z, B.Z);
 
         public int North => Math.Max(A.Z, B.Z);
-
-        public int South => Math.Max(A.Z, B.Z);
 
         // -- Cardinal Corners --
 
@@ -64,11 +64,14 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
         #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public CoordinateSquare(FlatCoordinatePoint a, FlatCoordinatePoint b)
             => (A, B) = (a, b);
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         // --- METHODS ---
 
         public bool Contains(IFlatCoordinate coord)
             => ((ICoordinateBoundAmbiguous)this).Contains2DHelper(coord);
+
+        public override string ToString() 
+            => $"{nameof(CoordinateSquare)} {{ {A.ToString()}, {B.ToString()} }}";
     }
 }

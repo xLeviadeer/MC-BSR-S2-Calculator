@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -29,13 +30,13 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
         // -- Cardinal Edges --
 
-        public int West => Math.Max(A.X, B.X);
+        public int West => Math.Min(A.X, B.X);
 
-        public int East => Math.Min(A.X, B.X);
+        public int East => Math.Max(A.X, B.X);
+
+        public int South => Math.Min(A.Z, B.Z);
 
         public int North => Math.Max(A.Z, B.Z);
-
-        public int South => Math.Max(A.Z, B.Z);
 
         public int Top => Math.Max(A.Y, B.Y);
 
@@ -91,6 +92,9 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
                 return containsTopDown;
             }
         }
+
+        public override string ToString()
+            => $"{nameof(CoordinateCube)} {{ {A.ToString()}, {B.ToString()} }}";
 
         // --- CASTING ---
 
