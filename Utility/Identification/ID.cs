@@ -1,4 +1,6 @@
-﻿using MC_BSR_S2_Calculator.Utility.Json;
+﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
+using MC_BSR_S2_Calculator.PlayerColumn;
+using MC_BSR_S2_Calculator.Utility.Json;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls.Primitives;
 
 namespace MC_BSR_S2_Calculator.Utility.Identification {
@@ -90,6 +93,47 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
                 IDTraceBase idTrace => idTrace.GetPrimary(),
                 _ => throw new InvalidOperationException($"Value for {nameof(id)}, '{id}' is not a valid ID")
             };
+
+        // - Construct Highest Identifier -
+        #region Construct Highest Identifier
+
+        /// <summary>
+        /// Constructs the highest identifier for this current object;
+        /// Takes all valid portions of the identifier and displays them 
+        /// while displaying error portions for invalid parts of the identifier
+        /// </summary>
+        /// <param name="id"> The ID to construct the highest identifier on </param>
+        /// <returns> A string with the most valid information that could be created from this ID </returns>
+        public static string ConstructHighestIdentifier(ID? id) {
+            const string NULL_ID = "<null ID>";
+            const string TYPE_NOT_FOUND = "<unable to find Type>";
+
+            // if null ID
+            if (id is null) {
+                return NULL_ID;
+            }
+
+            // try to get whole identifier
+            try {
+                return id.Identifier;
+            } catch (Exception e) when (
+                (e is ArgumentNullException)
+                || (e is ArgumentException)
+            ) {
+                // try to get type
+                string typeString;
+                try {
+                    typeString = id.GetChar().ToString();
+                } catch (ArgumentNullException) {
+                    typeString = TYPE_NOT_FOUND;
+                }
+
+                // return
+                return $"{typeString}{id._valuePadded}";
+            }
+        }
+
+        #endregion
 
         // - Conversion Methods -
         #region Conversion Methods
@@ -182,7 +226,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             get {
                 ArgumentNullException.ThrowIfNull(Type, nameof(Type));
                 if (Value < 0) { throw new ArgumentException($"Value was not set to a valid ID", nameof(Value)); }
-                return $"{GetCharFromType(Type)}{Value.ToString().PadLeft(10, '0')}";
+                return $"{GetCharFromType(Type)}{_valuePadded}";
             }
             set {
                 if (value.Length != 11) { throw new ArgumentException($"Provided Identifier was not of a valid format '{value}'; Identifier too long or too short"); }
@@ -203,6 +247,8 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
         // id value
         public virtual int Value { get; set; } = 0;
+
+        private string _valuePadded => Value.ToString().PadLeft(10, '0');
 
         // associated instance
         protected object? _instance { get; set; } = null;
@@ -238,6 +284,20 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         public virtual void AssignInstance(object instance) {
             Instance = instance;
         }
+
+        // - Construct Highest Identifier -
+        #region Construct Highest Identifier
+
+        /// <summary>
+        /// Constructs the highest identifier for this current object;
+        /// Takes all valid portions of the identifier and displays them 
+        /// while displaying error portions for invalid parts of the identifier
+        /// </summary>
+        /// <returns> A string with the most valid information that could be created from this ID </returns>
+        public virtual string ConstructHighestIdentifier()
+            => ConstructHighestIdentifier(this);
+
+        #endregion
 
         // - Conversion Mirrors  -
         #region Conversion Mirrors

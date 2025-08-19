@@ -57,7 +57,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         /// </summary>
         /// <param name="id"> the trace id to match to </param>
         /// <returns> An instance </returns>
-        public static object? GetParentOf(IDTraceBase id) => GetPrimaryOf(id).Instance;
+        public static object? GetParentOf(IDTraceBase id) => GetPrimaryOf(id)?.Instance;
 
         /// <summary>
         /// gets the instance associated with the associated primary id
