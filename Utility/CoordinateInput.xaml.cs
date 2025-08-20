@@ -241,6 +241,10 @@ namespace MC_BSR_S2_Calculator.Utility
             get => (int)ZInput.TryGetValue<double>();
         }
 
+        // - Layout Loaded -
+
+        public event EventHandler<EventArgs>? LayoutLoaded;
+
         #endregion
 
         // --- CONSTRUCTOR ---
@@ -270,6 +274,14 @@ namespace MC_BSR_S2_Calculator.Utility
                 YInput.InputFinalized += InvokeCoordinatesChanged;
                 ZInput.InputFinalized += InvokeCoordinatesChanged;
             };
+
+            // layout loaded
+            EventWatcher eventWatcher = new((_, _) => {
+                LayoutLoaded?.Invoke(this, EventArgs.Empty);
+            });
+            XInput.LayoutLoaded += eventWatcher.NewWatchAction();
+            YInput.LayoutLoaded += eventWatcher.NewWatchAction();
+            ZInput.LayoutLoaded += eventWatcher.NewWatchAction();
         }
 
         #endregion
@@ -281,16 +293,25 @@ namespace MC_BSR_S2_Calculator.Utility
 
         public CoordinateStructure GetCoordinatesAs<CoordinateStructure>()
             where CoordinateStructure : IModifyableFlatCoordinate, new() {
-            // return coord
+
+            // coord to return
             var coord = new CoordinateStructure();
-            coord.X = XCoordinate;
-            coord.Z = ZCoordinate;
+
+            // try to get coordinates or return default if cannot
+            int yCoordinate;
+            try {
+                coord.X = XCoordinate;
+                coord.Z = ZCoordinate;
+                yCoordinate = YCoordinate;
+            } catch (NullReferenceException) {
+                return new CoordinateStructure(); // returns default values
+            }
 
             // based on type structure
             Type coordStructType = typeof(CoordinateStructure);
             if (typeof(IModifyableCoordinate).IsAssignableFrom(coordStructType)) { // coord struct extends modify coord
                 var coordCasted = ((IModifyableCoordinate)coord);
-                coordCasted.Y = YCoordinate;
+                coordCasted.Y = yCoordinate;
                 return (CoordinateStructure)coordCasted;
             } else if (typeof(IModifyableFlatCoordinate).IsAssignableFrom(coordStructType)) { // coord struct extends modify flat coord
                 return coord;
