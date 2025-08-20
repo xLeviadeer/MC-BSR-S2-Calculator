@@ -144,7 +144,14 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
 
         // - Layout Loaded -
 
+        public bool IsLayoutLoaded { get; private set; } = false;
+
         public event EventHandler<EventArgs>? LayoutLoaded;
+
+        private void _markAsLoaded() {
+            IsLayoutLoaded = true;
+            LayoutLoaded?.Invoke(this, EventArgs.Empty);
+        }
 
         // - has been loaded -
         private bool HasBeenLoaded { get; set; } = false;
@@ -246,7 +253,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                 Grid.SetColumn(Element, 0);
 
                 // dont generate standard
-                LayoutLoaded?.Invoke(this, EventArgs.Empty);
+                _markAsLoaded();
                 return;
 
             // -- left or fit layout mode --
@@ -276,7 +283,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                         // if parent has at least 2 columns
                         if ((endingPos - startingPos) < 2) { 
                             generateStandardly();
-                            LayoutLoaded?.Invoke(this, EventArgs.Empty); 
+                            _markAsLoaded();
                             return; 
                         }
 
@@ -309,7 +316,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     });
 
                     // dont generate standard
-                    LayoutLoaded?.Invoke(this, EventArgs.Empty);
+                    _markAsLoaded();
                     return;
                 } else if (LayoutMode == LabeledInputLayoutModes.LeftSwap) {
                     // fluid
@@ -322,7 +329,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     });
 
                     // dont generate standard
-                    LayoutLoaded?.Invoke(this, EventArgs.Empty);
+                    _markAsLoaded();
                     return;
                 }
 
@@ -363,7 +370,7 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     Grid.SetColumn(Element, 1);
 
                     // dont generate standard
-                    LayoutLoaded?.Invoke(this, EventArgs.Empty);
+                    _markAsLoaded();
                     return;
                 } else if (LayoutMode == LabeledInputLayoutModes.LeftSwapFit) {
                     addFit(Element);
@@ -374,14 +381,14 @@ namespace MC_BSR_S2_Calculator.Utility.LabeledInputs {
                     Grid.SetColumn(TextLabel, 1);
 
                     // dont generate standard
-                    LayoutLoaded?.Invoke(this, EventArgs.Empty);
+                    _markAsLoaded();
                     return;
                 }
             }
 
             // - no parent grid -
             generateStandardly();
-            LayoutLoaded?.Invoke(this, EventArgs.Empty);
+            _markAsLoaded();
         }
 
         #endregion
