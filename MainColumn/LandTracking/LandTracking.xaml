@@ -30,7 +30,7 @@
         <!-- Land Type Checking -->
         <util_switchmanagedtab:SwitchManagedTabItem x:Name="TabLandTypeChecking" Style="{StaticResource SubTabStyle}"
                      Header="Land Type Checking">
-            <local:LandTypeChecking/>
+            <local:LandTypeChecking x:Name="LandTypeChecker"/>
         </util_switchmanagedtab:SwitchManagedTabItem>
     </util_switchmanagedtab:SwitchManagedTabControl>
 </UserControl>

@@ -4,6 +4,7 @@ using MC_BSR_S2_Calculator.Utility.ListBrowser;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
     public partial class LandTracking : UserControl {
@@ -48,6 +49,12 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
                 // mirror changes from the properties display class list to the converted list
                 MainResources.PropertiesDisplay.SearchableClassDataList.ItemsChanged += (sender, args) => {
+                    // update the search on the land type checker
+                    Dispatcher.BeginInvoke(() => {
+                        LandTypeChecker.UpdateResults();
+                    }, DispatcherPriority.Background);
+
+                    // mirror changes
                     if (args is ListChangedEventArgs listArgs) {
                         var convertedListDisplay = ((PropertyClickableList)PropertyBrowser.ListReference);
 
@@ -56,6 +63,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                                 convertedListDisplay.SearchableClassDataList.Add(
                                     PropertyClickable.From(((NotifyingList<Property>)sender!) [listArgs.NewIndex])
                                 );
+                                Property addedProperty = MainResources.PropertiesDisplay[listArgs.NewIndex];
                                 break;
                             case ListChangedType.ItemDeleted:
                                 convertedListDisplay.SearchableClassDataList.RemoveAt(
@@ -70,6 +78,13 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                         // update for changes
                         convertedListDisplay.BuildGrid();
                     }
+                };
+
+                // mirror name changes
+                MainResources.PropertiesDisplay.Rebuilt += (_, _) => {
+                    var propertyClickableList = ((PropertyClickableList)PropertyBrowser.ListReference);
+                    propertyClickableList.SearchableClassDataList.ForEach(property => property.UpdatePropertyDisplay());
+                    propertyClickableList.BuildGrid();
                 };
             };
 

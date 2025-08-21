@@ -8,49 +8,42 @@
              xmlns:util_labeledinputs="clr-namespace:MC_BSR_S2_Calculator.Utility.LabeledInputs"
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
              mc:Ignorable="d">
-    
-    <Grid x:Name="MainGrid">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="5"/> <!-- GridSpacer margin row -->
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="160"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <!-- Title -->
-        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource SubTitle}"
-                   Text="Land Type Checking"/>
-        <GridSplitter Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
-                      Height="3" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
-            <GridSplitter.Background>
-                <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
-            </GridSplitter.Background>
-        </GridSplitter>
+    <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="MainGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/> <!-- GridSpacer margin row -->
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/> <!-- GridSpacer margin row -->
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Use Y Coordinate -->
-        <util_labeledinputs:CheckBoxLabel x:Name="UseYCoordinate" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                                          LabelText="Use Y Coordinate" LayoutMode="LeftSwapFit"
-                                          CheckChanged="_useYCoordinateCheckChanged"/>
+            <!-- Title -->
+            <TextBlock Grid.Row="0" Style="{StaticResource SubTitle}"
+                       Text="Land Type Checking"/>
+            <GridSplitter Grid.Row="0"
+                          Height="3" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <GridSplitter.Background>
+                    <SolidColorBrush Color="{x:Static util:ColorResources.InnerColorL3}"/>
+                </GridSplitter.Background>
+            </GridSplitter>
 
-        <!-- Coordinates -->
-        <util:CoordinateInput x:Name="Coordinates" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
-                              NameExtension="to Check"
-                              ShowYInput="False"
-                              CoordinatesChanged="_coordinatesCoordinatesChanged"/>
+            <!-- Use Y Coordinate -->
+            <util_labeledinputs:CheckBoxLabel x:Name="UseYCoordinate" Grid.Row="2"
+                                              LabelText="Use Y Coordinate" LayoutMode="LeftSwapFit"
+                                              CheckChanged="_useYCoordinateCheckChanged"/>
+
+            <!-- Coordinates -->
+            <util:CoordinateInput x:Name="Coordinates" Grid.Row="3"
+                                  NameExtension="to Check"
+                                  ShowYInput="False"
+                                  CoordinatesChanged="_coordinatesCoordinatesChanged"/>
         
-        <!-- Land Type Result -->
-        <util_labeledinputs:ResultDisplay x:Name="LandTypeResult" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                          LabelText="Land Type at Coordinates" LayoutMode="Left" FluidProportionsSplitIndex="1"/>
-
-        <!-- Owner Result -->
-        <util_labeledinputs:ResultDisplay x:Name="LandOwnerResult" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
-                                          LabelText="Land Owner at Coordinates" LayoutMode="Left" FluidProportionsSplitIndex="1"/>
-
-    </Grid>
+            <!-- Results -->
+            <util:ControlStack x:Name="ResultsStack" Grid.Row="5"
+                               ItemsSource="{x:Static local:LandTypeCheckingResult.ResultsCollection}"/>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,13 +43,16 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             OWNED
         ];
 
+        public const string FREE = "free";
+
         public static ImmutableList<string> AllLandTypes = [
             PUBLIC,
             SHARED_PRIVATE,
             PRIVATE,
             UNOWNED,
             PROVISIONED,
-            OWNED
+            OWNED,
+            FREE 
         ];
 
         #endregion
@@ -167,6 +171,6 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
         public bool Contains(IFlatCoordinate coord);
 
         public bool ContainsHelper(IFlatCoordinate coord)
-            => Bounds.Any(bound => bound.Contains(coord));
+            => GetBoundsAsCubes().Any(bound => bound.Contains(coord));
     }
 }
