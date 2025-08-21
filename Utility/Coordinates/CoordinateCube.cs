@@ -44,16 +44,16 @@ namespace MC_BSR_S2_Calculator.Utility.Coordinates {
 
         // -- Cardinal Corners --
 
-        public IFlatCoordinate AmbigNW => new FluidCoordinatePoint(new FlatCoordinatePoint(West, North), Top, Bottom);
+        public IFlatCoordinate AmbigNW => new FluidCoordinatePoint(new FlatCoordinatePoint(West, North), Bottom, Top);
         public FluidCoordinatePoint NW => (FluidCoordinatePoint)AmbigNW;
 
-        public IFlatCoordinate AmbigNE => new FluidCoordinatePoint(new FlatCoordinatePoint(East, North), Top, Bottom);
+        public IFlatCoordinate AmbigNE => new FluidCoordinatePoint(new FlatCoordinatePoint(East, North), Bottom, Top);
         public FluidCoordinatePoint NE => (FluidCoordinatePoint)AmbigNE;
 
-        public IFlatCoordinate AmbigSW => new FluidCoordinatePoint(new FlatCoordinatePoint(West, South), Top, Bottom);
+        public IFlatCoordinate AmbigSW => new FluidCoordinatePoint(new FlatCoordinatePoint(West, South), Bottom, Top);
         public FluidCoordinatePoint SW => (FluidCoordinatePoint)AmbigSW;
 
-        public IFlatCoordinate AmbigSE => new FluidCoordinatePoint(new FlatCoordinatePoint(East, South), Top, Bottom);
+        public IFlatCoordinate AmbigSE => new FluidCoordinatePoint(new FlatCoordinatePoint(East, South), Bottom, Top);
         public FluidCoordinatePoint SE => (FluidCoordinatePoint)AmbigSE;
 
         // -- Measures --
