@@ -38,7 +38,7 @@ namespace MC_BSR_S2_Calculator.Utility.Json {
 
         // - Pathing -
 
-        private List<string> ExtensionPath { get => new List<string>() { JsonHandler.DataPath }.Concat(SaveLocation).ToList(); }
+        private List<string> ExtensionPath { get => new List<string>() { JsonHandler.DATA_PATH }.Concat(SaveLocation).ToList(); }
         
         /// <summary>
         /// A path to the save location for this ListDisplay

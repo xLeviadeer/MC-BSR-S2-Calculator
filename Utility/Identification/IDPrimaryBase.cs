@@ -20,7 +20,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         // -- VARIABLES --
         #region VARIABLES
 
-        private static readonly string[] CurrentsPath = [JsonHandler.DataPath, "currents.json"];
+        private static readonly string[] CurrentsPath = [JsonHandler.DATA_PATH, "currents.json"];
 
         // - current ids -
 

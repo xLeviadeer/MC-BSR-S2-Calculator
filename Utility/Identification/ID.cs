@@ -34,7 +34,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         // -- VARIABLES --
         #region VARIABLES
 
-        protected static readonly string[] TraceListPath = [JsonHandler.DataPath, "tracelist.json"];
+        protected static readonly string[] TraceListPath = [JsonHandler.DATA_PATH, "tracelist.json"];
 
         // - trace list -
 

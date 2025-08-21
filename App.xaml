@@ -6,7 +6,9 @@
              xmlns:main="clr-namespace:MC_BSR_S2_Calculator.MainColumn"
              xmlns:land="clr-namespace:MC_BSR_S2_Calculator.MainColumn.LandTracking"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             StartupUri="MainWindow.xaml">
+             StartupUri="MainWindow.xaml"
+             Exit="_application_Exit">
+
     <Application.Resources>
         <!-- Universal Label Padding Fix -->
         <Style TargetType="Label">

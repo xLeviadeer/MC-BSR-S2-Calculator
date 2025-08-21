@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Windows;
 
 // JsonHandler class taken from the RMAS; RMAS was not updated with any code updates in this class
@@ -36,8 +37,9 @@ sealed class JsonHandler {
 
     // --- VARIABLES ---
 
-    public const string DataPath = "Data";
-    private static string CWD = Directory.GetCurrentDirectory();
+    public const string DATA_PATH = "Data";
+    private static readonly string CWD = Directory.GetCurrentDirectory();
+    public static readonly string FULL_DATA_PATH = CreatePath([DATA_PATH]);
 
     // --- METHODS ---
 
@@ -49,7 +51,7 @@ sealed class JsonHandler {
     /// </summary>
     /// <param name="path"> The path as a list without a CWD </param>
     /// <returns> String path </returns>
-    public static string CreatePath(List<string> path) {
+    public static string CreatePath(IList<string> path) {
         return Path.Combine(path.Prepend(CWD).ToArray());
     }
 
@@ -58,8 +60,8 @@ sealed class JsonHandler {
     /// </summary>
     /// <param name="path"> Path as a list </param>
     /// <exception cref="JsonExtensionException"></exception>
-    private static void VerifyPathIsJson(List<string> path) {
-        string last_variable_in_path = path[path.Count - 1];
+    private static void VerifyPathIsJson(IList<string> path) {
+        string last_variable_in_path = path[path.Count() - 1];
         VerifyPathIsJson(last_variable_in_path); // run string version
     }
 
@@ -150,7 +152,7 @@ sealed class JsonHandler {
     /// <param name="create_directories"> Whether or not non-existent directories can be written </param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="DirectoryNotFoundException"></exception>
-    public static void Write<T>(List<string> path, T content, bool create_directories=true, JsonSerializerSettings? settings=null) where T : class {
+    public static void Write<T>(IList<string> path, T content, bool create_directories=true, JsonSerializerSettings? settings=null) where T : class {
         // run string version
         Write(Path.Combine(path.ToArray()), content, create_directories, settings);
     }
@@ -194,7 +196,7 @@ sealed class JsonHandler {
     /// <param name="path"> Path to read JsonHandler data from. Path is automatically appended to the current working directory </param>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="FileNotFoundException"></exception>
-    public static T Read<T>(List<string> path, JsonSerializerSettings? settings=null) where T : class {
+    public static T Read<T>(IList<string> path, JsonSerializerSettings? settings=null) where T : class {
         // run string version
         return Read<T>(Path.Combine(path.ToArray()), settings);
     }
@@ -229,7 +231,7 @@ sealed class JsonHandler {
     /// <param name="target"> The name of the variable (property/field) to target </param>
     /// <returns> Returns the value of either the field or property that was found </returns>
     /// <exception cref="ArgumentException"></exception>
-    public static object? ReadFor<T>(List<string> path, string target, JsonSerializerSettings? settings=null) where T : class {
+    public static object? ReadFor<T>(IList<string> path, string target, JsonSerializerSettings? settings=null) where T : class {
         // use string version
         return ReadFor<T>(Path.Combine(path.ToArray()), target, settings);
     }
@@ -265,7 +267,7 @@ sealed class JsonHandler {
     /// </remarks>
     /// <param name="path"> The path to the file </param>
     /// <exception cref="FileNotFoundException"></exception>
-    public static void Delete(List<string> path)
+    public static void Delete(IList<string> path)
     {
         // run string version
         Delete(Path.Combine(path.ToArray()));
