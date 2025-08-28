@@ -13,7 +13,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [TypeConverter(typeof(IDTypeConverter<IDPrimaryMark>))]
-    public abstract class IDPrimaryBase : ID {
+    public abstract class IDPrimaryBase : RelationalID {
 
         // --- STATIC ---
 

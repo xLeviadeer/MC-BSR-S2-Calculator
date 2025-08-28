@@ -57,6 +57,7 @@ namespace MC_BSR_S2_Calculator.MainColumn {
             PlayersDisplay.ClassDataListLoaded += (_, _) => {
                 // check if already exists
                 foreach (Player player in PlayersDisplay) {
+                    Debug.WriteLine(player.DisplayableID.Identifier);
                     if (player.DisplayableID.Identifier == GOVERNMENT_IDENTIFIER) {
                         GovernmentPlayer = player;
                         player.AssignInstanceID(player);
@@ -66,20 +67,17 @@ namespace MC_BSR_S2_Calculator.MainColumn {
                 }
 
                 // check if government player exits but not at 0
-                void checkGovernmentPlayerID() {
-                    if (PlayersDisplay.Any(player => player.Name == GOVERNMENT_PLAYER_NAME)) {
-                        throw new InvalidOperationException("Government Player found with incorrect ID. Ensure Governemnt user ID is at p...1 to continue launch");
-                    }
+                if (PlayersDisplay.Any(player => player.Name.Value == GOVERNMENT_PLAYER_NAME)) {
+                    throw new InvalidOperationException("Government Player found with incorrect ID. Ensure Governemnt user ID is at p...1 to continue launch");
                 }
-                checkGovernmentPlayerID();
 
                 // add government player
                 GovernmentPlayer = new Player(GOVERNMENT_PLAYER_NAME);
-                GovernmentPlayer.DisplayableID.AssignNewID(GovernmentPlayer);
                 GovernmentPlayer.WasActive.Value = false;
                 PlayersDisplay.Add(GovernmentPlayer);
+                PlayersDisplay.IDBlockList.Add(MainResources.GovernmentPlayer.DisplayableID);
                 PlayersDisplay.AsIStorable.Save();
-                checkGovernmentPlayerID();
+                RelationalID.TraceList[GovernmentPlayer.DisplayableID.AsMark()] = [GovernmentPlayer.DisplayableID.CreateTrace(GovernmentPlayer).AsMark()];
             };
         }
 

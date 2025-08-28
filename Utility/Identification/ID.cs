@@ -1,191 +1,124 @@
-﻿using MC_BSR_S2_Calculator.MainColumn.LandTracking;
-using MC_BSR_S2_Calculator.PlayerColumn;
-using MC_BSR_S2_Calculator.Utility.Json;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls.Primitives;
 
 namespace MC_BSR_S2_Calculator.Utility.Identification {
 
-    /// <summary>
-    /// Allows the Tracelist to be compared with mutable keys
-    /// </summary>
-    public class ReferenceEqualityComparer<T> : IEqualityComparer<T>
-    where T : class {
-        public bool Equals(T? x, T? y) => ReferenceEquals(x, y);
-        public int GetHashCode(T obj) => RuntimeHelpers.GetHashCode(obj);
-    }
-
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public abstract partial class ID : IComparable<ID> {
 
-        // --- STATIC ---
-
-        // -- VARIABLES --
+    public abstract class ID : IComparable<ID> {
+        // --- VARIABLES ---
         #region VARIABLES
 
-        protected static readonly string[] TraceListPath = [JsonHandler.DATA_PATH, "tracelist.json"];
+        // -- Static --
 
-        // - trace list -
+        public const int PADDING_AMOUNT = 10;
 
-        private static bool TraceListHasBeenBuilt { get; set; } = false;
+        public const int ZERO_ID_VALUE = 0;
+        public static readonly string ZERO_ID_IDENTIFIER = ZERO_ID_VALUE
+            .ToString()
+            .PadLeft(PADDING_AMOUNT, '0');
 
-        private static MutableKeysDictionary<IDPrimaryMark, List<IDTraceMark>> _tracelist { get; set; } = new();
+        // -- Instance --
 
-        public static MutableKeysDictionary<IDPrimaryMark, List<IDTraceMark>> TraceList {
+        // - Identifier -
+
+        [JsonProperty("id")]
+        public virtual string Identifier {
+            // assumes Type is correct via validation of the assignment method
             get {
-                if (
-                    (!TraceListHasBeenBuilt) 
-                    && (_tracelist.Count <= 0)
-                ) {
-                    SetUpTraceList();
-                }
-                return _tracelist;
+                if (Value < 0) { throw new ArgumentException($"Value was not set to a valid ID", nameof(Value)); }
+                Debug.WriteLine($"padded check: {valuePadded}");
+                Debug.WriteLine($"value check: {Value}");
+                return valuePadded;
             }
-            protected set => _tracelist = value;
-        }
-
-        private static void SetUpTraceList() {
-            TraceListHasBeenBuilt = true;
-
-            // read the value
-            try {
-                _tracelist = JsonHandler.Read<MutableKeysDictionary<IDPrimaryMark, List<IDTraceMark>>>(TraceListPath.ToList());
-            } catch (FileNotFoundException) { // couldn't find file
-                // tracelist will start empty
+            set {
+                if (value.Length != PADDING_AMOUNT) { throw new ArgumentException($"Provided Identifier was not of a valid format '{value}'; Identifier too long or too short"); }
+                Value = int.Parse(value);
             }
         }
 
-        protected static void SaveTracelist() {
-            JsonHandler.Write(TraceListPath.ToList(), TraceList);
-        }
+        // - Value -
 
-        // - id types -
+        public int Value { get; set; } = 0;
 
-        protected static Dictionary<Type, char> IDTypes { get; set; } = new();
+        protected string valuePadded => Value.ToString().PadLeft(PADDING_AMOUNT, '0');
 
         #endregion
 
-        // -- METHODS --
+        // --- CONSTRUCTORS ---
+        #region CONSTRUCTORS
 
-        // - Try Find Parent or Self ID -
+        // json constructor
+        // default constructor
+        public ID() { }
+
+        // copy constructor
+        public ID(ID id) {
+            Identifier = id.Identifier;
+        }
+
+        #endregion
+
+        // --- METHODS ---
+
+        // - To String (override) -
+
+        public override string ToString()
+            => Identifier;
+
+        // -- Operations --
+
+        // - Basis -
+        #region Basis
 
         /// <summary>
-        /// Intakes and ID and attempts to find
-        /// - if it's a trace: it's parent
-        /// - if it's a primary: itself
+        /// Gets the first child that extends this class
         /// </summary>
-        /// <returns> An IDPrimary corresponding to the parent of this trace or itself </returns>
-        public static IDPrimary? FindParentOrSelfID(ID id) 
-            => id switch {
-                IDPrimary idPrimary => idPrimary,
-                IDPrimaryMark idPrimaryMark => idPrimaryMark.AsReference(),
-                IDTraceBase idTrace => idTrace.GetPrimary(),
-                _ => throw new InvalidOperationException($"Value for {nameof(id)}, '{id}' is not a valid ID")
-            };
+        /// <param name="id"> An ID instance to get the first class extension on </param>
+        /// <returns> The type of the first class extension, null if  </returns>
+        private static Type? _getFirstExtension(ID id) {
+            // set the current type to the highest type
+            Type currentType = id.GetType();
 
-        // - Construct Highest Identifier -
-        #region Construct Highest Identifier
-
-        /// <summary>
-        /// Constructs the highest identifier for this current object;
-        /// Takes all valid portions of the identifier and displays them 
-        /// while displaying error portions for invalid parts of the identifier
-        /// </summary>
-        /// <param name="id"> The ID to construct the highest identifier on </param>
-        /// <returns> A string with the most valid information that could be created from this ID </returns>
-        public static string ConstructHighestIdentifier(ID? id) {
-            const string NULL_ID = "<null ID>";
-            const string TYPE_NOT_FOUND = "<unable to find Type>";
-
-            // if null ID
-            if (id is null) {
-                return NULL_ID;
-            }
-
-            // try to get whole identifier
-            try {
-                return id.Identifier;
-            } catch (Exception e) when (
-                (e is ArgumentNullException)
-                || (e is ArgumentException)
-            ) {
-                // try to get type
-                string typeString;
-                try {
-                    typeString = id.GetChar().ToString();
-                } catch (ArgumentNullException) {
-                    typeString = TYPE_NOT_FOUND;
+            // move down base types until found
+            while (currentType != typeof(object)) {
+                // if the base type is BareID then current must be it's first extension
+                if (currentType!.BaseType == typeof(ID)) {
+                    return currentType; 
+                }
+                
+                // check for invalid base type
+                if (currentType.BaseType == null) {
+                    throw new ArgumentNullException("BaseType was null");
                 }
 
-                // return
-                return $"{typeString}{id._valuePadded}";
-            }
-        }
-
-        #endregion
-
-        // - Conversion Methods -
-        #region Conversion Methods
-
-        /// <summary>
-        /// Gets a Type from a Character 
-        /// </summary>
-        /// <param name="typeCharacter"> The character to find a type from </param>
-        /// <returns> The associated type </returns>
-        /// <exception cref="ArgumentException"> Thrown if the character doesn't exist in the types dictionary </exception>
-        public static Type GetTypeFromChar(char typeCharacter) {
-            // if doesn't exist in dictionary
-            if (!IDTypes.ContainsValue(typeCharacter)) {
-                throw new ArgumentException($"typeCharacter doesn't exist in the IDTypes dictionary", nameof(typeCharacter));
+                // move down one base
+                currentType = currentType.BaseType;
             }
 
-            // find key from value
-            return IDTypes.First(kvp => kvp.Value == typeCharacter).Key;
+            // impossible condition
+            throw new InvalidOperationException("ID didn't extend anything, impossible instance");
         }
-
-        /// <summary>
-        /// Gets a Character from a Type 
-        /// </summary>
-        /// <param name="type"> The type to find a character from </param>
-        /// <returns> The associated character </returns>
-        /// <exception cref="ArgumentException"> Thrown if the type doesn't exist in the types dictionary </exception>
-        public static char GetCharFromType(Type type) {
-            // if doesn't exist in dictionary
-            if (!IDTypes.ContainsKey(type)) {
-                throw new ArgumentException($"type doesn't exist in the IDTypes dictionary", nameof(type));
-            }
-
-            // find value from key
-            return IDTypes[type];
-        }
-
-        #endregion
-
-        // - Operation Basis -
-        #region Operation Basis
 
         /// <summary>
         /// Compares two ID objects for equality
         /// </summary>
         /// <returns> A boolean, true if equal </returns>
         public static bool Compare(ID? idOne, ID? idTwo) {
+            // null comparisons
             if (idOne is null && idTwo is null) { return true; }
             if (idOne is null || idTwo is null) { return false; }
-            return (
-                (idOne!._type == idTwo._type) // using _type means this will work with invalid IDs
-                && (idOne.Value == idTwo.Value)
-            );
+
+            // ID's must have the same first child to be equal
+            if (_getFirstExtension(idOne) != _getFirstExtension(idTwo)) { return false; }
+
+            // check if the values are equal
+            return (idOne.Value == idTwo.Value);
         }
 
         /// <summary>
@@ -214,108 +147,10 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
         #endregion
 
-        // --- INSTANCE ---
+        // - Mirrors -
+        #region Mirrors
 
-        // -- VARIABLES --
-        #region VARIABLES
-
-        // id write build
-        [JsonProperty("id")]
-        public virtual string Identifier {
-            // assumes Type is correct via validation of the assignment method
-            get {
-                ArgumentNullException.ThrowIfNull(Type, nameof(Type));
-                if (Value < 0) { throw new ArgumentException($"Value was not set to a valid ID", nameof(Value)); }
-                return $"{GetCharFromType(Type)}{_valuePadded}";
-            }
-            set {
-                if (value.Length != 11) { throw new ArgumentException($"Provided Identifier was not of a valid format '{value}'; Identifier too long or too short"); }
-                Type = GetTypeFromChar(value[0]);
-                Value = int.Parse(value[1..]);
-            }
-        }
-
-        // id type
-        public Type? _type;
-        public Type Type {
-            get {
-                if (_type == null) { throw new ArgumentNullException(nameof(_type), "Attemping to access type when it hasn't been assigned"); }
-                return _type;
-            }
-            set => _type = value;
-        }
-
-        // id value
-        public virtual int Value { get; set; } = 0;
-
-        private string _valuePadded => Value.ToString().PadLeft(10, '0');
-
-        // associated instance
-        protected object? _instance { get; set; } = null;
-        public object Instance {
-            get {
-                if (_instance == null) { throw new ArgumentNullException(nameof(Instance), $"Instance of '{Identifier}' is not set to a value. Has it been constructed yet?"); }
-                return _instance;
-            } 
-            set => _instance = value;
-        }
-
-        #endregion
-
-        // -- CONSTRUCTORS --
-        #region CONSTRUCTORS
-
-        // paramless req
-        /// <summary>
-        /// creates an empty ID object with no association to any data
-        /// </summary>
-        public ID() { }
-
-        #endregion
-
-        // -- METHODS --
-
-        public void Increment() => Value += 1;
-
-        /// <summary>
-        /// assigns an instance to the class
-        /// </summary>
-        /// <param name="instance"> some type of associated object </param>
-        public virtual void AssignInstance(object instance) {
-            Instance = instance;
-        }
-
-        // - Construct Highest Identifier -
-        #region Construct Highest Identifier
-
-        /// <summary>
-        /// Constructs the highest identifier for this current object;
-        /// Takes all valid portions of the identifier and displays them 
-        /// while displaying error portions for invalid parts of the identifier
-        /// </summary>
-        /// <returns> A string with the most valid information that could be created from this ID </returns>
-        public virtual string ConstructHighestIdentifier()
-            => ConstructHighestIdentifier(this);
-
-        #endregion
-
-        // - Conversion Mirrors  -
-        #region Conversion Mirrors
-
-        public char GetChar() {
-            return GetCharFromType(this.Type);
-        }
-
-        public override string ToString() {
-            return this.Identifier;
-        }
-
-        #endregion
-
-        // - Operation Mirrors -
-        #region Operation Mirrors
-
-        public bool Compare(ID? id) => Compare(this, id);
+        public virtual bool Compare(ID? id) => Compare(this, id);
         public bool GreaterThan(ID id) => GreaterThan(this, id);
         public bool GreaterThanOrEqual(ID id) => GreaterThanOrEqual(this, id);
         public bool LessThan(ID id) => LessThan(this, id);
@@ -323,8 +158,8 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
         #endregion
 
-        // --- OPERATIONS ---
-        #region OPERATIONS
+        // - Real -
+        #region Real
 
         public int CompareTo(ID? other) {
             if (other == null) return 1;
@@ -332,42 +167,40 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         }
 
         public override bool Equals(object? obj) {
-            return obj is ID id && Compare((ID?)obj);
+            return (
+                (obj is ID)
+                && Compare((ID?)obj)
+            );
         }
 
         public override int GetHashCode() {
             try {
                 return Identifier.GetHashCode();
             } catch (ArgumentNullException) { // tolerates deleted IDs
-                return "0000000000".GetHashCode();
+                return ZERO_ID_IDENTIFIER.GetHashCode();
             }
         }
 
-        public static bool operator >(ID idOne, ID idTwo) {
-            return GreaterThan(idOne, idTwo);
-        }
+        public static bool operator >(ID idOne, ID idTwo)
+            => GreaterThan(idOne, idTwo);
 
-        public static bool operator >=(ID idOne, ID idTwo) {
-            return GreaterThanOrEqual(idOne, idTwo);
-        }
+        public static bool operator >=(ID idOne, ID idTwo)
+            => GreaterThanOrEqual(idOne, idTwo);
 
-        public static bool operator <(ID idOne, ID idTwo) {
-            return LessThan(idOne, idTwo);
-        }
+        public static bool operator <(ID idOne, ID idTwo)
+            => LessThan(idOne, idTwo);
 
-        public static bool operator <=(ID idOne, ID idTwo) {
-            return LessThanOrEqual(idOne, idTwo);
-        }
+        public static bool operator <=(ID idOne, ID idTwo)
+            => LessThanOrEqual(idOne, idTwo);
 
         public static bool operator ==(ID? idOne, ID? idTwo) {
-            if (ReferenceEquals(idOne, idTwo)) return true;
+            if (ReferenceEquals(idOne, idTwo)) { return true; }
             if (idOne is null || idTwo is null) return false;
-            return Equals(idOne, idTwo);
+            return idOne.Compare(idTwo); // using this version of compare will make sure it uses the overriden version
         }
 
-        public static bool operator !=(ID idOne, ID idTwo) {
-            return !(idOne == idTwo);
-        }
+        public static bool operator !=(ID idOne, ID idTwo)
+            => !(idOne == idTwo);
 
         #endregion
     }

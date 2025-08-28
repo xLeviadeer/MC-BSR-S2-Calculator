@@ -86,8 +86,8 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
 
         // - Name Already Used -
 
-        public bool NameAlreadyUsed(string name, ID playerID) {
-            IDPrimary? playerPrimaryID = ID.FindParentOrSelfID(playerID);
+        public bool NameAlreadyUsed(string name, RelationalID playerID) {
+            IDPrimary? playerPrimaryID = RelationalID.FindParentOrSelfID(playerID);
             if (playerPrimaryID is null) { return false; }
             foreach (Property property in ClassDataList) {
                 if (

@@ -24,7 +24,7 @@ namespace MC_BSR_S2_Calculator {
             Logging.Initialize();
 
             // ID setup
-            ID.InitializeIDTypes();
+            RelationalID.InitializeIDTypes();
         }
 
         private static readonly string[] BACKUPS_PATH = ["Backups"];

@@ -13,7 +13,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [TypeConverter(typeof(IDTypeConverter<IDTraceMark>))]
-    public abstract class IDTraceBase : ID {
+    public abstract class IDTraceBase : RelationalID {
         // --- STATIC ---
 
         // -- METHODS --

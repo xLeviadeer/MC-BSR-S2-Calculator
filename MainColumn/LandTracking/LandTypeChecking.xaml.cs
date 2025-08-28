@@ -95,7 +95,7 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
                 try {
                     owningPlayerName = Player.GetPlayerNameFrom(land.OwnerID);
                 } catch (ArgumentException) {
-                    string identifier = ID.ConstructHighestIdentifier(land.OwnerID);
+                    string identifier = RelationalID.ConstructHighestIdentifier(land.OwnerID);
                     MessageBox.Show($"Invalid ID used, {identifier}, for OwnerID when attempting to process Lands (from Lands.json)");
                     throw;
                 }

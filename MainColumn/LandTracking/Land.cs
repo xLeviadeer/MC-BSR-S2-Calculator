@@ -142,14 +142,14 @@ namespace MC_BSR_S2_Calculator.MainColumn.LandTracking {
             All.ItemsChanged += (_, _) => AsIStorable.Save();
 
             // create generic if empty
-            var fakeTrace = new IDTrace() {
-                Value = 0,
+            var premptiveGovernmentTrace = new IDTrace() {
+                Value = 1,
                 Type = typeof(Player)
             };
             if (All.Count == 0) {
                 All.Add(new(
                     "generic empty land",
-                    fakeTrace,
+                    premptiveGovernmentTrace,
                     ILandArea.PUBLIC,
                     [new CoordinateCube(
                         new CoordinatePoint(0, 0, 0),

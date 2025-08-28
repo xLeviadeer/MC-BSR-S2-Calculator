@@ -16,7 +16,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
     }
 
-    public abstract partial class ID : IComparable<ID> {
+    public abstract partial class RelationalID : ID {
 
         /// <summary>
         /// Ensures IDTypes will contain all types: chars when method completes.
