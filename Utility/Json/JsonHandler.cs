@@ -166,7 +166,7 @@ sealed class JsonHandler {
     /// Reads a whole json file
     /// </summary>
     /// <param name="path_string"> Path to read JsonHandler data from. Path is automatically appended to the current working directory </param>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="FileEmptyException"></exception>
     /// <exception cref="FileNotFoundException"></exception>
     public static T Read<T>(string path_string, JsonSerializerSettings? settings=null) where T : class {
         path_string = PathVerification(path_string);
@@ -194,7 +194,7 @@ sealed class JsonHandler {
     /// Reads a whole json file
     /// </summary>
     /// <param name="path"> Path to read JsonHandler data from. Path is automatically appended to the current working directory </param>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="FileEmptyException"></exception>
     /// <exception cref="FileNotFoundException"></exception>
     public static T Read<T>(IList<string> path, JsonSerializerSettings? settings=null) where T : class {
         // run string version

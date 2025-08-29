@@ -20,13 +20,13 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         // -- VARIABLES --
         #region VARIABLES
 
-        private static readonly string[] CurrentsPath = [JsonHandler.DATA_PATH, "currents.json"];
+        private static readonly string[] CURRENTS_PATH = [JsonHandler.DATA_PATH, "currents.json"];
 
         // - current ids -
 
         public static Dictionary<string, IDPrimaryMark> CurrentIDs { get; set; } = new();
 
-        private static void SetUpCurrentIDs(IDPrimaryBase id) {
+        private static void _setUpCurrentIDs(IDPrimaryBase id) {
             // current key
             string currKey = id.GetChar().ToString();
 
@@ -34,7 +34,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             if (CurrentIDs.Count <= 0) {
                 // read the value
                 try {
-                    CurrentIDs = JsonHandler.Read<Dictionary<string, IDPrimaryMark>>(CurrentsPath.ToList());
+                    CurrentIDs = JsonHandler.Read<Dictionary<string, IDPrimaryMark>>(CURRENTS_PATH.ToList());
                 } catch (FileNotFoundException) { // couldn't find file
                     CurrentIDs[currKey] = new IDPrimaryMark(id.Type, id.Value, id._instance, id.HasBeenAssigned, id.IsDeleted);
                 }
@@ -46,8 +46,8 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             }
         }
 
-        private static void SaveCurrents() {
-            JsonHandler.Write(CurrentsPath.ToList(), CurrentIDs);
+        private static void _saveCurrents() {
+            JsonHandler.Write(CURRENTS_PATH.ToList(), CurrentIDs);
         }
 
         #endregion
@@ -143,11 +143,6 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             // error if the value is already assigned
             if (id.HasBeenAssigned && !id.IsDeleted) { throw new ArgumentException("Provided ID is currently already assigned and cannot be re-assigned"); }
 
-            // add to IDTypes
-            //if (!IDTypes.ContainsValue(typeCharacter)) {
-            //    IDTypes[id.Type] = typeCharacter;
-            //}
-
             // - ensure primary mark exists -
 
             // use id as a mark
@@ -164,7 +159,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
             // - value setting -
 
             // set up current ids
-            SetUpCurrentIDs(idPrimaryMark);
+            _setUpCurrentIDs(idPrimaryMark);
 
             // current key
             string currKey = idPrimaryMark.GetChar().ToString();
@@ -184,7 +179,7 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
 
             // save changes
             SaveTracelist();
-            SaveCurrents();
+            _saveCurrents();
         }
 
         /// <summary>
@@ -196,8 +191,8 @@ namespace MC_BSR_S2_Calculator.Utility.Identification {
         public static void Delete(IDPrimaryBase id) {
             // set up current ids
             bool currentIDsChanged = (CurrentIDs.Count <= 0);
-            SetUpCurrentIDs(id);
-            if (currentIDsChanged) { SaveCurrents(); } // save the changes if needed
+            _setUpCurrentIDs(id);
+            if (currentIDsChanged) { _saveCurrents(); } // save the changes if needed
 
             // prospective delete is in valid range
             if (

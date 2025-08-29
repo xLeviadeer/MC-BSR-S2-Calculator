@@ -18,7 +18,6 @@ namespace MC_BSR_S2_Calculator {
     /// </summary>
     public partial class App : Application {
 
-
         public App() {
             // set up logging
             Logging.Initialize();

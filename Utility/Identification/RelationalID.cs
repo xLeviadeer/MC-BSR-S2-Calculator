@@ -20,7 +20,7 @@ using System.Windows.Media.Media3D;
 namespace MC_BSR_S2_Calculator.Utility.Identification {
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public abstract partial class RelationalID : ID {
+    public abstract partial class RelationalID : ID, IInstanceID {
 
         // --- STATIC ---
 
